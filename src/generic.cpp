@@ -1,8 +1,6 @@
 #include <Arduino.h>
 #include "customImpl.h"
 
-#define dmxID 3
-#define num_leds 150
 
 #define DEBUG 1
 #if DEBUG
@@ -12,10 +10,13 @@
 #endif 
 
 class Generic : public CustomImpl {
-    public:
-        int id = dmxID;
-        int num_leds_in_strip = num_leds;
+    
+    int id = 3; // Declare the 'id' variable as an integer with the value of 3
+    const int num_leds = 150; // Declare the 'num_leds' variable as an integer with the value of 150
 
+    public:
+        
+       
         void setBrightness(uint8_t brightness) override {
             // put your main code here, to run repeatedly:
             debug("Set brightness\n",brightness);
@@ -25,7 +26,7 @@ class Generic : public CustomImpl {
 
         void customEffect(CRGB *leds) override {
             // put your main code here, to run repeatedly:
-            debug("Custom effect\n",0);
+            debug("Generic custom effect\n",0);
             // alternate blue and red
             for (int i = 0; i < num_leds_in_strip; i++) {
                 if (i % 2 == 0) {
@@ -35,6 +36,14 @@ class Generic : public CustomImpl {
                 }
             }
             
+        }
+
+        int getId() override {
+            return id;
+        }
+        
+        int getNumLeds() {
+            return num_leds;
         }
 
 };

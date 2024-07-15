@@ -1,12 +1,13 @@
 #include <Arduino.h>
 #include <RF24.h>
-#include <FastLED.h>
+#include "customImpl.h"
 
 #include "generic.cpp"
 #include "madbod.cpp"
 #include "skurvogn.cpp"
 
 CustomImpl *impl = new Generic();
+
 
 #define DEBUG 1
 #if DEBUG
@@ -24,16 +25,13 @@ RF24 radio(CE_PIN, CSN_PIN);
 uint8_t address[][6] = { "1Node", "2Node" };
 
 
-#define id impl->getID()
-#define full_leds 150
-#define num_leds 60
-#define num_channels num_leds*3 + 2 // 1 master dimmer + 1 local effect
-
+#define id impl->getId()
+#define num_channels 180 // fix this
+const int num_leds_in_strip = impl->getNumLeds();
+CRGB leds[150];
 
 #define LED_PIN  9 
 #define built_in_led 8
-CRGB leds[full_leds];
-
 bool split = false;
 // if brightnessFlag is true, the brightness is set at somepoint in the current loop.
 // if false, the brightness is set with the dmx packet.
@@ -50,6 +48,7 @@ void setOneColour(const CRGB &colour);
 void normalMode();
 void setLEDs();
 void setDMX();
+void localEffect(uint8_t led_index, uint8_t effect_value);
 
 void setup() {
   // put your setup code here, to run once:
@@ -67,7 +66,7 @@ void setup() {
       delay(1000);
     }  // hold in infinite loop
   }
-  FastLED.addLeds<WS2812B, LED_PIN, RGB>(leds, full_leds);
+  FastLED.addLeds<WS2812B, LED_PIN, RGB>(leds, num_leds_in_strip);
 
   // Set the PA Level low to try preventing power supply related problems
   // because these examples are likely run with nodes in close proximity to each other.
@@ -125,6 +124,13 @@ void loop() {
       debug("%d ", data[i]);
     }
     debug("\n",0);
+
+    // print first 30 channels
+    for (int i = 0; i < 30; i++)
+    {
+      debug("%d ", dmx[i]);
+    }
+    debug("\n",0);
     
     setDMX();
   }
@@ -138,24 +144,78 @@ void setDMX(){
   //dmx[4] fixture B effect
   //dmx[5] fixture C effect
   //...
-
-
-  FastLED.setBrightness(dmx[0]);
-  
+  FastLED.setBrightness(dmx[0]);  
   //Master effect implementation here, Might remove if not needed.
+  debug("dmx id: %d\n", id);
+  debug("dmx value: %d\n", dmx[id]);
+  localEffect(dmx[2], dmx[id]);
+}
 
-  if (dmx[id] == 1) digitalWrite(built_in_led, LOW);
-  else digitalWrite(built_in_led, HIGH);
-  if (dmx[3]== 2) 
-  // All Red
-    for (int i = 0; i < 150; i++) {
-        leds[i] = CRGB::Red;
-    }
-    debug("All Red\n",0);
-  impl->localEffect(leds, dmx[2], dmx[id]);
-  FastLED.show();
-  
+  void localEffect(uint8_t led_index, uint8_t effect_value){
+    //full color 0-7
+    //
+    debug("Effect value: %d\n", effect_value);
+      switch (effect_value) {
+      //full color 0-7
+        case 0:
+            // turn off all leds
+            setOneColour(CRGB::Black);
+            debug("All leds off\n",0);
+            break;
+        case 1:
+            // All Red
+            setOneColour(CRGB::Red);
+            debug("All Red\n",0);
+            debug("from impl \n",0);
+            for (int i = 0; i < 3; i++)
+            {
+                printf("R: %d, G: %d, B: %d \n", leds[i].r, leds[i].g, leds[i].b);
+            }
+            break;
+        case 2:
+            // All Green
+            setOneColour(CRGB::Green);
+            debug("All Green\n",0);
+            break;
+        case 3:
+            // All Blue
+            setOneColour(CRGB::Blue);
+            debug("All Blue\n",0);
+            break;
+        case 4:
+            // All White
+            setOneColour(CRGB::White);
+            debug("All White\n",0);
+            break;
+        case 5:
+            // All Yellow
+            setOneColour(CRGB::Yellow);
+            debug("All Yellow\n",0);
+            break;
+        case 6:
+            // All Cyan
+            setOneColour(CRGB::Cyan);
+            debug("All Cyan\n",0);
+            break;
+        case 7:
+            // All Magenta
+            setOneColour(CRGB::Magenta);
+            debug("All Magenta\n",0);
+            break;
+        
+        case 255:
+          CRGB (*leds2)[150] = &leds;
+          impl->customEffect(*leds2);
+          break;
+      }
+    FastLED.show();  
+  }
 
+
+void setOneColour(const CRGB &colour) {
+  for (int i = 0; i < num_leds; i++) {
+    leds[i] = colour;
+  }
 }
 
 
