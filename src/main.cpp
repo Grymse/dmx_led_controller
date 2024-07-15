@@ -151,6 +151,8 @@ void setDMX(){
   localEffect(dmx[2], dmx[id]);
 }
 
+
+// -------------------------local effect implementation-------------------------
   void localEffect(uint8_t led_index, uint8_t effect_value){
     //full color 0-7
     //
@@ -203,6 +205,80 @@ void setDMX(){
             debug("All Magenta\n",0);
             break;
         
+
+        //Strobe effect with speed control 
+        case 8:
+          // strobe Red
+          if (led_index % 2 == 0) {
+            setOneColour(CRGB::Red);
+          } else {
+            setOneColour(CRGB::Black);
+          }
+          break;
+        case 9:
+          // strobe Green
+          if (led_index % 2 == 0) {
+            setOneColour(CRGB::Green);
+          } else {
+            setOneColour(CRGB::Black);
+          }
+          break;
+        case 10:
+          // strobe Blue
+          if (led_index % 2 == 0) {
+            setOneColour(CRGB::Blue);
+          } else {
+            setOneColour(CRGB::Black);
+          }
+          break;
+        case 11:
+          // strobe White
+          if (led_index % 2 == 0) {
+            setOneColour(CRGB::White);
+          } else {
+            setOneColour(CRGB::Black);
+          }
+          break;
+        case 12:
+          // strobe Yellow
+          if (led_index % 2 == 0) {
+            setOneColour(CRGB::Yellow);
+          } else {
+            setOneColour(CRGB::Black);
+          }
+          break;
+        case 13:
+          // strobe Cyan
+          if (led_index % 2 == 0) {
+            setOneColour(CRGB::Cyan);
+          } else {
+            setOneColour(CRGB::Black);
+          }
+          break;
+        case 14:
+          // strobe Magenta
+          if (led_index % 2 == 0) {
+            setOneColour(CRGB::Magenta);
+          } else {
+            setOneColour(CRGB::Black);
+          }
+          break;
+
+        //Animation fill from start to end
+        case 15:
+          // fill Red
+          for (int i = 0; i < led_index; i++) {
+            leds[i] = CRGB::Red;
+          }
+          break;
+        case 16:
+          // fill Green
+          for (int i = 0; i < led_index; i++) {
+            leds[i] = CRGB::Green;
+          }
+          break;
+
+
         case 255:
           CRGB* newLeds = impl->customEffect();
           for (int i = 0; i < num_leds_in_strip; i++) {
