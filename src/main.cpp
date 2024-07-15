@@ -278,6 +278,10 @@ void setDMX(){
           }
           break;
 
+        // Ideas:
+          //Pulsate: brightness off->increase, on->decrease, increase<->decrease
+          //Different colors on one strip
+          //
 
         case 255:
           CRGB* newLeds = impl->customEffect();
