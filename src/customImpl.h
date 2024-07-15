@@ -19,7 +19,7 @@ class CustomImpl {
         virtual int getNumLeds() = 0;
         int num_leds_in_strip;
         //const int split;
-        virtual void customEffect(CRGB *leds) = 0;
+        virtual CRGB* customEffect() = 0;
         virtual void setBrightness(uint8_t brightness) = 0;
 
 };

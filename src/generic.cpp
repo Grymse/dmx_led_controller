@@ -12,8 +12,9 @@
 class Generic : public CustomImpl {
     
     int id = 3; // Declare the 'id' variable as an integer with the value of 3
-    const int num_leds = 150; // Declare the 'num_leds' variable as an integer with the value of 150
+    static const int num_leds =  150; // Declare the 'num_leds' variable as an integer with the value of 150
 
+    CRGB leds[num_leds]; // Declare the 'leds' variable as an array of CRGB with the size of 150
     public:
         
        
@@ -24,11 +25,11 @@ class Generic : public CustomImpl {
 
         }
 
-        void customEffect(CRGB *leds) override {
+        CRGB* customEffect() override {
             // put your main code here, to run repeatedly:
             debug("Generic custom effect\n",0);
             // alternate blue and red
-            for (int i = 0; i < num_leds_in_strip; i++) {
+            for (int i = 0; i < num_leds; i++) {
                 if (i % 2 == 0) {
                     leds[i] = CRGB::Blue;
                 } else {
@@ -36,7 +37,10 @@ class Generic : public CustomImpl {
                 }
             }
             
+            return leds;
         }
+
+        
 
         int getId() override {
             return id;

@@ -27,7 +27,7 @@ uint8_t address[][6] = { "1Node", "2Node" };
 
 #define id impl->getId()
 #define num_channels 180 // fix this
-const int num_leds_in_strip = impl->getNumLeds();
+static const int num_leds_in_strip = impl->getNumLeds();
 CRGB leds[150];
 
 #define LED_PIN  9 
@@ -204,8 +204,10 @@ void setDMX(){
             break;
         
         case 255:
-          CRGB (*leds2)[150] = &leds;
-          impl->customEffect(*leds2);
+          CRGB* newLeds = impl->customEffect();
+          for (int i = 0; i < num_leds_in_strip; i++) {
+            leds[i] = newLeds[i];
+          }
           break;
       }
     FastLED.show();  
