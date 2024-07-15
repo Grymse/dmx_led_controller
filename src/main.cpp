@@ -2,6 +2,20 @@
 #include <RF24.h>
 #include <FastLED.h>
 
+#include "generic.cpp"
+#include "madbod.cpp"
+#include "skurvogn.cpp"
+
+CustomImpl *impl = new Generic();
+
+#define DEBUG 1
+#if DEBUG
+#define debug(x,t) printf(x,t)
+#else
+#define debug(x,t)
+#endif
+
+
 #define CE_PIN 0
 #define CSN_PIN 10
 // instantiate an object for the nRF24L01 transceiver
@@ -9,9 +23,13 @@ RF24 radio(CE_PIN, CSN_PIN);
 
 uint8_t address[][6] = { "1Node", "2Node" };
 
+
+#define id impl->getID()
 #define full_leds 150
 #define num_leds 60
 #define num_channels num_leds*3 + 2 // 1 master dimmer + 1 local effect
+
+
 #define LED_PIN  9 
 #define built_in_led 8
 CRGB leds[full_leds];
@@ -31,6 +49,7 @@ int recvData(); // Declare the recvData function
 void setOneColour(const CRGB &colour);
 void normalMode();
 void setLEDs();
+void setDMX();
 
 void setup() {
   // put your setup code here, to run once:
@@ -40,7 +59,7 @@ void setup() {
   delay(1000);
 
   if (!radio.begin()) {
-    Serial.println(F("radio hardware is not responding!!"));
+    debug("radio hardware is not responding!!", 0);
     while (1) {
       digitalWrite(built_in_led, HIGH);
       delay(1000);
@@ -66,19 +85,19 @@ void setup() {
 
 int recvData()
 {
-  //printf("start of recvData\n");
+  //debug("start of recvData\n",0);
   uint8_t pipe;
   if ( radio.available(&pipe) ) {
     digitalWrite(built_in_led, LOW);
-    //printf("radio available\n");
+    //debug("radio available\n",0);
     uint8_t bytes = radio.getPayloadSize();
     radio.read(&data, bytes);
     digitalWrite(built_in_led, HIGH);
       
     // check fragment number
-    printf("Fragment number: %d\n", data[0]);
+    debug("Fragment number: %d\n", data[0]);
     uint8_t offset = data[0] * 31;
-    //printf("Fragment number: %d\n", data[0]);
+    //debug("Fragment number: %d\n", data[0]);
     uint8_t limit = (data[0] == 5) ? 27 : 31; // last fragment has different size
 
     if (offset > 155) {
@@ -94,99 +113,49 @@ int recvData()
   return 0;
 }
 
-void setLEDs()
-{
-  if (dmx[1]== 0) // normal mode, effect is off
-  {
-    normalMode();
-  }
-  else if (dmx[1] == 1)// Red-Blue effect 1
-  { 
-    CRGB colour = CRGB::Red;
-    if (split) CRGB::Blue;
-    setOneColour(colour);
-  }
-  else if (dmx[1] == 2) //Red-Blue effect 2
-  {
-    CRGB colour = CRGB::Blue;
-    if (split) CRGB::Red;
-    setOneColour(colour);
-  }
-  else if (dmx[1]== 3) //side to side, off - on
-  {
-    brightnessFlag = true;
-    if (split) FastLED.setBrightness(0);
-    else FastLED.setBrightness(dmx[0]);
-    normalMode();
-  }
-  else if (dmx[1]== 4) //side to side, off - on
-  {
-    brightnessFlag = true;
-    if (!split) FastLED.setBrightness(0);
-    else FastLED.setBrightness(dmx[0]);
-    normalMode();
-  }
-
-  if (!brightnessFlag) FastLED.setBrightness(dmx[0]);
-  brightnessFlag = false;
-  FastLED.show();
-}
-
-void setOneColour(const CRGB &colour)
-{
-  for (int i = 0; i < num_leds; i++)
-  {
-    leds[i] = colour;
-  }
-}
-
-void normalMode()
-{
-  if (full_leds == num_leds) {
-    for (int i = 0; i < num_leds; i++)
-    {
-      leds[i].setRGB(dmx[i * 3 + 2], dmx[i * 3 + 3], dmx[i * 3 + 4]);
-    }
-  }
-  else {
-    // expand dmx data to fill all leds 
-    int dividor = full_leds / num_leds * 10;
-    int j = 0;
-    int k = 0;
-
-    for (int i = 0; i < num_leds; i++)
-    {
-      while (k < dividor) {
-        leds[j].setRGB(dmx[i * 3 + 2], dmx[i * 3 + 3], dmx[i * 3 + 4]);
-        j++;
-        k+= 10;
-      }
-      if (k > dividor) {
-        // set the next led to the same colour as the previous one
-        leds[j].setRGB(dmx[i * 3 + 2], dmx[i * 3 + 3], dmx[i * 3 + 4]);
-        j++;
-      }
-      k -= dividor;      
-    }
-  }
-}
-
 void loop() {
-  //printf("start of loop\n");
   
   if(recvData() )
   {
     
     
-    printf("Data received:\n");
+    debug("Data received:\n",0);
     for (int i = 0; i < 32; i++)
     {
-      printf("%d ", data[i]);
+      debug("%d ", data[i]);
     }
-    printf("\n");
+    debug("\n",0);
     
-    setLEDs();
+    setDMX();
   }
+}
+
+void setDMX(){
+  //dmx[0] master dimmer
+  //dmx[1] master effect
+  //dmx[2] LED index
+  //dmx[3] fixture A effect
+  //dmx[4] fixture B effect
+  //dmx[5] fixture C effect
+  //...
+
+
+  FastLED.setBrightness(dmx[0]);
+  
+  //Master effect implementation here, Might remove if not needed.
+
+  if (dmx[id] == 1) digitalWrite(built_in_led, LOW);
+  else digitalWrite(built_in_led, HIGH);
+  if (dmx[3]== 2) 
+  // All Red
+    for (int i = 0; i < 150; i++) {
+        leds[i] = CRGB::Red;
+    }
+    debug("All Red\n",0);
+  impl->localEffect(leds, dmx[2], dmx[id]);
+  FastLED.show();
+  
+
 }
 
 
