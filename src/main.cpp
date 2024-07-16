@@ -2,9 +2,7 @@
 #include <RF24.h>
 #include "customImpl.h"
 
-#include "generic.cpp"
-#include "madbod.cpp"
-#include "skurvogn.cpp"
+#include "generic.cpp"; #include "madbod.cpp"; #include "skurvogn.cpp"
 
 CustomImpl *impl = new Generic();
 
@@ -295,7 +293,7 @@ void setDMX(){
 
 
 void setOneColour(const CRGB &colour) {
-  for (int i = 0; i < num_leds; i++) {
+  for (int i = 0; i < num_leds_in_strip; i++) {
     leds[i] = colour;
   }
 }
