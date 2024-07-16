@@ -30,7 +30,7 @@ uint8_t address[][6] = { "1Node", "2Node" };
 static const int num_leds_in_strip = impl->getNumLeds();
 CRGB leds[150];
 
-#define LED_PIN  9 
+#define LED_PIN  7 
 #define built_in_led 8
 bool split = false;
 // if brightnessFlag is true, the brightness is set at somepoint in the current loop.
@@ -49,6 +49,7 @@ void normalMode();
 void setLEDs();
 void setDMX();
 void localEffect(uint8_t led_index, uint8_t effect_value);
+void loopFromToColour(int from, int to, CRGB colour);
 
 void setup() {
   // put your setup code here, to run once:
@@ -64,6 +65,7 @@ void setup() {
       delay(1000);
       digitalWrite(built_in_led, LOW);
       delay(1000);
+      debug("radio hardware is not responding!!", 0);
     }  // hold in infinite loop
   }
   FastLED.addLeds<WS2812B, LED_PIN, RGB>(leds, num_leds_in_strip);
@@ -267,17 +269,45 @@ void setDMX(){
         //Animation fill from start to end
         case 15:
           // fill Red
-          for (int i = 0; i < led_index; i++) {
-            leds[i] = CRGB::Red;
-          }
+          loopFromToColour(0, led_index, CRGB::Red);
+          loopFromToColour(led_index, num_leds_in_strip, CRGB::Black);
           break;
         case 16:
           // fill Green
-          for (int i = 0; i < led_index; i++) {
-            leds[i] = CRGB::Green;
-          }
+          loopFromToColour(0, led_index, CRGB::Green);
+          loopFromToColour(led_index, num_leds_in_strip, CRGB::Black);
           break;
-
+        case 17:
+          // fill Blue
+          loopFromToColour(0, led_index, CRGB::Blue);
+          loopFromToColour(led_index, num_leds_in_strip, CRGB::Black);
+          break;
+        case 18:
+          // fill White
+          loopFromToColour(0, led_index, CRGB::White);
+          loopFromToColour(led_index, num_leds_in_strip, CRGB::Black);
+          break;
+        case 19:
+          // fill Yellow
+          loopFromToColour(0, led_index, CRGB::Yellow);
+          loopFromToColour(led_index, num_leds_in_strip, CRGB::Black);
+          break;
+        case 20:
+          // fill Cyan
+          loopFromToColour(0, led_index, CRGB::Cyan);
+          loopFromToColour(led_index, num_leds_in_strip, CRGB::Black);
+          break;
+        case 21:
+          // fill Magenta
+          loopFromToColour(0, led_index, CRGB::Magenta);
+          loopFromToColour(led_index, num_leds_in_strip, CRGB::Black);
+          break;
+        
+        //Animation unfill from start to end
+        case 22:
+          // unfill black
+          loopFromToColour(0, led_index, CRGB::Black);
+          break;
 
         case 255:
           CRGB* newLeds = impl->customEffect();
@@ -292,6 +322,12 @@ void setDMX(){
 
 void setOneColour(const CRGB &colour) {
   for (int i = 0; i < num_leds; i++) {
+    leds[i] = colour;
+  }
+}
+
+void loopFromToColour(int from, int to, CRGB colour){
+  for (int i = from; i < to; i++) {
     leds[i] = colour;
   }
 }
