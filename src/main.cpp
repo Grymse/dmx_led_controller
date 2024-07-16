@@ -2,7 +2,9 @@
 #include <RF24.h>
 #include "customImpl.h"
 
-#include "generic.cpp"; #include "madbod.cpp"; #include "skurvogn.cpp"
+#include "generic.cpp"
+#include "madbod.cpp"
+#include "skurvogn.cpp"
 
 CustomImpl *impl = new Generic();
 
