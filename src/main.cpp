@@ -35,8 +35,24 @@ uint8_t dmx[num_channels];
 uint8_t data[32];
 uint8_t fragment[6][32];
 
+/**
+ * DECLARATION OF STRUCTS
+ */
 
-// put function declarations here:
+struct DMXPayload {
+  uint8_t effect_id;
+  uint8_t step;
+  uint8_t bpm;
+  uint8_t r;
+  uint8_t g;
+  uint8_t b;
+  uint8_t master_dimmer;
+};
+
+/**
+ * DECLARATION OF FUNCTIONS
+ */
+
 int recvData(); // Declare the recvData function
 void setOneColour(const CRGB &colour);
 void normalMode();
@@ -44,6 +60,11 @@ void setLEDs();
 void setDMX();
 void localEffect(uint8_t led_index, uint8_t effect_value);
 void loopFromToColour(int from, int to, CRGB colour);
+void strobe(DMXPayload effect);
+void alternateColorPicker(uint8_t step, uint8_t colors[][3], uint8_t num_colors);
+void alternateColor(DMXPayload payload);
+void updateEffect(DMXPayload payload);
+void setToFullColor(DMXPayload payload);
 
 void setup() {
   // put your setup code here, to run once:
@@ -142,23 +163,13 @@ float bpm = 0;
 // If called regularly, the getBPM updates and returns a BPM value based on the time difference between each step-increase
 float getBPM(uint8_t step) {
   if (step == 0) return 0;
-  if(step == prevStep) return bpm;
+  if (step == prevStep) return bpm;
   long curtime = millis();
   long diff = curtime - prevStepMillis;
   prevStepMillis = curtime;
   bpm = 60000 / diff;
   return bpm;
 }
-
-struct EffectPayload {
-  uint8_t effect_id;
-  uint8_t step;
-  uint8_t bpm;
-  uint8_t r;
-  uint8_t g;
-  uint8_t b;
-  uint8_t master_dimmer;
-};
 
 void setDMX(){
   //dmx[0] master dimmer
@@ -177,16 +188,16 @@ void setDMX(){
   debug("dmx id: %d\n", id);
   debug("dmx effect_id: %d\n", dmx[id]);
 
-  EffectPayload effect;
-  effect.master_dimmer = dmx[0];
-  effect.r = dmx[1];
-  effect.g = dmx[2];
-  effect.b = dmx[3];
-  effect.step = dmx[4];
-  effect.bpm = getBPM(dmx[4]);
-  effect.effect_id = dmx[id];
+  DMXPayload payload;
+  payload.master_dimmer = dmx[0];
+  payload.r = dmx[1];
+  payload.g = dmx[2];
+  payload.b = dmx[3];
+  payload.step = dmx[4];
+  payload.bpm = getBPM(dmx[4]);
+  payload.effect_id = dmx[id];
 
-  updateEffect(effect);
+  updateEffect(payload);
   FastLED.show();
 }
 
@@ -213,54 +224,109 @@ String COLOR_NAMES[8] = {
   "Magneta"
 };
 
+/**
+ * @brief Set the To Full Color object
+ * Expects the ID to be between 0-8
+ * 0: All leds to R,G,B
+ * 1-8: Picks a color from COLORS array
+ * @param payload DMX payload
+ */
+void setToFullColor(DMXPayload payload) {
+    if (payload.effect_id == 0) {
+
+      String color = "All leds to color: " + String(payload.r) + "," + String(payload.g) + "," + String(payload.b) + "\n";
+      debug(color.c_str(), 0);
+      
+      setOneColour(CRGB(payload.r, payload.g, payload.b));
+      return;
+    }
+
+    uint8_t color_id = payload.effect_id - 1;
+    debug("All leds to color: %s\n", COLOR_NAMES[color_id].c_str());
+    setOneColour(CRGB(
+      COLORS[color_id][0], // Red color from color_id array
+      COLORS[color_id][1], // Green color from color_id array
+      COLORS[color_id][2] // Blue color from color_id array
+    ));
+}
+
+
+
+
+uint8_t RG[2][3] = {{255, 0, 0}, {0, 255, 0}};
+uint8_t GB[2][3] = {{0, 255, 0}, {0, 0, 255}};
+uint8_t BR[2][3] = {{0, 0, 255}, {255, 0, 0}};
+uint8_t ALL[7][3] = {{255, 0, 0},
+{0, 255, 0},
+{0, 0, 255},
+{255, 255, 0},
+{0, 255, 255},
+{255, 0, 255},
+{255, 255, 255}};
+
+/**
+ * @brief Set the To Alternate colors usings step-count
+ * Expects the ID to be between 16-21
+ * 16:	Red, Green
+ * 17:	Green, Blue
+ * 18:	Blue, Red
+ * 19:	Red, Green, Blue
+ * 20:	COLOR_ARRAY (no white)
+ * 21:	COLOR_ARRAY (with white)
+ * @param payload DMX payload
+ */
+void alternateColor(DMXPayload payload) {
+  switch (payload.effect_id) {
+    case 16:
+      alternateColorPicker(payload.step, RG, 2);
+      break;
+    case 17:
+      alternateColorPicker(payload.step, GB, 2);
+      break;
+    case 18:
+      alternateColorPicker(payload.step, BR, 2);
+      break;
+    case 19:
+      alternateColorPicker(payload.step, ALL, 3);
+      break;
+    case 20:
+      alternateColorPicker(payload.step, ALL, 6);
+      break;
+    case 21:
+      alternateColorPicker(payload.step, ALL, 7);
+      break;
+  }
+}
+
+void alternateColorPicker(uint8_t step, uint8_t colors[][3], uint8_t num_colors) {
+  uint8_t* color = colors[step % num_colors];
+  setOneColour(CRGB(
+    color[0], // Red color from colors_array
+    color[1], // Green color from colors_array
+    color[2] // Blue color from colors_array
+  ));
+}
+
+void strobe(DMXPayload effect) {
+  // TODO: Implement strobe effect
+}
+
 
 // --------------- local effect implementation (new protocol) ------------------
-void updateEffect(EffectPayload effect) {
-  if (effect.effect_id < 8) {
-    setOneColour(CRGB(COLORS[effect.effect_id][0],COLORS[effect.effect_id][1],COLORS[effect.effect_id][2]));
-  }
+void updateEffect(DMXPayload payload) {
+  if (payload.effect_id <= 8) setToFullColor(payload);
+
+  if (16 <= payload.effect_id && payload.effect_id <= 21)
+    alternateColor(payload);
+
+  if (32 <= payload.effect_id && payload.effect_id <= 36)
+    strobe(payload);
 
 
-  switch (effect.effect_id) {
-      case 0:
-        debug("All leds off\n",0);
-        setOneColour(CRGB::Black);
-        break;
-      case 1:
-        debug("All LED to White\n",0);
-        setOneColour(CRGB::White);
-        break;
-      case 2:
-        debug("All LED to RED\n",0);
-        setOneColour(CRGB::Red);
-        break;
-      case 3:
-        debug("All LED to GREEN\n",0);
-        setOneColour(CRGB::Green);
-        break;
-      case 4:
-        debug("All LED to BLUE\n",0);
-        setOneColour(CRGB::Blue);
-        break;
-      case 5:
-        debug("All LED to Magneta\n",0);
-        setOneColour(CRGB::Magenta);
-        break;
-      case 6:
-        debug("All LED to Cyan\n",0);
-        setOneColour(CRGB::Cyan);
-        break;
-      case 7:
-        debug("All LED to Yellow\n",0);
-        setOneColour(CRGB::Yellow);
-        break;
-
-
-
-      
+  switch (payload.effect_id) {
       case 1:
         debug("All LED to R,G,B\n",0);
-        setOneColour(CRGB(effect.r, effect.g, effect.b));
+        setOneColour(CRGB(payload.r, payload.g, payload.b));
         break;
   }
 }
@@ -273,149 +339,11 @@ void updateEffect(EffectPayload effect) {
     //
     debug("Effect value: %d\n", effect_value);
       switch (effect_value) {
-      //full color 0-7
-        case 0:
-            // turn off all leds
-            setOneColour(CRGB::Black);
-            debug("All leds off\n",0);
-            break;
-        case 1:
-            // All Red
-            setOneColour(CRGB::Red);
-            debug("All Red\n",0);
-            debug("from impl \n",0);
-            for (int i = 0; i < 3; i++)
-            {
-                printf("R: %d, G: %d, B: %d \n", leds[i].r, leds[i].g, leds[i].b);
-            }
-            break;
-        case 2:
-            // All Green
-            setOneColour(CRGB::Green);
-            debug("All Green\n",0);
-            break;
-        case 3:
-            // All Blue
-            setOneColour(CRGB::Blue);
-            debug("All Blue\n",0);
-            break;
-        case 4:
-            // All White
-            setOneColour(CRGB::White);
-            debug("All White\n",0);
-            break;
-        case 5:
-            // All Yellow
-            setOneColour(CRGB::Yellow);
-            debug("All Yellow\n",0);
-            break;
-        case 6:
-            // All Cyan
-            setOneColour(CRGB::Cyan);
-            debug("All Cyan\n",0);
-            break;
-        case 7:
-            // All Magenta
-            setOneColour(CRGB::Magenta);
-            debug("All Magenta\n",0);
-            break;
-        
-
-        //Strobe effect with speed control 
-        case 8:
-          // strobe Red
-          if (led_index % 2 == 0) {
-            setOneColour(CRGB::Red);
-          } else {
-            setOneColour(CRGB::Black);
-          }
-          break;
-        case 9:
-          // strobe Green
-          if (led_index % 2 == 0) {
-            setOneColour(CRGB::Green);
-          } else {
-            setOneColour(CRGB::Black);
-          }
-          break;
-        case 10:
-          // strobe Blue
-          if (led_index % 2 == 0) {
-            setOneColour(CRGB::Blue);
-          } else {
-            setOneColour(CRGB::Black);
-          }
-          break;
-        case 11:
-          // strobe White
-          if (led_index % 2 == 0) {
-            setOneColour(CRGB::White);
-          } else {
-            setOneColour(CRGB::Black);
-          }
-          break;
-        case 12:
-          // strobe Yellow
-          if (led_index % 2 == 0) {
-            setOneColour(CRGB::Yellow);
-          } else {
-            setOneColour(CRGB::Black);
-          }
-          break;
-        case 13:
-          // strobe Cyan
-          if (led_index % 2 == 0) {
-            setOneColour(CRGB::Cyan);
-          } else {
-            setOneColour(CRGB::Black);
-          }
-          break;
-        case 14:
-          // strobe Magenta
-          if (led_index % 2 == 0) {
-            setOneColour(CRGB::Magenta);
-          } else {
-            setOneColour(CRGB::Black);
-          }
-          break;
-
         //Animation fill from start to end
         case 15:
           // fill Red
           loopFromToColour(0, led_index, CRGB::Red);
           loopFromToColour(led_index, num_leds_in_strip, CRGB::Black);
-          break;
-        case 16:
-          // fill Green
-          loopFromToColour(0, led_index, CRGB::Green);
-          loopFromToColour(led_index, num_leds_in_strip, CRGB::Black);
-          break;
-        case 17:
-          // fill Blue
-          loopFromToColour(0, led_index, CRGB::Blue);
-          loopFromToColour(led_index, num_leds_in_strip, CRGB::Black);
-          break;
-        case 18:
-          // fill White
-          loopFromToColour(0, led_index, CRGB::White);
-          loopFromToColour(led_index, num_leds_in_strip, CRGB::Black);
-          break;
-        case 19:
-          // fill Yellow
-          loopFromToColour(0, led_index, CRGB::Yellow);
-          loopFromToColour(led_index, num_leds_in_strip, CRGB::Black);
-          break;
-        case 20:
-          // fill Cyan
-          loopFromToColour(0, led_index, CRGB::Cyan);
-          loopFromToColour(led_index, num_leds_in_strip, CRGB::Black);
-          break;
-        case 21:
-          // fill Magenta
-          loopFromToColour(0, led_index, CRGB::Magenta);
-          loopFromToColour(led_index, num_leds_in_strip, CRGB::Black);
-          break;
-        
         //Animation unfill from start to end
         case 22:
           // unfill black
@@ -444,6 +372,5 @@ void loopFromToColour(int from, int to, CRGB colour){
     leds[i] = colour;
   }
 }
-
 
 
