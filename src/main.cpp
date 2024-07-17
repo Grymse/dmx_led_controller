@@ -132,10 +132,6 @@ int recvData()
 }
 
 void loop() {
-  setOneColour(CRGB::Red);
-  delay(1000);
-  setOneColour(CRGB::Green);
-  delay(1000);
   if(recvData() )
   {
     debug("Data received:\n",0);
@@ -249,9 +245,6 @@ void setToFullColor(DMXPayload payload) {
       COLORS[color_id][2] // Blue color from color_id array
     ));
 }
-
-
-
 
 uint8_t RG[2][3] = {{255, 0, 0}, {0, 255, 0}};
 uint8_t GB[2][3] = {{0, 255, 0}, {0, 0, 255}};
