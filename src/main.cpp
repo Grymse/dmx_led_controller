@@ -48,7 +48,7 @@ struct DMXPayload {
   uint8_t b;
   uint8_t master_dimmer;
 };
-enum Animation_Type {NONE, STROBE};
+enum Animation_Type {NONE, STROBE, WAVE};
 
 /**
  * DECLARATION OF FUNCTIONS
@@ -71,6 +71,7 @@ void fillEffect(DMXPayload payload);
 // Animations
 void animate();
 void strobe();
+void wave(uint8_t length, uint8_t multiplier);
 
 Animation_Type animation = NONE;
 long tick = 0; // Used to keep track of local animations
@@ -184,8 +185,8 @@ uint16_t getBPM(uint8_t step) {
   long curtime = millis();
   long diff = curtime - prevStepMillis;
   prevStepMillis = curtime;
-  bpm = (bpm * 3) / 4;
-  bpm += (60000 / diff) / 4;
+  bpm = (bpm * 7) / 8;
+  bpm += (60000 / diff) / 8;
 
   return (uint16_t) bpm;
 }
@@ -219,7 +220,6 @@ void pushDMXtoLED(){
   updateEffect(payload);
   FastLED.show();
 }
-
 
 uint8_t COLORS[8][3] = {
   {0, 0, 0},
@@ -338,31 +338,53 @@ void updateEffect(DMXPayload payload) {
 
   if (40 <= payload.effect_id && payload.effect_id <= 43) fillEffect(payload);
 
+  if (57 <= payload.effect_id && payload.effect_id <= 64) setAnimation(WAVE);
+
   if (payload.effect_id == 255) customEffect();
 }
 
 void fillEffect(DMXPayload payload) {
   uint16_t multiplier = 150 < num_leds_in_strip ? 2 : 1;
+  int middle = num_leds_in_strip / 2;
 
   switch(payload.effect_id) {
     case 40: // FILL FROM START
       loopFromToColour(0, multiplier * (uint16_t) payload.step, CRGB(payload.r, payload.g,payload.b));
       loopFromToColour(multiplier * (uint16_t) payload.step, num_leds_in_strip, CRGB::Black);
       break;
+
     case 41: // FILL FROM END
       loopFromToColour(0, multiplier * (uint16_t) payload.step, CRGB::Black);
       loopFromToColour(multiplier * (uint16_t) payload.step, num_leds_in_strip, CRGB(payload.r, payload.g,payload.b));
       break;
+
     case 42: // FILL FROM BOTH
       loopFromToColour(payload.step, num_leds_in_strip - payload.step, CRGB::Black);
       loopFromToColour(0, payload.step, CRGB(payload.r, payload.g,payload.b));
       loopFromToColour(num_leds_in_strip - payload.step, num_leds_in_strip, CRGB(payload.r, payload.g,payload.b));
       break;
+
     case 43: // FILL FROM MIDDLE
-      int middle = num_leds_in_strip / 2;
       loopFromToColour(0, middle - payload.step, CRGB::Black);
       loopFromToColour(middle - payload.step, middle + payload.step, CRGB(payload.r, payload.g,payload.b));
       loopFromToColour(middle + payload.step, num_leds_in_strip, CRGB::Black);
+      break;
+    
+    case 44: // OVERWRITE FILL FROM START
+      loopFromToColour(0, multiplier * (uint16_t) payload.step, CRGB(payload.r, payload.g,payload.b));
+      break;
+
+    case 45: // OVERWRITE FILL FROM END
+      loopFromToColour(multiplier * (uint16_t) payload.step, num_leds_in_strip, CRGB(payload.r, payload.g,payload.b));
+      break;
+
+    case 46: // OVERWRITE FILL FROM BOTH
+      loopFromToColour(0, payload.step, CRGB(payload.r, payload.g,payload.b));
+      loopFromToColour(num_leds_in_strip - payload.step, num_leds_in_strip, CRGB(payload.r, payload.g,payload.b));
+      break;
+
+    case 47: // OVERWRITE FILL FROM MIDDLE
+      loopFromToColour(middle - payload.step, middle + payload.step, CRGB(payload.r, payload.g,payload.b));
       break;
   }
 }
@@ -400,6 +422,10 @@ void animate() {
     case STROBE:
       strobe();
       break;
+    case WAVE:
+      uint8_t length = (payload.effect_id - 57) % 4 + 1;
+      wave(length, payload.effect_id < 61 ? 1 : -1);
+      break;
   }
 
   FastLED.show();  
@@ -424,9 +450,27 @@ void strobe() {
     setOneColour(CRGB::Black);
   }
 }
-/* 
-void wave() {
-  
-} */
+
+/**
+ * Updates wave in accordance to the wave and tick. Continuous updates creates a wave effect.
+ * @param length starts from 1. The higher number, the shorter the wave.
+ * @param multiplier Add positive number to increase and reverse speed of wave.
+ */
+void wave(uint8_t length, uint8_t multiplier) {
+  uint8_t reducedBPM = payload.bpm / 30; // divided by 30, to make effect more stable!
+  float speed_multiplier = (((float) reducedBPM) / 2) * multiplier;
+  uint16_t wavelength = 512 / length;
+  uint16_t half_wavelength = wavelength / 2;
+
+  for (uint16_t i = 0; i < num_leds_in_strip; i++) {
+    uint16_t count = ((uint16_t) (i + tick * speed_multiplier)) % wavelength;
+    if(half_wavelength < count) {
+      count = half_wavelength - count;
+    }
+
+    float wave = (float) count / half_wavelength;
+    leds[i] = CRGB(payload.r * wave, payload.g * wave, payload.b * wave);
+  }
+}
 
 
