@@ -3,8 +3,6 @@
 #include "customImpl.h"
 
 #include "generic.cpp"
-#include "madbod.cpp"
-#include "skurvogn.cpp"
 
 CustomImpl *impl = new Generic();
 
