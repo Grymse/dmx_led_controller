@@ -3,11 +3,13 @@
 #include "customImpl.h"
 
 #include "generic.cpp"
+#include "slange.cpp"
+#include "istapper.cpp"
 
-CustomImpl *impl = new Generic();
+CustomImpl *impl = new Istapper();
 
 
-#define DEBUG 1
+#define DEBUG 0
 #if DEBUG
 #define debug(x,t) printf(x,t)
 #else

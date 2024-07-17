@@ -10,10 +10,10 @@
 #define debug(x,t)
 #endif 
 
-class Istapper : public CustomImpl {
+class Drinks : public CustomImpl {
     
     int id = 21; // Declare the 'id' variable as an integer with the value of 3
-    static const int num_leds =  150/3; // Declare the 'num_leds' variable as an integer with the value of 150
+    static const int num_leds =  150; // Declare the 'num_leds' variable as an integer with the value of 150
 
     CRGB leds[num_leds]; // Declare the 'leds' variable as an array of CRGB with the size of 150
     public:
@@ -54,7 +54,7 @@ class Istapper : public CustomImpl {
             int upper = istapRanges[randomNum][1];
 
             for (int i = 0; i < num_leds; i++) {
-                    leds[i] = CRGB::Black;
+                    leds[i] = CRGB::;
                 }
 
             for (int i = lower; i <= upper; i++) {
@@ -71,6 +71,17 @@ class Istapper : public CustomImpl {
             
             return leds;
         }
+
+        uint8_t COLORS[8][3] = {
+        {0, 0, 0},
+        {255, 255, 255},
+        {255, 0, 0},
+        {0, 255, 0},
+        {0, 0, 255},
+        {255, 255, 0},
+        {0, 255, 255},
+        {255, 0, 255},
+        };
 
         int getId() override {
             return id;

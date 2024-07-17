@@ -9,10 +9,10 @@
 #define debug(x,t)
 #endif 
 
-class slange : public CustomImpl {
+class Slange : public CustomImpl {
     
     int id = 20; // Declare the 'id' variable as an integer with the value of 8
-    static const int num_leds =  150; // Declare the 'num_leds' variable as an integer with the value of 150
+    static const int num_leds =  150/3; // Declare the 'num_leds' variable as an integer with the value of 150
 
     CRGB leds[num_leds]; // Declare the 'leds' variable as an array of CRGB with the size of 150
 
@@ -27,22 +27,26 @@ class slange : public CustomImpl {
         }
 
         CRGB* customEffect() override {
-            // put your main code here, to run repeatedly:
-            debug("Generic custom effect\n",0);
-            // alternate blue and red
-
             long currentMillis = millis();
+            long speed = 200;
 
-            const int snakeLength = 10; // Number of turned on LEDs 
+            const int snakeLength = 4; // Number of turned on LEDs 
 
-            if (currentMillis - lastAnimationMillis > 500){
+            if (currentMillis - lastAnimationMillis > speed){
                 
+                for (int i = 0; i < num_leds; i++) {
+                    leds[i] = CRGB::Black;
+                }
+
                 for (int i = tick; i < tick + snakeLength; i++) {
-                    leds[i] = CRGB::Blue;
+                    leds[i] = CRGB::Red;
                 }
 
                 lastAnimationMillis = currentMillis;
                 tick++;
+
+                if (tick >= num_leds) tick = 0;
+                debug(" - Move - %d\n", NULL);
             }
             
             debug("Tick: %d\n", tick);
