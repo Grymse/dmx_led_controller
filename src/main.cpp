@@ -65,6 +65,7 @@ void alternateColorPicker(uint8_t step, uint8_t colors[][3], uint8_t num_colors)
 void alternateColor(DMXPayload payload);
 void updateEffect(DMXPayload payload);
 void setToFullColor(DMXPayload payload);
+void customEffect();
 
 // Animations
 void animate();
@@ -96,9 +97,10 @@ void setup() {
       debug("radio hardware is not responding!!", 0);
     }  // hold in infinite loop
   }
-  FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, num_leds_in_strip);
-  //ws2812B 4pin sorte full cover
-  //ws2811 til hvid strip hvid tape.  
+
+  FastLED.addLeds<WS2812B, LED_PIN, BRG>(leds, num_leds_in_strip);
+  // ws2812B 4pin sorte full cover
+  // ws2811 til hvid strip hvid tape - BRG
 
   // Set the PA Level low to try preventing power supply related problems
   // because these examples are likely run with nodes in close proximity to each other.
@@ -331,35 +333,28 @@ void updateEffect(DMXPayload payload) {
     alternateColor(payload);
 
   if (32 <= payload.effect_id && payload.effect_id <= 36) setAnimation(STROBE);
-}
 
-// -------------------------OLD effect implementation-------------------------
-  void localEffect(uint8_t led_index, uint8_t effect_value){
-    //full color 0-7
-    //
-    debug("Effect value: %d\n", effect_value);
-      switch (effect_value) {
-        //Animation fill from start to end
-        case 15:
-          // fill Red
-          loopFromToColour(0, led_index, CRGB::Red);
-          loopFromToColour(led_index, num_leds_in_strip, CRGB::Black);
-        //Animation unfill from start to end
-        case 22:
-          // unfill black
-          loopFromToColour(0, led_index, CRGB::Black);
-          break;
 
-        case 255:
-          CRGB* newLeds = impl->customEffect();
-          for (int i = 0; i < num_leds_in_strip; i++) {
-            leds[i] = newLeds[i];
-          }
-          break;
-      }
-    FastLED.show();  
+  if (40 == payload.effect_id) {
+
+    // TODO: FIX FOR LONG STRIPS TO BE DOUBLE
+    loopFromToColour(0, payload.step, CRGB(payload.r, payload.g,payload.b));
+    loopFromToColour(payload.step, num_leds_in_strip, CRGB::Black);
+  }
+  if (41 == payload.effect_id) {
+    loopFromToColour(0, payload.step, CRGB::Black );
+    loopFromToColour(payload.step, num_leds_in_strip, CRGB(payload.r, payload.g,payload.b));
   }
 
+  if (payload.effect_id == 255) customEffect();
+}
+
+void customEffect() {
+  CRGB* newLeds = impl->customEffect();
+    for (int i = 0; i < num_leds_in_strip; i++) {
+      leds[i] = newLeds[i];
+    }
+}
 
 long lastAnimationMillis = 0;
 
@@ -394,7 +389,7 @@ void strobe() {
   uint8_t onLength = strobeOnlength[payload.effect_id - 32];
 
   if(tick % length < onLength) {
-    setOneColour(CRGB::White);
+    setOneColour(CRGB(payload.r, payload.g, payload.b));
   } else {
     setOneColour(CRGB::Black);
   }
