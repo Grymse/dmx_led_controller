@@ -27,6 +27,7 @@ uint8_t address[][6] = { "1Node", "2Node" };
 #define num_channels 180 // fix this
 #define timeout_millis 120000
 static const int num_leds_in_strip = impl->getNumLeds();
+static const LEDSections sections = impl->getLEDSections();
 CRGB leds[300];
 
 #define LED_PIN  7 
@@ -49,6 +50,7 @@ struct DMXPayload {
   uint8_t b;
   uint8_t master_dimmer;
 };
+
 enum Animation_Type {NONE, STROBE, WAVE, RAINBOW};
 
 /**
@@ -59,16 +61,25 @@ void setOneColour(const CRGB &colour);
 void normalMode();
 void setLEDs();
 void pushDMXtoLED();
-void localEffect(uint8_t led_index, uint8_t effect_value);
 void loopFromToColour(int from, int to, CRGB colour);
 void setAnimation(Animation_Type new_animation);
+void setSoloMode();
+
+// Effects
 void alternateColorPicker(uint8_t step, uint8_t colors[][3], uint8_t num_colors);
 void alternateColor(DMXPayload payload);
 void updateEffect(DMXPayload payload);
 void setToFullColor(DMXPayload payload);
 void customEffect();
 void fillEffect(DMXPayload payload);
-void setSoloMode();
+void setSection(uint8_t i, CRGB color);
+void sections2(DMXPayload payload);
+void sections3(DMXPayload payload);
+void sections4(DMXPayload payload);
+void sectionsFull(DMXPayload payload);
+void sectionsRandom1(DMXPayload payload);
+void sectionsRandom2(DMXPayload payload);
+void setSectionEffect(DMXPayload payload);
 
 // Animations
 void animate();
@@ -360,7 +371,32 @@ void updateEffect(DMXPayload payload) {
 
   if (65 <= payload.effect_id && payload.effect_id <= 68) setAnimation(RAINBOW);
 
+  if (128 <= payload.effect_id && payload.effect_id <= 133) setSectionEffect(payload);
+
   if (payload.effect_id == 255) customEffect();
+}
+
+void setSectionEffect(DMXPayload payload) {
+  switch(payload.effect_id) {
+    case 128:
+      sections2(payload);
+      break;
+    case 129:
+      sections3(payload);
+      break;
+    case 130:
+      sections4(payload);
+      break;
+    case 131:
+      sectionsFull(payload);
+      break;
+    case 132:
+      sectionsRandom1(payload);
+      break;
+    case 133:
+      sectionsRandom2(payload);
+      break;
+  }
 }
 
 void fillEffect(DMXPayload payload) {
@@ -503,4 +539,55 @@ void rainbow(uint8_t length) {
   }
 }
 
+void sections2(DMXPayload payload) {
+  for (long i = 0; i < sections.noOfSections; i++) {
+    setSection(i, (i + payload.step) % 2 == 0 ? CRGB(payload.r, payload.g, payload.b) : CRGB::Black);
+  }
+}
 
+void sections3(DMXPayload payload) {
+  for (long i = 0; i < sections.noOfSections; i++) {
+    setSection(i, (i + payload.step) % 3 == 0 ? CRGB(payload.r, payload.g, payload.b) : CRGB::Black);
+  }
+}
+
+void sections4(DMXPayload payload) {
+  for (long i = 0; i < sections.noOfSections; i++) {
+    setSection(i, (i + payload.step) % 4 == 0 ? CRGB(payload.r, payload.g, payload.b) : CRGB::Black);
+  }
+}
+
+void sectionsFull(DMXPayload payload) {
+  for (long i = 0; i < sections.noOfSections; i++) {
+    setSection(i, (i + payload.step) % sections.noOfSections == 0 ? CRGB(payload.r, payload.g, payload.b) : CRGB::Black);
+  }
+}
+
+// Random numbers between 0-63
+byte psudoRandom[] = {38, 33, 31, 45, 2, 56, 15, 44, 33, 13, 32, 37, 39, 52, 8, 6, 25, 15, 16, 17, 14, 31, 33, 63, 62, 56, 61, 44, 60, 45, 33, 17, 22, 55, 63, 51, 0, 11, 54, 12, 37, 54, 55, 37, 33, 39, 58, 20, 54, 63, 5, 12, 51, 57, 51, 58, 29, 58, 17, 7, 56, 36, 22, 51};
+
+void sectionsRandom1(DMXPayload payload) {
+  for (int i = 0; i < sections.noOfSections; i++) {
+    setOneColour(CRGB::Black);
+
+    uint8_t section_id = psudoRandom[(payload.step) % 64];
+    setSection(section_id, CRGB(payload.r, payload.g, payload.b));
+  }
+}
+
+void sectionsRandom2(DMXPayload payload) {
+  for (int i = 0; i < sections.noOfSections; i++) {
+    setOneColour(CRGB::Black);
+
+    uint8_t section_id1 = psudoRandom[(payload.step) % 64];
+    uint8_t section_id2 = psudoRandom[(payload.step + 32) % 64];
+    setSection(section_id1, CRGB(payload.r, payload.g, payload.b));
+    setSection(section_id2, CRGB(payload.r, payload.g, payload.b));
+  }
+}
+
+void setSection(uint8_t i, CRGB color) {
+  uint16_t start = sections.sectionsStartIndex[i];
+  uint16_t end = sections.noOfSections == i + 1 ? num_leds_in_strip : sections.sectionsStartIndex[i + 1];
+  loopFromToColour(start, end, color);
+}

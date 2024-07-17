@@ -62,6 +62,11 @@ class istapper : public CustomImpl {
             return num_leds;
         }
 
+        LEDSections getLEDSections() {
+            uint8_t sectionsStartIndex[] = {0, 10, 30, 60, 80, 90, 100};
+            LEDSections sections = {sectionsStartIndex, 7};
+            return sections;
+        }
 };
 
 

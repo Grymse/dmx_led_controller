@@ -50,6 +50,11 @@ class Generic : public CustomImpl {
             return num_leds;
         }
 
+        LEDSections getLEDSections() {
+            uint8_t sectionsStartIndex[] = {0, 50, 100};
+            LEDSections sections = {sectionsStartIndex, 3};
+            return sections;
+        }
 };
 
 
