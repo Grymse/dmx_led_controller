@@ -25,7 +25,7 @@ uint8_t address[][6] = { "1Node", "2Node" };
 
 #define id impl->getId()
 #define num_channels 180 // fix this
-#define timeout_millis 60000
+#define timeout_millis 120000
 static const int num_leds_in_strip = impl->getNumLeds();
 CRGB leds[300];
 
@@ -68,6 +68,7 @@ void updateEffect(DMXPayload payload);
 void setToFullColor(DMXPayload payload);
 void customEffect();
 void fillEffect(DMXPayload payload);
+void setSoloMode();
 
 // Animations
 void animate();
@@ -442,8 +443,7 @@ void animate() {
       strobe();
       break;
     case WAVE:
-      uint8_t length = (payload.effect_id - 57) % 4 + 1;
-      wave(length, payload.effect_id < 61 ? 1 : -1);
+      wave((payload.effect_id - 57) % 4 + 1, payload.effect_id < 61 ? 1 : -1);
       break;
     case RAINBOW:
       rainbow((payload.effect_id - 65) % 4 + 1);
