@@ -16,13 +16,9 @@ class Generic : public CustomImpl {
 
     CRGB leds[num_leds]; // Declare the 'leds' variable as an array of CRGB with the size of 150
     public:
-        
-       
         void setBrightness(uint8_t brightness) override {
             // put your main code here, to run repeatedly:
             debug("Set brightness\n",brightness);
-
-
         }
 
         CRGB* customEffect() override {
@@ -52,7 +48,7 @@ class Generic : public CustomImpl {
 
         LEDSections getLEDSections() {
             uint8_t sectionsStartIndex[] = {0, 50, 100};
-            LEDSections sections = {sectionsStartIndex, 3};
+            LEDSections sections = {sectionsStartIndex, sizeof(sectionsStartIndex)};
             return sections;
         }
 };
