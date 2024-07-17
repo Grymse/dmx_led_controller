@@ -28,15 +28,11 @@ uint8_t address[][6] = { "1Node", "2Node" };
 #define id impl->getId()
 #define num_channels 180 // fix this
 static const int num_leds_in_strip = impl->getNumLeds();
-CRGB leds[150];
+CRGB leds[300];
 
 #define LED_PIN  7 
 #define built_in_led 8
 bool split = false;
-// if brightnessFlag is true, the brightness is set at somepoint in the current loop.
-// if false, the brightness is set with the dmx packet.
-// often used to hardcode brightness to a value in a special program.
-bool brightnessFlag = false;
 uint8_t dmx[num_channels];
 uint8_t data[32];
 uint8_t fragment[6][32];
@@ -118,8 +114,6 @@ void loop() {
   
   if(recvData() )
   {
-    
-    
     debug("Data received:\n",0);
     for (int i = 0; i < 32; i++)
     {
