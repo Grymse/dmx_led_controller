@@ -137,20 +137,136 @@ void loop() {
   }
 }
 
+uint8_t prevStep = 0;
+long prevStepMillis = 0;
+float bpm = 0;
+
+// If called regularly, the getBPM updates and returns a BPM value based on the time difference between each step-increase
+float getBPM(uint8_t step) {
+  if (step == 0) return 0;
+  if(step == prevStep) return bpm;
+  long curtime = millis();
+  long diff = curtime - prevStepMillis;
+  prevStepMillis = curtime;
+  bpm = 60000 / diff;
+  return bpm;
+}
+
+struct EffectPayload {
+  uint8_t effect_id;
+  uint8_t step;
+  uint8_t bpm;
+  uint8_t r;
+  uint8_t g;
+  uint8_t b;
+  uint8_t master_dimmer;
+};
+
 void setDMX(){
   //dmx[0] master dimmer
-  //dmx[1] master effect
-  //dmx[2] LED index
-  //dmx[3] fixture A effect
-  //dmx[4] fixture B effect
-  //dmx[5] fixture C effect
-  //...
-  FastLED.setBrightness(dmx[0]);  
-  //Master effect implementation here, Might remove if not needed.
+  //dmx[1] master R
+  //dmx[2] master G
+  //dmx[3] master B
+  //dmx[4] Step
+  //dmx[5] NOT USED
+  //dmx[6] NOT USED
+  //dmx[7] NOT USED
+  //dmx[8] fixture A effect
+  //dmx[9] fixture B effect
+  //dmx[10] fixture C effect
+  FastLED.setBrightness(dmx[0]);
+  
   debug("dmx id: %d\n", id);
-  debug("dmx value: %d\n", dmx[id]);
-  localEffect(dmx[2], dmx[id]);
+  debug("dmx effect_id: %d\n", dmx[id]);
+
+  EffectPayload effect;
+  effect.master_dimmer = dmx[0];
+  effect.r = dmx[1];
+  effect.g = dmx[2];
+  effect.b = dmx[3];
+  effect.step = dmx[4];
+  effect.bpm = getBPM(dmx[4]);
+  effect.effect_id = dmx[id];
+
+  updateEffect(effect);
+  FastLED.show();
 }
+
+
+uint8_t COLORS[8][3] = {
+  {0, 0, 0},
+  {255, 255, 255},
+  {255, 0, 0},
+  {0, 255, 0},
+  {0, 0, 255},
+  {255, 255, 0},
+  {0, 255, 255},
+  {255, 0, 255},
+};
+
+String COLOR_NAMES[8] = {
+  "Black",
+  "White",
+  "Red",
+  "Green",
+  "Blue",
+  "Yellow",
+  "Cyan",
+  "Magneta"
+};
+
+
+// --------------- local effect implementation (new protocol) ------------------
+void updateEffect(EffectPayload effect) {
+  if (effect.effect_id < 8) {
+    setOneColour(CRGB(COLORS[effect.effect_id][0],COLORS[effect.effect_id][1],COLORS[effect.effect_id][2]));
+  }
+
+
+  switch (effect.effect_id) {
+      case 0:
+        debug("All leds off\n",0);
+        setOneColour(CRGB::Black);
+        break;
+      case 1:
+        debug("All LED to White\n",0);
+        setOneColour(CRGB::White);
+        break;
+      case 2:
+        debug("All LED to RED\n",0);
+        setOneColour(CRGB::Red);
+        break;
+      case 3:
+        debug("All LED to GREEN\n",0);
+        setOneColour(CRGB::Green);
+        break;
+      case 4:
+        debug("All LED to BLUE\n",0);
+        setOneColour(CRGB::Blue);
+        break;
+      case 5:
+        debug("All LED to Magneta\n",0);
+        setOneColour(CRGB::Magenta);
+        break;
+      case 6:
+        debug("All LED to Cyan\n",0);
+        setOneColour(CRGB::Cyan);
+        break;
+      case 7:
+        debug("All LED to Yellow\n",0);
+        setOneColour(CRGB::Yellow);
+        break;
+
+
+
+      
+      case 1:
+        debug("All LED to R,G,B\n",0);
+        setOneColour(CRGB(effect.r, effect.g, effect.b));
+        break;
+  }
+}
+
 
 
 // -------------------------local effect implementation-------------------------
