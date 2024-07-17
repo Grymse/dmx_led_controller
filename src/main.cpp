@@ -42,12 +42,13 @@ uint8_t fragment[6][32];
 struct DMXPayload {
   uint8_t effect_id;
   uint8_t step;
-  uint8_t bpm;
+  uint16_t bpm;
   uint8_t r;
   uint8_t g;
   uint8_t b;
   uint8_t master_dimmer;
 };
+enum Animation_Type {NONE, STROBE};
 
 /**
  * DECLARATION OF FUNCTIONS
@@ -59,11 +60,24 @@ void setLEDs();
 void pushDMXtoLED();
 void localEffect(uint8_t led_index, uint8_t effect_value);
 void loopFromToColour(int from, int to, CRGB colour);
-void strobe(DMXPayload effect);
+void setAnimation(Animation_Type new_animation);
 void alternateColorPicker(uint8_t step, uint8_t colors[][3], uint8_t num_colors);
 void alternateColor(DMXPayload payload);
 void updateEffect(DMXPayload payload);
 void setToFullColor(DMXPayload payload);
+
+// Animations
+void animate();
+void strobe();
+
+Animation_Type animation = NONE;
+long tick = 0; // Used to keep track of local animations
+DMXPayload payload;
+
+void setAnimation(Animation_Type new_animation) {
+  animation = new_animation;
+  tick = 0;
+}
 
 void setup() {
   // put your setup code here, to run once:
@@ -97,7 +111,7 @@ void setup() {
 
   //radio.setAutoAck(false);
   //radio.setDataRate(RF24_250KBPS); //estimated max is only 64kbps
-  radio.startListening();     
+  radio.startListening();
 }
 
 int recvData()
@@ -130,8 +144,9 @@ int recvData()
   return 0;
 }
 
+
+
 void loop() {
-  // 
   if(recvData() )
   {
     debug("Data received:\n",0);
@@ -150,6 +165,8 @@ void loop() {
     
     pushDMXtoLED();
   }
+
+  if(animation != NONE) animate();
 }
 
 uint8_t prevStep = 0;
@@ -157,14 +174,16 @@ long prevStepMillis = 0;
 float bpm = 0;
 
 // If called regularly, the getBPM updates and returns a BPM value based on the time difference between each step-increase
-float getBPM(uint8_t step) {
+uint16_t getBPM(uint8_t step) {
   if (step == 0) return 0;
   if (step == prevStep) return bpm;
   long curtime = millis();
   long diff = curtime - prevStepMillis;
   prevStepMillis = curtime;
-  bpm = 60000 / diff;
-  return bpm;
+  bpm = (bpm * 3) / 4;
+  bpm += (60000 / diff) / 4;
+
+  return (uint16_t) bpm;
 }
 
 void pushDMXtoLED(){
@@ -181,10 +200,6 @@ void pushDMXtoLED(){
   //dmx[10] fixture C effect
   FastLED.setBrightness(dmx[0]);
   
-  debug("dmx id: %d\n", id);
-  debug("dmx effect_id: %d\n", dmx[id]);
-
-  DMXPayload payload;
   payload.master_dimmer = dmx[0];
   payload.r = dmx[1];
   payload.g = dmx[2];
@@ -192,6 +207,10 @@ void pushDMXtoLED(){
   payload.step = dmx[4];
   payload.bpm = getBPM(dmx[4]);
   payload.effect_id = dmx[id];
+
+  debug("dmx bpm: %d\n", payload.bpm);
+  debug("dmx id: %d\n", id);
+  debug("dmx effect_id: %d\n", dmx[id]);
 
   updateEffect(payload);
   FastLED.show();
@@ -300,33 +319,21 @@ void alternateColorPicker(uint8_t step, uint8_t colors[][3], uint8_t num_colors)
   ));
 }
 
-void strobe(DMXPayload effect) {
-  // TODO: Implement strobe effect
-}
-
-
 // --------------- local effect implementation (new protocol) ------------------
 void updateEffect(DMXPayload payload) {
+  animation = NONE; // RESET ANIMATION TYPE. OVERWRITE TO CORRECT ANIMATION
+                    // DO NOT REMOVE THIS LINE.
+                    // Do not set animation directly in the following code. Must use setAnimation!!
+
   if (payload.effect_id <= 8) setToFullColor(payload);
 
   if (16 <= payload.effect_id && payload.effect_id <= 21)
     alternateColor(payload);
 
-  if (32 <= payload.effect_id && payload.effect_id <= 36)
-    strobe(payload);
-
-
-  switch (payload.effect_id) {
-      case 1:
-        debug("All LED to R,G,B\n",0);
-        setOneColour(CRGB(payload.r, payload.g, payload.b));
-        break;
-  }
+  if (32 <= payload.effect_id && payload.effect_id <= 36) setAnimation(STROBE);
 }
 
-
-
-// -------------------------local effect implementation-------------------------
+// -------------------------OLD effect implementation-------------------------
   void localEffect(uint8_t led_index, uint8_t effect_value){
     //full color 0-7
     //
@@ -352,6 +359,46 @@ void updateEffect(DMXPayload payload) {
       }
     FastLED.show();  
   }
+
+
+long lastAnimationMillis = 0;
+
+void animate() {
+  long currentMillis = millis();
+  if (currentMillis - lastAnimationMillis < 20) return;
+  lastAnimationMillis = currentMillis;
+  tick++;
+  debug("Tick: %d\n", tick);
+  debug("animation: %d\n", animation);
+
+  switch (animation) {
+    case STROBE:
+      strobe();
+      break;
+  }
+
+  FastLED.show();  
+}
+
+
+// 32	Ultra-Slow
+// 33	Slow
+// 34	Medium
+// 35	Fast
+// 36	Ultra-fast
+uint8_t strobeLength[5] = {50, 20, 10, 7, 5};
+uint8_t strobeOnlength[5] = {10, 5, 3, 2, 1};
+
+void strobe() {
+  uint8_t length = strobeLength[payload.effect_id - 32];
+  uint8_t onLength = strobeOnlength[payload.effect_id - 32];
+
+  if(tick % length < onLength) {
+    setOneColour(CRGB::White);
+  } else {
+    setOneColour(CRGB::Black);
+  }
+}
 
 
 void setOneColour(const CRGB &colour) {
