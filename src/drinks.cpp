@@ -54,7 +54,7 @@ class Drinks : public CustomImpl {
             int upper = istapRanges[randomNum][1];
 
             for (int i = 0; i < num_leds; i++) {
-                    leds[i] = CRGB::;
+                    leds[i] = CRGB::Black;
                 }
 
             for (int i = lower; i <= upper; i++) {

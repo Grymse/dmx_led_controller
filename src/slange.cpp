@@ -28,7 +28,7 @@ class Slange : public CustomImpl {
 
         CRGB* customEffect() override {
             long currentMillis = millis();
-            long speed = 200;
+            const long speed = 200;
 
             const int snakeLength = 4; // Number of turned on LEDs 
 
@@ -50,11 +50,8 @@ class Slange : public CustomImpl {
             }
             
             debug("Tick: %d\n", tick);
-
-            FastLED.show();  
             
             return leds;
-            
         }
 
         int getId() override {

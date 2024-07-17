@@ -60,14 +60,6 @@ class Istapper : public CustomImpl {
             for (int i = lower; i <= upper; i++) {
                 leds[i] = CRGB::Yellow;
             }
-    
-/*             for (int i = 0; i < numberOfIstapper; i++) {
-                for (int j = 0; j < 2; j++) {
-                    int v = istapRanges[i][j];
-                    if (v != 0){
-                    }
-                }
-            } */
             
             return leds;
         }

@@ -170,6 +170,8 @@ void loop() {
     debug("\n",0);
     
     pushDMXtoLED();
+  } else if(payload.effect_id == 255){
+    pushDMXtoLED();
   }
 
   if(animation != NONE) animate();
