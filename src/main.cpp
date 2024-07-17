@@ -65,6 +65,8 @@ void setup() {
     }  // hold in infinite loop
   }
   FastLED.addLeds<WS2812B, LED_PIN, RGB>(leds, num_leds_in_strip);
+  //ws2812B 4pin sorte full cover
+  //ws2811 til hvid strip hvid tape.  
 
   // Set the PA Level low to try preventing power supply related problems
   // because these examples are likely run with nodes in close proximity to each other.
@@ -111,7 +113,10 @@ int recvData()
 }
 
 void loop() {
-  
+  setOneColour(CRGB::Red);
+  delay(1000);
+  setOneColour(CRGB::Green);
+  delay(1000);
   if(recvData() )
   {
     debug("Data received:\n",0);
