@@ -48,7 +48,7 @@ struct DMXPayload {
   uint8_t b;
   uint8_t master_dimmer;
 };
-enum Animation_Type {NONE, STROBE, WAVE};
+enum Animation_Type {NONE, STROBE, WAVE, RAINBOW};
 
 /**
  * DECLARATION OF FUNCTIONS
@@ -72,6 +72,7 @@ void fillEffect(DMXPayload payload);
 void animate();
 void strobe();
 void wave(uint8_t length, uint8_t multiplier);
+void rainbow(uint8_t length);
 
 Animation_Type animation = NONE;
 long tick = 0; // Used to keep track of local animations
@@ -340,6 +341,8 @@ void updateEffect(DMXPayload payload) {
 
   if (57 <= payload.effect_id && payload.effect_id <= 64) setAnimation(WAVE);
 
+  if (65 <= payload.effect_id && payload.effect_id <= 68) setAnimation(RAINBOW);
+
   if (payload.effect_id == 255) customEffect();
 }
 
@@ -426,6 +429,9 @@ void animate() {
       uint8_t length = (payload.effect_id - 57) % 4 + 1;
       wave(length, payload.effect_id < 61 ? 1 : -1);
       break;
+    case RAINBOW:
+      rainbow((payload.effect_id - 65) % 4 + 1);
+      break;
   }
 
   FastLED.show();  
@@ -470,6 +476,14 @@ void wave(uint8_t length, uint8_t multiplier) {
 
     float wave = (float) count / half_wavelength;
     leds[i] = CRGB(payload.r * wave, payload.g * wave, payload.b * wave);
+  }
+}
+
+void rainbow(uint8_t length) {
+  uint8_t speed_multiplier = payload.bpm / 30; // divided by 30, to make effect more stable!
+  
+  for (int i = 0; i < num_leds_in_strip; i++) {
+    leds[i] = CHSV(i - ((tick * speed_multiplier) % 255 * length), 255, 255); /* The higher the value 4 the less fade there is and vice versa */ 
   }
 }
 
