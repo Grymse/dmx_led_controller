@@ -25,6 +25,7 @@ uint8_t address[][6] = { "1Node", "2Node" };
 
 #define id impl->getId()
 #define num_channels 180 // fix this
+#define timeout_millis 60000
 static const int num_leds_in_strip = impl->getNumLeds();
 CRGB leds[300];
 
@@ -83,9 +84,18 @@ void setAnimation(Animation_Type new_animation) {
   tick = 0;
 }
 
+void setSoloMode() {
+  payload.master_dimmer = 255;
+  payload.effect_id = 255;
+  pushDMXtoLED();
+}
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
+
+  // Set initial values
+  setSoloMode();
 
   pinMode(built_in_led, OUTPUT);
   digitalWrite(built_in_led, HIGH); //Led is reversed. Low is on and high is off.
@@ -150,11 +160,17 @@ int recvData()
   return 0;
 }
 
+long lastReceivedData = 0;
 
 
 void loop() {
+  if (millis() - lastReceivedData > timeout_millis) {
+    setSoloMode();
+  }
+
   if(recvData() )
   {
+    lastReceivedData = millis();
     debug("Data received:\n",0);
     for (int i = 0; i < 32; i++)
     {
