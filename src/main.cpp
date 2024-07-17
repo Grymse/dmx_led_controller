@@ -66,6 +66,7 @@ void alternateColor(DMXPayload payload);
 void updateEffect(DMXPayload payload);
 void setToFullColor(DMXPayload payload);
 void customEffect();
+void fillEffect(DMXPayload payload);
 
 // Animations
 void animate();
@@ -83,6 +84,7 @@ void setAnimation(Animation_Type new_animation) {
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
+
   pinMode(built_in_led, OUTPUT);
   digitalWrite(built_in_led, HIGH); //Led is reversed. Low is on and high is off.
   delay(1000);
@@ -334,19 +336,47 @@ void updateEffect(DMXPayload payload) {
 
   if (32 <= payload.effect_id && payload.effect_id <= 36) setAnimation(STROBE);
 
-
-  if (40 == payload.effect_id) {
-
-    // TODO: FIX FOR LONG STRIPS TO BE DOUBLE
-    loopFromToColour(0, payload.step, CRGB(payload.r, payload.g,payload.b));
-    loopFromToColour(payload.step, num_leds_in_strip, CRGB::Black);
-  }
-  if (41 == payload.effect_id) {
-    loopFromToColour(0, payload.step, CRGB::Black );
-    loopFromToColour(payload.step, num_leds_in_strip, CRGB(payload.r, payload.g,payload.b));
-  }
+  if (40 <= payload.effect_id && payload.effect_id <= 43) fillEffect(payload);
 
   if (payload.effect_id == 255) customEffect();
+}
+
+void fillEffect(DMXPayload payload) {
+  uint16_t multiplier = 150 < num_leds_in_strip ? 2 : 1;
+
+  switch(payload.effect_id) {
+    case 40: // FILL FROM START
+      loopFromToColour(0, multiplier * (uint16_t) payload.step, CRGB(payload.r, payload.g,payload.b));
+      loopFromToColour(multiplier * (uint16_t) payload.step, num_leds_in_strip, CRGB::Black);
+      break;
+    case 41: // FILL FROM END
+      loopFromToColour(0, multiplier * (uint16_t) payload.step, CRGB::Black);
+      loopFromToColour(multiplier * (uint16_t) payload.step, num_leds_in_strip, CRGB(payload.r, payload.g,payload.b));
+      break;
+    case 42: // FILL FROM BOTH
+      loopFromToColour(payload.step, num_leds_in_strip - payload.step, CRGB::Black);
+      loopFromToColour(0, payload.step, CRGB(payload.r, payload.g,payload.b));
+      loopFromToColour(num_leds_in_strip - payload.step, num_leds_in_strip, CRGB(payload.r, payload.g,payload.b));
+      break;
+    case 43: // FILL FROM MIDDLE
+      int middle = num_leds_in_strip / 2;
+      loopFromToColour(0, middle - payload.step, CRGB::Black);
+      loopFromToColour(middle - payload.step, middle + payload.step, CRGB(payload.r, payload.g,payload.b));
+      loopFromToColour(middle + payload.step, num_leds_in_strip, CRGB::Black);
+      break;
+  }
+}
+
+void setOneColour(const CRGB &colour) {
+  for (int i = 0; i < num_leds_in_strip; i++) {
+    leds[i] = colour;
+  }
+}
+
+void loopFromToColour(int from, int to, CRGB colour){
+  for (int i = from; i < to; i++) {
+    leds[i] = colour;
+  }
 }
 
 void customEffect() {
@@ -394,18 +424,9 @@ void strobe() {
     setOneColour(CRGB::Black);
   }
 }
-
-
-void setOneColour(const CRGB &colour) {
-  for (int i = 0; i < num_leds_in_strip; i++) {
-    leds[i] = colour;
-  }
-}
-
-void loopFromToColour(int from, int to, CRGB colour){
-  for (int i = from; i < to; i++) {
-    leds[i] = colour;
-  }
-}
+/* 
+void wave() {
+  
+} */
 
 
