@@ -52,12 +52,11 @@ struct DMXPayload {
 /**
  * DECLARATION OF FUNCTIONS
  */
-
 int recvData(); // Declare the recvData function
 void setOneColour(const CRGB &colour);
 void normalMode();
 void setLEDs();
-void setDMX();
+void pushDMXtoLED();
 void localEffect(uint8_t led_index, uint8_t effect_value);
 void loopFromToColour(int from, int to, CRGB colour);
 void strobe(DMXPayload effect);
@@ -132,6 +131,7 @@ int recvData()
 }
 
 void loop() {
+  // 
   if(recvData() )
   {
     debug("Data received:\n",0);
@@ -148,7 +148,7 @@ void loop() {
     }
     debug("\n",0);
     
-    setDMX();
+    pushDMXtoLED();
   }
 }
 
@@ -167,7 +167,7 @@ float getBPM(uint8_t step) {
   return bpm;
 }
 
-void setDMX(){
+void pushDMXtoLED(){
   //dmx[0] master dimmer
   //dmx[1] master R
   //dmx[2] master G

@@ -11,7 +11,7 @@
 
 class Generic : public CustomImpl {
     
-    int id = 3; // Declare the 'id' variable as an integer with the value of 3
+    int id = 8; // Declare the 'id' variable as an integer with the value of 8
     static const int num_leds =  150; // Declare the 'num_leds' variable as an integer with the value of 150
 
     CRGB leds[num_leds]; // Declare the 'leds' variable as an array of CRGB with the size of 150
