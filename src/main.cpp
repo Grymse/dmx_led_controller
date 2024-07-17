@@ -27,7 +27,9 @@ uint8_t address[][6] = { "1Node", "2Node" };
 
 #define id impl->getId()
 #define num_channels 180 // fix this
+#define timeout_millis 120000
 static const int num_leds_in_strip = impl->getNumLeds();
+static const LEDSections sections = impl->getLEDSections();
 CRGB leds[300];
 
 #define LED_PIN  7 
@@ -50,7 +52,8 @@ struct DMXPayload {
   uint8_t b;
   uint8_t master_dimmer;
 };
-enum Animation_Type {NONE, STROBE};
+
+enum Animation_Type {NONE, STROBE, WAVE, RAINBOW};
 
 /**
  * DECLARATION OF FUNCTIONS
@@ -60,19 +63,31 @@ void setOneColour(const CRGB &colour);
 void normalMode();
 void setLEDs();
 void pushDMXtoLED();
-void localEffect(uint8_t led_index, uint8_t effect_value);
 void loopFromToColour(int from, int to, CRGB colour);
 void setAnimation(Animation_Type new_animation);
+void setSoloMode();
+
+// Effects
 void alternateColorPicker(uint8_t step, uint8_t colors[][3], uint8_t num_colors);
 void alternateColor(DMXPayload payload);
 void updateEffect(DMXPayload payload);
 void setToFullColor(DMXPayload payload);
 void customEffect();
 void fillEffect(DMXPayload payload);
+void setSection(uint8_t i, CRGB color);
+void sections2(DMXPayload payload);
+void sections3(DMXPayload payload);
+void sections4(DMXPayload payload);
+void sectionsFull(DMXPayload payload);
+void sectionsRandom1(DMXPayload payload);
+void sectionsRandom2(DMXPayload payload);
+void setSectionEffect(DMXPayload payload);
 
 // Animations
 void animate();
 void strobe();
+void wave(uint8_t length, uint8_t multiplier);
+void rainbow(uint8_t length);
 
 Animation_Type animation = NONE;
 long tick = 0; // Used to keep track of local animations
@@ -83,9 +98,18 @@ void setAnimation(Animation_Type new_animation) {
   tick = 0;
 }
 
+void setSoloMode() {
+  payload.master_dimmer = 255;
+  payload.effect_id = 255;
+  pushDMXtoLED();
+}
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
+
+  // Set initial values
+  setSoloMode();
 
   pinMode(built_in_led, OUTPUT);
   digitalWrite(built_in_led, HIGH); //Led is reversed. Low is on and high is off.
@@ -150,11 +174,17 @@ int recvData()
   return 0;
 }
 
+long lastReceivedData = 0;
 
 
 void loop() {
+  if (millis() - lastReceivedData > timeout_millis) {
+    setSoloMode();
+  }
+
   if(recvData() )
   {
+    lastReceivedData = millis();
     debug("Data received:\n",0);
     for (int i = 0; i < 32; i++)
     {
@@ -188,8 +218,8 @@ uint16_t getBPM(uint8_t step) {
   long curtime = millis();
   long diff = curtime - prevStepMillis;
   prevStepMillis = curtime;
-  bpm = (bpm * 3) / 4;
-  bpm += (60000 / diff) / 4;
+  bpm = (bpm * 7) / 8;
+  bpm += (60000 / diff) / 8;
 
   return (uint16_t) bpm;
 }
@@ -223,7 +253,6 @@ void pushDMXtoLED(){
   updateEffect(payload);
   FastLED.show();
 }
-
 
 uint8_t COLORS[8][3] = {
   {0, 0, 0},
@@ -342,31 +371,80 @@ void updateEffect(DMXPayload payload) {
 
   if (40 <= payload.effect_id && payload.effect_id <= 43) fillEffect(payload);
 
+  if (57 <= payload.effect_id && payload.effect_id <= 64) setAnimation(WAVE);
+
+  if (65 <= payload.effect_id && payload.effect_id <= 68) setAnimation(RAINBOW);
+
+  if (128 <= payload.effect_id && payload.effect_id <= 133) setSectionEffect(payload);
+
   if (payload.effect_id == 255) customEffect();
+}
+
+void setSectionEffect(DMXPayload payload) {
+  switch(payload.effect_id) {
+    case 128:
+      sections2(payload);
+      break;
+    case 129:
+      sections3(payload);
+      break;
+    case 130:
+      sections4(payload);
+      break;
+    case 131:
+      sectionsFull(payload);
+      break;
+    case 132:
+      sectionsRandom1(payload);
+      break;
+    case 133:
+      sectionsRandom2(payload);
+      break;
+  }
 }
 
 void fillEffect(DMXPayload payload) {
   uint16_t multiplier = 150 < num_leds_in_strip ? 2 : 1;
+  int middle = num_leds_in_strip / 2;
 
   switch(payload.effect_id) {
     case 40: // FILL FROM START
       loopFromToColour(0, multiplier * (uint16_t) payload.step, CRGB(payload.r, payload.g,payload.b));
       loopFromToColour(multiplier * (uint16_t) payload.step, num_leds_in_strip, CRGB::Black);
       break;
+
     case 41: // FILL FROM END
       loopFromToColour(0, multiplier * (uint16_t) payload.step, CRGB::Black);
       loopFromToColour(multiplier * (uint16_t) payload.step, num_leds_in_strip, CRGB(payload.r, payload.g,payload.b));
       break;
+
     case 42: // FILL FROM BOTH
       loopFromToColour(payload.step, num_leds_in_strip - payload.step, CRGB::Black);
       loopFromToColour(0, payload.step, CRGB(payload.r, payload.g,payload.b));
       loopFromToColour(num_leds_in_strip - payload.step, num_leds_in_strip, CRGB(payload.r, payload.g,payload.b));
       break;
+
     case 43: // FILL FROM MIDDLE
-      int middle = num_leds_in_strip / 2;
       loopFromToColour(0, middle - payload.step, CRGB::Black);
       loopFromToColour(middle - payload.step, middle + payload.step, CRGB(payload.r, payload.g,payload.b));
       loopFromToColour(middle + payload.step, num_leds_in_strip, CRGB::Black);
+      break;
+    
+    case 44: // OVERWRITE FILL FROM START
+      loopFromToColour(0, multiplier * (uint16_t) payload.step, CRGB(payload.r, payload.g,payload.b));
+      break;
+
+    case 45: // OVERWRITE FILL FROM END
+      loopFromToColour(multiplier * (uint16_t) payload.step, num_leds_in_strip, CRGB(payload.r, payload.g,payload.b));
+      break;
+
+    case 46: // OVERWRITE FILL FROM BOTH
+      loopFromToColour(0, payload.step, CRGB(payload.r, payload.g,payload.b));
+      loopFromToColour(num_leds_in_strip - payload.step, num_leds_in_strip, CRGB(payload.r, payload.g,payload.b));
+      break;
+
+    case 47: // OVERWRITE FILL FROM MIDDLE
+      loopFromToColour(middle - payload.step, middle + payload.step, CRGB(payload.r, payload.g,payload.b));
       break;
   }
 }
@@ -404,6 +482,12 @@ void animate() {
     case STROBE:
       strobe();
       break;
+    case WAVE:
+      wave((payload.effect_id - 57) % 4 + 1, payload.effect_id < 61 ? 1 : -1);
+      break;
+    case RAINBOW:
+      rainbow((payload.effect_id - 65) % 4 + 1);
+      break;
   }
 
   FastLED.show();  
@@ -428,9 +512,86 @@ void strobe() {
     setOneColour(CRGB::Black);
   }
 }
-/* 
-void wave() {
+
+/**
+ * Updates wave in accordance to the wave and tick. Continuous updates creates a wave effect.
+ * @param length starts from 1. The higher number, the shorter the wave.
+ * @param multiplier Add positive number to increase and reverse speed of wave.
+ */
+void wave(uint8_t length, uint8_t multiplier) {
+  uint8_t reducedBPM = payload.bpm / 30; // divided by 30, to make effect more stable!
+  float speed_multiplier = (((float) reducedBPM) / 2) * multiplier;
+  uint16_t wavelength = 512 / length;
+  uint16_t half_wavelength = wavelength / 2;
+
+  for (uint16_t i = 0; i < num_leds_in_strip; i++) {
+    uint16_t count = ((uint16_t) (i + tick * speed_multiplier)) % wavelength;
+    if(half_wavelength < count) {
+      count = half_wavelength - count;
+    }
+
+    float wave = (float) count / half_wavelength;
+    leds[i] = CRGB(payload.r * wave, payload.g * wave, payload.b * wave);
+  }
+}
+
+void rainbow(uint8_t length) {
+  uint8_t speed_multiplier = payload.bpm / 30; // divided by 30, to make effect more stable!
   
-} */
+  for (int i = 0; i < num_leds_in_strip; i++) {
+    leds[i] = CHSV(i - ((tick * speed_multiplier) % 255 * length), 255, 255); /* The higher the value 4 the less fade there is and vice versa */ 
+  }
+}
 
+void sections2(DMXPayload payload) {
+  for (long i = 0; i < sections.noOfSections; i++) {
+    setSection(i, (i + payload.step) % 2 == 0 ? CRGB(payload.r, payload.g, payload.b) : CRGB::Black);
+  }
+}
 
+void sections3(DMXPayload payload) {
+  for (long i = 0; i < sections.noOfSections; i++) {
+    setSection(i, (i + payload.step) % 3 == 0 ? CRGB(payload.r, payload.g, payload.b) : CRGB::Black);
+  }
+}
+
+void sections4(DMXPayload payload) {
+  for (long i = 0; i < sections.noOfSections; i++) {
+    setSection(i, (i + payload.step) % 4 == 0 ? CRGB(payload.r, payload.g, payload.b) : CRGB::Black);
+  }
+}
+
+void sectionsFull(DMXPayload payload) {
+  for (long i = 0; i < sections.noOfSections; i++) {
+    setSection(i, (i + payload.step) % sections.noOfSections == 0 ? CRGB(payload.r, payload.g, payload.b) : CRGB::Black);
+  }
+}
+
+// Random numbers between 0-63
+byte psudoRandom[] = {38, 33, 31, 45, 2, 56, 15, 44, 33, 13, 32, 37, 39, 52, 8, 6, 25, 15, 16, 17, 14, 31, 33, 63, 62, 56, 61, 44, 60, 45, 33, 17, 22, 55, 63, 51, 0, 11, 54, 12, 37, 54, 55, 37, 33, 39, 58, 20, 54, 63, 5, 12, 51, 57, 51, 58, 29, 58, 17, 7, 56, 36, 22, 51};
+
+void sectionsRandom1(DMXPayload payload) {
+  for (int i = 0; i < sections.noOfSections; i++) {
+    setOneColour(CRGB::Black);
+
+    uint8_t section_id = psudoRandom[(payload.step) % 64];
+    setSection(section_id, CRGB(payload.r, payload.g, payload.b));
+  }
+}
+
+void sectionsRandom2(DMXPayload payload) {
+  for (int i = 0; i < sections.noOfSections; i++) {
+    setOneColour(CRGB::Black);
+
+    uint8_t section_id1 = psudoRandom[(payload.step) % 64];
+    uint8_t section_id2 = psudoRandom[(payload.step + 32) % 64];
+    setSection(section_id1, CRGB(payload.r, payload.g, payload.b));
+    setSection(section_id2, CRGB(payload.r, payload.g, payload.b));
+  }
+}
+
+void setSection(uint8_t i, CRGB color) {
+  uint16_t start = sections.sectionsStartIndex[i];
+  uint16_t end = sections.noOfSections == i + 1 ? num_leds_in_strip : sections.sectionsStartIndex[i + 1];
+  loopFromToColour(start, end, color);
+}

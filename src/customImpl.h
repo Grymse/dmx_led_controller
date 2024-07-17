@@ -11,6 +11,11 @@
 #define debug(x,t)
 #endif 
 
+struct LEDSections {
+  uint8_t* sectionsStartIndex; // Pointer to the start index of each section
+  uint8_t noOfSections; // Number of sections
+};
+
 class CustomImpl {
     
     public:
@@ -21,7 +26,7 @@ class CustomImpl {
         //const int split;
         virtual CRGB* customEffect() = 0;
         virtual void setBrightness(uint8_t brightness) = 0;
-
+        virtual LEDSections getLEDSections() = 0;
 };
 
 
