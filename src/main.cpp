@@ -3,9 +3,9 @@
 #include "customImpl.h"
 
 #include "generic.cpp"
-#include "staenger.cpp"
+#include "bil.cpp"
 
-CustomImpl *impl = new Staenger();
+CustomImpl *impl = new Bil();
 
 
 #define DEBUG 0
