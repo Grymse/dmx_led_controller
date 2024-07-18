@@ -6,11 +6,14 @@
 #include "slange.cpp"
 #include "istapper.cpp"
 #include "drinks.cpp"
+#include "stolpe.cpp"
+#include "lysekrone.cpp"
 
-CustomImpl *impl = new Slange();
+CustomImpl *impl = new Lysekrone();
 
+#define TEST 0
 
-#define DEBUG 0
+#define DEBUG 1
 #if DEBUG
 #define debug(x,t) printf(x,t)
 #else
@@ -181,6 +184,9 @@ long lastReceivedData = 0;
 void loop() {
   if (millis() - lastReceivedData > timeout_millis) {
     setSoloMode();
+    debug("setSoloMode\n", "");
+    debug("%d ", millis());
+    debug("%d ", lastReceivedData);
   }
 
   if(recvData() )
@@ -199,8 +205,9 @@ void loop() {
       debug("%d ", dmx[i]);
     }
     debug("\n",0);
-    
+
     pushDMXtoLED();
+    
   } else if(payload.effect_id == 255){
     pushDMXtoLED();
   }
@@ -245,7 +252,8 @@ void pushDMXtoLED(){
   payload.b = dmx[3];
   payload.step = dmx[4];
   payload.bpm = getBPM(dmx[4]);
-  payload.effect_id = dmx[id];
+  payload.effect_id = dmx[id]; 
+  //payload.effect_id = 255; // Skal udkommenteres
 
   debug("dmx bpm: %d\n", payload.bpm);
   debug("dmx id: %d\n", id);

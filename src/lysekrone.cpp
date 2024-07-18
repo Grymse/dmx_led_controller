@@ -9,9 +9,9 @@
 #define debug(x,t)
 #endif 
 
-class Lysekrone : public CustomImpl {
+class Slange : public CustomImpl {
     
-    int id = 19; // Declare the 'id' variable as an integer with the value of 8
+    int id = 17; // Declare the 'id' variable as an integer with the value of 8
     static const int num_leds = 50; // Declare the 'num_leds' variable as an integer with the value of 150
 
     CRGB leds[num_leds]; // Declare the 'leds' variable as an array of CRGB with the size of 150
@@ -73,9 +73,7 @@ class Lysekrone : public CustomImpl {
 
             if (currentMillis - lastAnimationMillis > speed){
                 
-                if (id == 20) currentColour = CRGB::Red;
-                if (id == 21) currentColour = CRGB::Green;
-                if (id == 19) currentColour = CRGB::Orange;
+                currentColour = CRGB::Red;
 
                 for (int i = tick; i < tick + snakeLength; i++) {
                     if(i > num_leds){
@@ -85,9 +83,7 @@ class Lysekrone : public CustomImpl {
                     }
                 }
 
-                if (id == 20) currentColour = CRGB::Blue;
-                if (id == 21) currentColour = CRGB::MediumPurple;
-                if (id == 19) currentColour = CRGB::Blue;
+                currentColour = CRGB::Green;
 
                 for (int i = tick + snakeLength; i < tick + snakeLength*2; i++) {
                     if(i > num_leds){
@@ -97,9 +93,7 @@ class Lysekrone : public CustomImpl {
                     }
                 }
 
-                if (id == 20) currentColour = CRGB::Magenta;
-                if (id == 21) currentColour = CRGB::Orange;
-                if (id == 19) currentColour = CRGB::White;
+                currentColour = CRGB::Blue;
 
                 for (int i = tick + snakeLength*2; i < tick + snakeLength*3; i++) {
                     if(i > num_leds){

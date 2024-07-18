@@ -13,7 +13,7 @@
 class Istapper : public CustomImpl {
     
     int id = 21; // Declare the 'id' variable as an integer with the value of 3
-    static const int num_leds =  150/3; // Declare the 'num_leds' variable as an integer with the value of 150
+    static const int num_leds =  50; // Declare the 'num_leds' variable as an integer with the value of 150
 
     CRGB leds[num_leds]; // Declare the 'leds' variable as an array of CRGB with the size of 150
     public:
@@ -24,6 +24,10 @@ class Istapper : public CustomImpl {
         }
 
         CRGB* customEffect() override {
+            return customEffectA();
+        }
+
+        CRGB* customEffectA(){
             const int numberOfIstapper = 16;
 
             const int istapRanges[numberOfIstapper][2] = {
@@ -60,6 +64,12 @@ class Istapper : public CustomImpl {
             for (int i = lower; i <= upper; i++) {
                 leds[i] = CRGB::Yellow;
             }
+            
+            return leds;
+        }
+
+        CRGB* customEffectB(){
+
             
             return leds;
         }
