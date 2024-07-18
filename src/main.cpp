@@ -127,7 +127,7 @@ void setup() {
     }  // hold in infinite loop
   }
 
-  FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, num_leds_in_strip);
+  FastLED.addLeds<WS2812B, LED_PIN, BRG>(leds, num_leds_in_strip);
   // ws2812B 4pin sorte full cover
   // ws2811 til hvid strip hvid tape - BRG
 

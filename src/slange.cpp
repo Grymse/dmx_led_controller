@@ -11,8 +11,8 @@
 
 class Slange : public CustomImpl {
     
-    int id = 20; // Declare the 'id' variable as an integer with the value of 8
-    static const int num_leds =  300; // Declare the 'num_leds' variable as an integer with the value of 150
+    int id = 21; // Declare the 'id' variable as an integer with the value of 8
+    static const int num_leds = 150; // Declare the 'num_leds' variable as an integer with the value of 150
 
     CRGB leds[num_leds]; // Declare the 'leds' variable as an array of CRGB with the size of 150
 
@@ -69,29 +69,43 @@ class Slange : public CustomImpl {
 
             const int snakeLength = num_leds/3; // Number of turned on LEDs 
 
+            CRGB currentColour = CRGB::Black;
+
             if (currentMillis - lastAnimationMillis > speed){
+                
+                if (id == 20) currentColour = CRGB::Red;
+                if (id == 21) currentColour = CRGB::Green;
+                if (id == 22) currentColour = CRGB::Green;
 
                 for (int i = tick; i < tick + snakeLength; i++) {
                     if(i > num_leds){
-                        leds[i-num_leds] = CRGB::Red;
+                        leds[i-num_leds] = currentColour;
                     } else {
-                        leds[i] = CRGB::Red;
+                        leds[i] = currentColour;
                     }
                 }
+
+                if (id == 20) currentColour = CRGB::Blue;
+                if (id == 21) currentColour = CRGB::Yellow;
+                if (id == 22) currentColour = CRGB::Green;
 
                 for (int i = tick + snakeLength; i < tick + snakeLength*2; i++) {
                     if(i > num_leds){
-                        leds[i-num_leds] = CRGB::Blue;
+                        leds[i-num_leds] = currentColour;
                     } else {
-                        leds[i] = CRGB::Blue;
+                        leds[i] = currentColour;
                     }
                 }
 
+                if (id == 20) currentColour = CRGB::Magenta;
+                if (id == 21) currentColour = CRGB::Orange;
+                if (id == 22) currentColour = CRGB::Green;
+
                 for (int i = tick + snakeLength*2; i < tick + snakeLength*3; i++) {
                     if(i > num_leds){
-                        leds[i-num_leds] = CRGB::Pink;
+                        leds[i-num_leds] = currentColour;
                     } else {
-                        leds[i] = CRGB::Pink;
+                        leds[i] = currentColour;
                     }
                 }
 
