@@ -6,8 +6,9 @@
 #include "slange.cpp"
 #include "istapper.cpp"
 #include "portalen.cpp"
+#include "drinks.cpp"
 
-CustomImpl *impl = new Portalen();
+CustomImpl *impl = new Slange();
 
 
 #define DEBUG 0
