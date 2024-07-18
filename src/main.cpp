@@ -10,7 +10,7 @@
 #include "stolpe.cpp"
 #include "lysekrone.cpp"
 
-CustomImpl *impl = new Lysekrone();
+CustomImpl *impl = new Slange();
 
 #define TEST 0
 
@@ -104,9 +104,11 @@ void setAnimation(Animation_Type new_animation) {
 }
 
 void setSoloMode() {
-  payload.master_dimmer = 255;
+/*   payload.master_dimmer = 255;
   payload.effect_id = 255;
-  pushDMXtoLED();
+  pushDMXtoLED(); */
+  customEffect();
+  FastLED.show();
 }
 
 void setup() {

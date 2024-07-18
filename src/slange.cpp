@@ -9,7 +9,7 @@
 #define debug(x,t)
 #endif 
 
-class Lysekrone : public CustomImpl {
+class Slange : public CustomImpl {
     
     int id = 19; // Declare the 'id' variable as an integer with the value of 8
     static const int num_leds = 50; // Declare the 'num_leds' variable as an integer with the value of 150

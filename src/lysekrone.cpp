@@ -9,7 +9,7 @@
 #define debug(x,t)
 #endif 
 
-class Slange : public CustomImpl {
+class Lysekrone : public CustomImpl {
     
     int id = 17; // Declare the 'id' variable as an integer with the value of 8
     static const int num_leds = 50; // Declare the 'num_leds' variable as an integer with the value of 150
@@ -73,7 +73,7 @@ class Slange : public CustomImpl {
 
             if (currentMillis - lastAnimationMillis > speed){
                 
-                currentColour = CRGB::Red;
+                currentColour = CRGB::Orange;
 
                 for (int i = tick; i < tick + snakeLength; i++) {
                     if(i > num_leds){
@@ -83,7 +83,7 @@ class Slange : public CustomImpl {
                     }
                 }
 
-                currentColour = CRGB::Green;
+                currentColour = CRGB::White;
 
                 for (int i = tick + snakeLength; i < tick + snakeLength*2; i++) {
                     if(i > num_leds){
@@ -93,7 +93,7 @@ class Slange : public CustomImpl {
                     }
                 }
 
-                currentColour = CRGB::Blue;
+                currentColour = CRGB::Red;
 
                 for (int i = tick + snakeLength*2; i < tick + snakeLength*3; i++) {
                     if(i > num_leds){
