@@ -5,6 +5,7 @@
 #include "generic.cpp"
 #include "slange.cpp"
 #include "istapper.cpp"
+#include "portalen.cpp"
 #include "drinks.cpp"
 #include "stolpe.cpp"
 #include "lysekrone.cpp"

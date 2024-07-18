@@ -12,8 +12,8 @@
 
 class Drinks : public CustomImpl {
     
-    int id = 57; // Declare the 'id' variable as an integer with the value of 3
-    static const int num_leds =  300; // Declare the 'num_leds' variable as an integer with the value of 150
+    int id = 24; // Declare the 'id' variable as an integer with the value of 3
+    static const int num_leds =  50; // Declare the 'num_leds' variable as an integer with the value of 150
 
     CRGB leds[num_leds]; // Declare the 'leds' variable as an array of CRGB with the size of 150
 
