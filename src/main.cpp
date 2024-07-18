@@ -3,16 +3,10 @@
 #include "customImpl.h"
 
 #include "generic.cpp"
-#include "slange.cpp"
 #include "istapper.cpp"
-#include "portalen.cpp"
-#include "drinks.cpp"
-#include "stolpe.cpp"
-#include "lysekrone.cpp"
 
-CustomImpl *impl = new Slange();
+CustomImpl *impl = new Istapper();
 
-#define TEST 0
 
 #define DEBUG 1
 #if DEBUG
@@ -32,7 +26,7 @@ uint8_t address[][6] = { "1Node", "2Node" };
 
 #define id impl->getId()
 #define num_channels 180 // fix this
-#define timeout_millis 120000
+static const int timeout_millis = 60000;
 static const int num_leds_in_strip = impl->getNumLeds();
 static const LEDSections sections = impl->getLEDSections();
 CRGB leds[300];
@@ -58,7 +52,7 @@ struct DMXPayload {
   uint8_t master_dimmer;
 };
 
-enum Animation_Type {NONE, STROBE, WAVE, RAINBOW};
+enum Animation_Type {NONE, STROBE, WAVE, RAINBOW, CUSTOM};
 
 /**
  * DECLARATION OF FUNCTIONS
@@ -77,13 +71,13 @@ void alternateColorPicker(uint8_t step, uint8_t colors[][3], uint8_t num_colors)
 void alternateColor(DMXPayload payload);
 void updateEffect(DMXPayload payload);
 void setToFullColor(DMXPayload payload);
-void customEffect();
+void customEffect(long tick);
 void fillEffect(DMXPayload payload);
 void setSection(uint8_t i, CRGB color);
 void sections2(DMXPayload payload);
-void sections3(DMXPayload payload);
-void sections4(DMXPayload payload);
-void sectionsFull(DMXPayload payload);
+void sections3(DMXPayload payload, bool reverse);
+void sections4(DMXPayload payload, bool reverse);
+void sectionsFull(DMXPayload payload, bool reverse);
 void sectionsRandom1(DMXPayload payload);
 void sectionsRandom2(DMXPayload payload);
 void setSectionEffect(DMXPayload payload);
@@ -99,28 +93,35 @@ long tick = 0; // Used to keep track of local animations
 DMXPayload payload;
 
 void setAnimation(Animation_Type new_animation) {
+  debug("set animation: %d\n", new_animation);
+
+  if(animation == new_animation) return;
+
+  debug("reset tick\n",0);
+
   animation = new_animation;
   tick = 0;
 }
 
 void setSoloMode() {
-/*   payload.master_dimmer = 255;
+  debug("set solo\n",0);
+  payload.master_dimmer = 255;
   payload.effect_id = 255;
-  pushDMXtoLED(); */
-  customEffect();
-  FastLED.show();
+  updateEffect(payload);
 }
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
 
-  // Set initial values
-  setSoloMode();
-
   pinMode(built_in_led, OUTPUT);
   digitalWrite(built_in_led, HIGH); //Led is reversed. Low is on and high is off.
   delay(1000);
+
+  FastLED.addLeds<WS2812B, LED_PIN, BRG>(leds, num_leds_in_strip);
+  
+  // ws2812B 4pin sorte full cover
+  // ws2811 til hvid strip hvid tape - BRG
 
   if (!radio.begin()) {
     debug("radio hardware is not responding!!", 0);
@@ -132,10 +133,6 @@ void setup() {
       debug("radio hardware is not responding!!", 0);
     }  // hold in infinite loop
   }
-
-  FastLED.addLeds<WS2812B, LED_PIN, BRG>(leds, num_leds_in_strip);
-  // ws2812B 4pin sorte full cover
-  // ws2811 til hvid strip hvid tape - BRG
 
   // Set the PA Level low to try preventing power supply related problems
   // because these examples are likely run with nodes in close proximity to each other.
@@ -149,6 +146,8 @@ void setup() {
   //radio.setAutoAck(false);
   //radio.setDataRate(RF24_250KBPS); //estimated max is only 64kbps
   radio.startListening();
+
+  setSoloMode();
 }
 
 int recvData()
@@ -183,13 +182,10 @@ int recvData()
 
 long lastReceivedData = 0;
 
-
 void loop() {
-  if (millis() - lastReceivedData > timeout_millis) {
+  if (timeout_millis < millis() - lastReceivedData) {
+    lastReceivedData = millis();
     setSoloMode();
-    debug("setSoloMode\n", "");
-    debug("%d ", millis());
-    debug("%d ", lastReceivedData);
   }
 
   if(recvData() )
@@ -208,10 +204,7 @@ void loop() {
       debug("%d ", dmx[i]);
     }
     debug("\n",0);
-
-    pushDMXtoLED();
     
-  } else if(payload.effect_id == 255){
     pushDMXtoLED();
   }
 
@@ -255,8 +248,7 @@ void pushDMXtoLED(){
   payload.b = dmx[3];
   payload.step = dmx[4];
   payload.bpm = getBPM(dmx[4]);
-  payload.effect_id = dmx[id]; 
-  //payload.effect_id = 255; // Skal udkommenteres
+  payload.effect_id = dmx[id];
 
   debug("dmx bpm: %d\n", payload.bpm);
   debug("dmx id: %d\n", id);
@@ -370,26 +362,36 @@ void alternateColorPicker(uint8_t step, uint8_t colors[][3], uint8_t num_colors)
 
 // --------------- local effect implementation (new protocol) ------------------
 void updateEffect(DMXPayload payload) {
-  animation = NONE; // RESET ANIMATION TYPE. OVERWRITE TO CORRECT ANIMATION
-                    // DO NOT REMOVE THIS LINE.
-                    // Do not set animation directly in the following code. Must use setAnimation!!
 
-  if (payload.effect_id <= 8) setToFullColor(payload);
+  if (payload.effect_id <= 8) {
+    setAnimation(NONE);
+    setToFullColor(payload);
+  }
 
-  if (16 <= payload.effect_id && payload.effect_id <= 21)
+  if (16 <= payload.effect_id && payload.effect_id <= 21){
+    setAnimation(NONE);
     alternateColor(payload);
+  }
 
-  if (32 <= payload.effect_id && payload.effect_id <= 36) setAnimation(STROBE);
+  if (32 <= payload.effect_id && payload.effect_id <= 36){
+    setAnimation(STROBE);
+  }
 
-  if (40 <= payload.effect_id && payload.effect_id <= 43) fillEffect(payload);
+  if (40 <= payload.effect_id && payload.effect_id <= 43) {
+    setAnimation(NONE);
+    fillEffect(payload);
+  }
 
   if (57 <= payload.effect_id && payload.effect_id <= 64) setAnimation(WAVE);
 
   if (65 <= payload.effect_id && payload.effect_id <= 68) setAnimation(RAINBOW);
 
-  if (128 <= payload.effect_id && payload.effect_id <= 133) setSectionEffect(payload);
+  if (128 <= payload.effect_id && payload.effect_id <= 136) {
+    setAnimation(NONE);
+    setSectionEffect(payload);
+  }
 
-  if (payload.effect_id == 255) customEffect();
+  if (payload.effect_id == 255) setAnimation(CUSTOM);
 }
 
 void setSectionEffect(DMXPayload payload) {
@@ -398,18 +400,27 @@ void setSectionEffect(DMXPayload payload) {
       sections2(payload);
       break;
     case 129:
-      sections3(payload);
+      sections3(payload, false);
       break;
     case 130:
-      sections4(payload);
+      sections4(payload, false);
       break;
     case 131:
-      sectionsFull(payload);
+      sectionsFull(payload, false);
       break;
     case 132:
-      sectionsRandom1(payload);
+      sections3(payload, true);
       break;
     case 133:
+      sections4(payload, true);
+      break;
+    case 134:
+      sectionsFull(payload, true);
+      break;
+    case 135:
+      sectionsRandom1(payload);
+      break;
+    case 136:
       sectionsRandom2(payload);
       break;
   }
@@ -426,8 +437,8 @@ void fillEffect(DMXPayload payload) {
       break;
 
     case 41: // FILL FROM END
-      loopFromToColour(0, multiplier * (uint16_t) payload.step, CRGB::Black);
-      loopFromToColour(multiplier * (uint16_t) payload.step, num_leds_in_strip, CRGB(payload.r, payload.g,payload.b));
+      loopFromToColour(num_leds_in_strip - multiplier * (uint16_t) payload.step, num_leds_in_strip, CRGB(payload.r, payload.g,payload.b));
+      loopFromToColour(0, num_leds_in_strip - multiplier * (uint16_t) payload.step, CRGB::Black);
       break;
 
     case 42: // FILL FROM BOTH
@@ -447,7 +458,7 @@ void fillEffect(DMXPayload payload) {
       break;
 
     case 45: // OVERWRITE FILL FROM END
-      loopFromToColour(multiplier * (uint16_t) payload.step, num_leds_in_strip, CRGB(payload.r, payload.g,payload.b));
+      loopFromToColour(num_leds_in_strip - multiplier * (uint16_t) payload.step, num_leds_in_strip, CRGB(payload.r, payload.g,payload.b));
       break;
 
     case 46: // OVERWRITE FILL FROM BOTH
@@ -473,8 +484,8 @@ void loopFromToColour(int from, int to, CRGB colour){
   }
 }
 
-void customEffect() {
-  CRGB* newLeds = impl->customEffect();
+void customEffect(long tick) {
+  CRGB* newLeds = impl->customEffect(tick);
     for (int i = 0; i < num_leds_in_strip; i++) {
       leds[i] = newLeds[i];
     }
@@ -499,6 +510,9 @@ void animate() {
       break;
     case RAINBOW:
       rainbow((payload.effect_id - 65) % 4 + 1);
+      break;
+    case CUSTOM:
+      customEffect(tick);
       break;
   }
 
@@ -551,7 +565,7 @@ void rainbow(uint8_t length) {
   uint8_t speed_multiplier = payload.bpm / 30; // divided by 30, to make effect more stable!
   
   for (int i = 0; i < num_leds_in_strip; i++) {
-    leds[i] = CHSV(i - ((tick * speed_multiplier) % 255 * length), 255, 255); /* The higher the value 4 the less fade there is and vice versa */ 
+    leds[i] = CHSV(i * length - ((tick * speed_multiplier) % 255), 255, 255); /* The higher the value 4 the less fade there is and vice versa */ 
   }
 }
 
@@ -561,42 +575,52 @@ void sections2(DMXPayload payload) {
   }
 }
 
-void sections3(DMXPayload payload) {
+void sections3(DMXPayload payload, bool reverse) {
+
+  int step = reverse ? 1000-payload.step : payload.step;
+  
   for (long i = 0; i < sections.noOfSections; i++) {
-    setSection(i, (i + payload.step) % 3 == 0 ? CRGB(payload.r, payload.g, payload.b) : CRGB::Black);
+    setSection(i, (i + step) % 3 == 0 ? CRGB(payload.r, payload.g, payload.b) : CRGB::Black);
   }
 }
 
-void sections4(DMXPayload payload) {
+void sections4(DMXPayload payload, bool reverse) {
+  int step = reverse ? 1000-payload.step : payload.step;
   for (long i = 0; i < sections.noOfSections; i++) {
-    setSection(i, (i + payload.step) % 4 == 0 ? CRGB(payload.r, payload.g, payload.b) : CRGB::Black);
+    setSection(i, (i + step) % 4 == 0 ? CRGB(payload.r, payload.g, payload.b) : CRGB::Black);
   }
 }
 
-void sectionsFull(DMXPayload payload) {
+void sectionsFull(DMXPayload payload, bool reverse) {
+  int step = reverse ? 1000-payload.step : payload.step;
   for (long i = 0; i < sections.noOfSections; i++) {
-    setSection(i, (i + payload.step) % sections.noOfSections == 0 ? CRGB(payload.r, payload.g, payload.b) : CRGB::Black);
+    setSection(i, (i + step) % sections.noOfSections == 0 ? CRGB(payload.r, payload.g, payload.b) : CRGB::Black);
   }
 }
 
-// Random numbers between 0-63
-byte psudoRandom[] = {38, 33, 31, 45, 2, 56, 15, 44, 33, 13, 32, 37, 39, 52, 8, 6, 25, 15, 16, 17, 14, 31, 33, 63, 62, 56, 61, 44, 60, 45, 33, 17, 22, 55, 63, 51, 0, 11, 54, 12, 37, 54, 55, 37, 33, 39, 58, 20, 54, 63, 5, 12, 51, 57, 51, 58, 29, 58, 17, 7, 56, 36, 22, 51};
+uint32_t getPseudoRandom(uint32_t previous) {
+  uint32_t newNumber = previous;
+  newNumber ^= newNumber << 13;
+  newNumber ^= newNumber >> 7;
+  newNumber ^= newNumber << 17;
+  return newNumber;
+}
 
 void sectionsRandom1(DMXPayload payload) {
   for (int i = 0; i < sections.noOfSections; i++) {
     setOneColour(CRGB::Black);
-
-    uint8_t section_id = psudoRandom[(payload.step) % 64];
-    setSection(section_id, CRGB(payload.r, payload.g, payload.b));
   }
+
+  uint8_t section_id = getPseudoRandom(payload.step) % sections.noOfSections;
+  setSection(section_id, CRGB(payload.r, payload.g, payload.b));
 }
 
 void sectionsRandom2(DMXPayload payload) {
   for (int i = 0; i < sections.noOfSections; i++) {
     setOneColour(CRGB::Black);
 
-    uint8_t section_id1 = psudoRandom[(payload.step) % 64];
-    uint8_t section_id2 = psudoRandom[(payload.step + 32) % 64];
+    uint8_t section_id1 = getPseudoRandom(payload.step) % sections.noOfSections;
+    uint8_t section_id2 = getPseudoRandom(payload.step + 5431) % sections.noOfSections;
     setSection(section_id1, CRGB(payload.r, payload.g, payload.b));
     setSection(section_id2, CRGB(payload.r, payload.g, payload.b));
   }
@@ -605,5 +629,6 @@ void sectionsRandom2(DMXPayload payload) {
 void setSection(uint8_t i, CRGB color) {
   uint16_t start = sections.sectionsStartIndex[i];
   uint16_t end = sections.noOfSections == i + 1 ? num_leds_in_strip : sections.sectionsStartIndex[i + 1];
+
   loopFromToColour(start, end, color);
 }

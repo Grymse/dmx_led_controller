@@ -26,7 +26,7 @@ class Drinks : public CustomImpl {
             debug("Set brightness\n",brightness);
         }
 
-        CRGB* customEffect() override {
+        CRGB* customEffect(long tick) override {
 
             srand(time(0));
             int randomNum1 = rand() % 7;
@@ -91,8 +91,7 @@ class Drinks : public CustomImpl {
         }
 
         LEDSections getLEDSections() {
-            uint8_t sectionsStartIndex[] = {0, 50, 100};
-            LEDSections sections = {sectionsStartIndex, sizeof(sectionsStartIndex)};
+            LEDSections sections = {{0, 50, 100}, 3};
             return sections;
         }
 

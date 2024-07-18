@@ -12,7 +12,7 @@
 #endif 
 
 struct LEDSections {
-  uint8_t* sectionsStartIndex; // Pointer to the start index of each section
+  uint8_t sectionsStartIndex[12]; // Pointer to the start index of each section
   uint8_t noOfSections; // Number of sections
 };
 
@@ -24,7 +24,7 @@ class CustomImpl {
         virtual int getNumLeds() = 0;
         int num_leds_in_strip;
         //const int split;
-        virtual CRGB* customEffect() = 0;
+        virtual CRGB* customEffect(long tick) = 0;
         virtual void setBrightness(uint8_t brightness) = 0;
         virtual LEDSections getLEDSections() = 0;
 };

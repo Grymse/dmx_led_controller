@@ -21,7 +21,7 @@ class Podiet : public CustomImpl {
             debug("Set brightness\n",brightness);
         }
 
-        CRGB* customEffect() override {
+        CRGB* customEffect(long tick) override {
             // put your main code here, to run repeatedly:
             debug("Generic custom effect\n",0);
             // Solid color orange
@@ -43,8 +43,7 @@ class Podiet : public CustomImpl {
         }
 
         LEDSections getLEDSections() {
-            uint8_t sectionsStartIndex[] = {0, 50, 100};
-            LEDSections sections = {sectionsStartIndex, sizeof(sectionsStartIndex)};
+            LEDSections sections = {{0, 50, 100}, 3};
             return sections;
         }
 };

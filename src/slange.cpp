@@ -26,7 +26,7 @@ class Slange : public CustomImpl {
             debug("Set brightness\n",brightness);
         }
 
-        CRGB* customEffect() override {
+        CRGB* customEffect(long tick) override {
             //return customEffectA();
             return customEffectB();
         }
@@ -131,8 +131,7 @@ class Slange : public CustomImpl {
         }
 
         LEDSections getLEDSections() {
-            uint8_t sectionsStartIndex[] = {0, 50, 100};
-            LEDSections sections = {sectionsStartIndex, sizeof(sectionsStartIndex)};
+            LEDSections sections = {{0, 50, 100}, 3};
             return sections;
         }
 
