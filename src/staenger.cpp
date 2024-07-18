@@ -9,9 +9,9 @@
 #define debug(x,t)
 #endif 
 
-class Istapper : public CustomImpl {
+class Staenger : public CustomImpl {
     
-    int id = 26; // 25, 26
+    int id = 16; // 13, 16
     static const int num_leds =  50; // Declare the 'num_leds' variable as an integer with the value of 150
 
     CRGB leds[num_leds]; // Declare the 'leds' variable as an array of CRGB with the size of 150
@@ -24,7 +24,7 @@ class Istapper : public CustomImpl {
         CRGB* customEffect(long tick) override {
             // put your main code here, to run repeatedly:
             debug("Generic custom effect\n",0);
-            rainbow(8, tick);
+            rainbow(2, tick);
             
             return leds;
         }

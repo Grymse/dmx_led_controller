@@ -3,12 +3,12 @@
 #include "customImpl.h"
 
 #include "generic.cpp"
-#include "istapper.cpp"
+#include "staenger.cpp"
 
-CustomImpl *impl = new Istapper();
+CustomImpl *impl = new Staenger();
 
 
-#define DEBUG 1
+#define DEBUG 0
 #if DEBUG
 #define debug(x,t) printf(x,t)
 #else
