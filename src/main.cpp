@@ -120,8 +120,8 @@ void setup() {
 
   FastLED.addLeds<WS2812B, LED_PIN, BRG>(leds, num_leds_in_strip);
   
-  // ws2812B 4pin sorte full cover
-  // ws2811 til hvid strip hvid tape - BRG
+  // WS2812B 4pin sorte full cover - BRG
+  // WS2811 til hvid strip hvid tape - BRG
 
   if (!radio.begin()) {
     debug("radio hardware is not responding!!", 0);

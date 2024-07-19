@@ -46,7 +46,7 @@ class Bil : public CustomImpl {
         }
 
         LEDSections getLEDSections() {
-            LEDSections sections = {{0, 6, 12, 18, 24, 30, 36, 42, 48, 54}, 10};
+            LEDSections sections = {{0, 50, 100, 150, 200, 250}, 6};
             return sections;
         }
         
@@ -56,9 +56,7 @@ class Bil : public CustomImpl {
         uint16_t wavelength = 512 / length;
         uint16_t half_wavelength = wavelength / 2;
 
-        int num_leds_in_strip = 150;
-
-        for (uint16_t i = 0; i < num_leds_in_strip; i++) {
+        for (uint16_t i = 0; i < num_leds; i++) {
             uint16_t count = ((uint16_t) (i + tick * speed_multiplier)) % wavelength;
             if(half_wavelength < count) {
             count = half_wavelength - count;

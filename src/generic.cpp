@@ -12,7 +12,7 @@
 class Generic : public CustomImpl {
     
     int id = 8; // Declare the 'id' variable as an integer with the value of 8
-    static const int num_leds =  60; // Declare the 'num_leds' variable as an integer with the value of 150
+    static const int num_leds =  50; // Declare the 'num_leds' variable as an integer with the value of 150
 
     CRGB leds[num_leds]; // Declare the 'leds' variable as an array of CRGB with the size of 150
     public:
@@ -48,7 +48,7 @@ class Generic : public CustomImpl {
         }
 
         LEDSections getLEDSections() {
-            LEDSections sections = {{0, 6, 12, 18, 24, 30, 36, 42, 48, 54}, 10};
+            LEDSections sections = {{0, 10, 20, 30, 40}, 5};
             return sections;
         }
     
