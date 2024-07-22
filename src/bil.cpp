@@ -22,17 +22,12 @@ class Bil : public CustomImpl {
         }
 
         CRGB* customEffect(long tick) override {
-            // put your main code here, to run repeatedly:
-            debug("Generic custom effect\n",0);
-            // alternate blue and red
-
             
-            
-            if (tick%(50 /* tick */ * 60 /* sekunder */ * 5 /* minutter */) < 80) { // Gimmick hvert 5 minut
+            if (tick%(50 * 60 * 5) < 200) { // Gimmick hvert 5 minut
                for (int i = 0; i < num_leds; i++) {
                 leds[i] = tick % 6 < 2 ? CRGB::White : CRGB::Black;
                 }
-            } else wave(1, 1, tick, 255, 0, 0);
+            } else wave(1, 1, tick % 2000, 255, 0, 0);
             
             return leds;
         }
