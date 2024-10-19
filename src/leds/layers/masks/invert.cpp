@@ -5,7 +5,7 @@
 class InvertMask : public ILayer {
 public:
   String getName() {
-    return "Invert";
+    return "Invert Mask";
   } 
 
   CRGB apply(CRGB color, LEDState *state) {

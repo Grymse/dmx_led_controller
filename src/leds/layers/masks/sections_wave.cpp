@@ -3,7 +3,7 @@
 #include "../layer.h"
 #include <vector>
 
-class SectionsMask : public ILayer {
+class SectionsWaveMask : public ILayer {
   u16_t duration;
   std::vector<u8_t> sections;
 
@@ -12,7 +12,7 @@ public:
     return "Section Mask";
   }
 
-  SectionsMask(std::vector<u8_t> sections, u16_t duration) {
+  SectionsWaveMask(std::vector<u8_t> sections, u16_t duration) {
     this->duration = duration;
     this->sections = sections;
   }
@@ -24,7 +24,9 @@ public:
    */
   CRGB apply(CRGB color, LEDState *state) {
     float sectionLength = (float) state->length / sections.size();
-    u16_t sectionIndex = state->tick / duration + (state->index / sectionLength);
-    return color.scale8(sections[sectionIndex % sections.size()]);
+    u16_t tick = (state->tick % duration) * state->length / duration;
+    u16_t t = (tick + state->index) / sectionLength;
+
+    return color.scale8(sections[t % sections.size()]);
   }
 };
