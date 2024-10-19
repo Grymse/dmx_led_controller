@@ -1,58 +1,64 @@
+#include "scheduler/scheduler.cpp"
+#include "scheduler/process.h"
 #include <Arduino.h>
-#include "customImpl.h"
-
-#include "generic.cpp"
-#include "katapult_ekstra.cpp"
-
-CustomImpl *impl = new Katapult();
-
-
-#define DEBUG 0
-#if DEBUG
-#define debug(x,t) printf(x,t)
-#else
-#define debug(x,t)
-#endif
+#include <leds/layer_controller.cpp>
+#include <leds/layer_scheduler.cpp>
+#include <leds/layers/masks/sections.cpp>
+#include <leds/layers/masks/invert.cpp>
+#include <leds/layers/masks/wave.cpp>
+#include <leds/layers/colors/single.cpp>
+#include <FastLED.h>
+#include "debug.cpp"
 
 
 #define CE_PIN 0
 #define CSN_PIN 10
+#define LED_PIN 7
+#define NUM_LEDS 300
+#define BUILTIN_LED 8
+CRGB *leds = new CRGB[NUM_LEDS];
 
-uint8_t address[][6] = { "1Node", "2Node" };
-
-
-#define id impl->getId()
-#define num_channels 180 // fix this
-static const int timeout_millis = 60000;
-CRGB leds[300];
-
-#define LED_PIN  7 
-#define built_in_led 8
-/**
- * DECLARATION OF FUNCTIONS
- */
-
-long tick = 0; // Used to keep track of local animations
+Scheduler scheduler = Scheduler();
+LayerController *layerController;
+LayerScheduler *layerScheduler;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
+  pinMode(BUILTIN_LED, OUTPUT);
 
-  pinMode(built_in_led, OUTPUT);
-  digitalWrite(built_in_led, HIGH); //Led is reversed. Low is on and high is off.
-  delay(1000);
+  FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
+  
+  layerController = new LayerController(leds, NUM_LEDS);
+  layerScheduler = new LayerScheduler(layerController);
 
-  FastLED.addLeds<WS2812B, LED_PIN, RGB>(leds, num_leds_in_strip);
+
+  /* layerScheduler->add({
+    new SingleColor(CRGB::Blue),
+    new WaveMask(20, 2000),
+    }
+  ,2000); */
+
+  layerScheduler->add({
+    new SingleColor(CRGB::Blue),
+    /* new SectionsMask({true, false, true, false, true, false, true, false, true, false}, 10),
+    new SectionsMask({true, false, false}, 40), */
+    /* new WaveMask(25, 275, 200), */
+    }
+  ,2000);
+
+
+  /* layerScheduler->add({
+    new SingleColor(CRGB::Red)
+    }
+  ,25); */
+
+  scheduler.addProcess(layerScheduler, 20); // Update every 20ms
+  scheduler.addProcess(layerController, 20); // Update every 20ms
+  
 }
 
-
-long lastAnimationMillis = 0;
-
 void loop() {
-  long currentMillis = millis();
-  delay(1);
-  if (currentMillis - lastAnimationMillis < 20) return;
-  lastAnimationMillis = currentMillis;
-  tick++;
-  
+  scheduler.run();
+  delay(1); // Stability
 }

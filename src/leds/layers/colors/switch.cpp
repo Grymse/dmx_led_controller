@@ -1,15 +1,15 @@
 #include <Arduino.h>
 #include <FastLED.h>
-#include "IColor.h"
+#include "../layer.h"
 #include <vector>
 
-class SwitchColor : IColor {
-public:
+class SwitchColor : public ILayer {
   std::vector<CRGB> colors;
   u16_t duration;
 
+public:
   String getName() {
-    return "Switch";
+    return "Switch Color";
   }
 
   SwitchColor( std::vector<CRGB> colors, u16_t duration ) {
@@ -17,7 +17,7 @@ public:
     this->duration = duration;
   }
 
-  CRGB getColor(long tick, u16_t index) {
-    return colors[tick / duration % colors.size()];
+  CRGB apply(CRGB color, LEDState *state) {
+    return colors[state->tick / duration % colors.size()];
   }
 };
