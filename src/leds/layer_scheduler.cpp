@@ -6,14 +6,7 @@
 #include "layer_controller.h"
 #include "layer_scheduler.h"
 
-/**
- * @brief A struct to represent an animation step
- *
- */
-struct AnimationStep {
-  std::vector<ILayer*> layers;
-  u16_t tickDuration;
-};
+
 class LayerScheduler : public Process, public ILayerScheduler {
   u16_t currentStep = 0;
   u16_t tick = 0;
@@ -81,9 +74,9 @@ class LayerScheduler : public Process, public ILayerScheduler {
     // Erroneous state => reset;
     if (steps.size() <= currentStep) reset();
 
-    // If first tick => apply layers. Cannot be added to statement above, as it would miss the first animation
+    // If first tick => apply pattern. Cannot be added to statement above, as it would miss the first animation
     if (tick == 0) {
-      controller->set(steps[currentStep]->layers);
+      controller->set(steps[currentStep]->pattern);
     }
 
     tick++; // Progress

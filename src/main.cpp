@@ -4,9 +4,10 @@
 // Local
 #include "scheduler/scheduler.cpp"
 #include "scheduler/process.h"
-#include <leds/layer_controller.cpp>
-#include <leds/layer_scheduler.cpp>
+#include "leds/layer_controller.cpp"
+#include "leds/layer_scheduler.cpp"
 #include "debug.cpp"
+#include "leds/sequence_decoder.cpp"
 // Masks
 #include <leds/layers/masks/blink.cpp>
 #include <leds/layers/masks/invert.cpp>
@@ -25,7 +26,6 @@
 #include <leds/layers/colors/single.cpp>
 #include <leds/layers/colors/switch.cpp>
 
-
 #define CE_PIN 0
 #define CSN_PIN 10
 #define LED_PIN 7
@@ -36,6 +36,23 @@ CRGB* leds = new CRGB[NUM_LEDS];
 ProcessScheduler scheduler = ProcessScheduler();
 LayerController* layerController;
 LayerScheduler* layerScheduler;
+SequenceDecoder* sequenceDecoder;
+
+class MyProcess : public Process {
+  uint8_t buffer[79] = { 8, 255, 1, 18, 36, 8, 1, 26, 16, 8, 1, 16, 1, 32, 3, 42, 8, 255, 133, 244, 7, 255, 133, 244, 7, 26, 14, 8, 1, 16, 1, 24, 2, 42, 6, 255, 1, 255, 1, 255, 1, 18, 36, 8, 1, 26, 16, 8, 1, 16, 1, 32, 3, 42, 8, 255, 133, 244, 7, 255, 133, 244, 7, 26, 14, 8, 1, 16, 1, 24, 2, 42, 6, 255, 1, 255, 1, 255, 1 };
+
+  public:
+  String getName() {
+    return "My Process";
+  }
+
+  void update() {
+    // create pb_istream_t
+    pb_istream_t stream = pb_istream_from_buffer(buffer, sizeof(buffer));
+
+    sequenceDecoder->decode(&stream);
+  }
+};
 
 void setup() {
   // put your setup code here, to run once:
@@ -46,6 +63,8 @@ void setup() {
 
   layerController = new LayerController(leds, NUM_LEDS);
   layerScheduler = new LayerScheduler(layerController);
+
+  sequenceDecoder = new SequenceDecoder(layerScheduler);
 
 
   /* layerScheduler->add({
@@ -58,10 +77,6 @@ void setup() {
     /** COLORS */
     /* new SingleColor(CRGB::Red), */
     /* new FadeColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 300), */
-    new RainbowColor(500, 0),
-    new RainbowColor(500, 0),
-    new RainbowColor(500, 0),
-    new RainbowColor(500, 0),
     new RainbowColor(500, 0),
     /* new SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100), */
     /* new SectionsColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100), */
@@ -80,8 +95,11 @@ void setup() {
     }
   , 2000);
 
+  MyProcess* myProcess = new MyProcess();
+
   scheduler.addProcess(layerScheduler, 20); // Update every 20ms
   scheduler.addProcess(layerController, 20); // Update every 20ms
+  scheduler.addProcess(myProcess, 500); // Update every 500ms
 
   layerController->setDirection(Direction::BACKWARD);
 

@@ -4,6 +4,15 @@
 #ifndef LAYER_SCHEDULER_H
 #define LAYER_SCHEDULER_H
 
+/**
+ * @brief A struct to represent an animation step
+ *
+ */
+struct AnimationStep {
+  std::vector<ILayer*> pattern;
+  u16_t tickDuration;
+};
+
 class ILayerScheduler {
   public:
   virtual ~ILayerScheduler() {}
