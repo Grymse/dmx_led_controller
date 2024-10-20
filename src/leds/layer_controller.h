@@ -5,12 +5,21 @@
 #define LAYER_CONTROLLER_H
 
 class ILayerController {
-public:
+  public:
   virtual ~ILayerController() {}
 
+  /**
+   * @brief Clear the layers used in the animation
+   *
+   */
   virtual void clear() = 0;
 
-  virtual void set(std::vector<ILayer*> layers)  = 0;
+  /**
+   * @brief Set the direction of the animation
+   *
+   * @param layers The layers to use
+   */
+  virtual void set(std::vector<ILayer*> layers) = 0;
 };
 
 #endif
