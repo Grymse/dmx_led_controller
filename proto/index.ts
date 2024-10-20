@@ -1,18 +1,43 @@
 import { led_protocols } from "./dist/protocol.ts";
-const { Direction, Layer, SetLayersRequest } = led_protocols;
+const { Direction, Layer, Sequence } = led_protocols;
 
-const layerRequest = SetLayersRequest.fromObject({
-  direction: Direction.FORWARD,
-  brightness: 255,
+const animation = {
+  direction: Direction.BACKWARD,
   layers: [
     {
-      effect_p1: 1,
-      p2_p3: 2,
-      effect_set: [1, 4, 2147483647, 2147483647],
+      effect: 1,
+      p1: 1,
+      p2: 2,
+      p3: 3,
+      effect_set: [
+        255 * 255 * 255,
+        255 * 255 * 255,
+        255 * 255 * 255,
+        255 * 255 * 255,
+        255 * 255 * 255,
+        255 * 255 * 255,
+      ],
+    },
+    {
+      effect: 1,
+      p1: 1,
+      p2: 2,
+      p3: 3,
+      effect_set: [255, 255, 255],
+    },
+    {
+      effect: 1,
+      p1: 1,
+      p2: 2,
+      p3: 3,
+      effect_set: [255, 255, 255],
     },
   ],
+};
+
+const layerRequest = Sequence.fromObject({
+  brightness: 255,
+  animations: [animation, animation, animation, animation],
 });
 
 const binary = layerRequest.serializeBinary();
-
-console.log(SetLayersRequest.deserializeBinary(binary).toObject());

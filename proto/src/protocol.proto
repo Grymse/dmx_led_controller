@@ -8,14 +8,21 @@ enum Direction {
 
 // The request message containing the desired effect and brightness.
 message Layer {
-  uint32 effect_p1 = 1;
-  uint32 p2_p3 = 2;
-  repeated uint32 effect_set = 3;
+  uint32 effect = 1;
+  uint32 p1 = 2;
+  uint32 p2 = 3;
+  uint32 p3 = 4;
+  repeated uint32 effect_set = 5;
 }
 
 // The request message containing an array of effects.
-message SetLayersRequest {
+message Animation {
   Direction direction = 1;
-  uint32 brightness = 2;
+  uint32 duration = 2;
   repeated Layer layers = 3;
+}
+
+message Sequence {
+  uint32 brightness = 1;
+  repeated Animation animations = 2;
 }
