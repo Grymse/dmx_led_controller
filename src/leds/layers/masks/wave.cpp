@@ -9,7 +9,7 @@ class WaveMask : public ILayer {
   u16_t duration;
   u16_t wave_gap;
 
-  float mod(float a, float b) {
+  double mod(double a, double b) {
     return a - b * floor(a / b);
   }
 
@@ -18,15 +18,31 @@ class WaveMask : public ILayer {
     return "Wave Mask";
   }
 
+  /**
+   * @brief Construct a new Wave Mask object
+   *
+   * @param wavelength The wavelength of the wave pattern.
+   * @param wavegap The gap between waves.
+   * @param duration The duration of the wave cycle.
+   *
+   * @example WaveMask(100, 100, 50)
+   */
   WaveMask(u16_t wavelength, u16_t wavegap, u16_t duration) {
     this->wavelength = wavelength;
     this->wave_gap = wavegap;
     this->duration = duration;
   }
 
+
+  /**
+   * @brief Applies a wave to the given color based on the current state (tick and index of led)
+   * @param color The original color of the LED.
+   * @param state The current state of the LED, including the tick count.
+   * @return The modified color after applying the blink pattern.
+   */
   CRGB apply(CRGB color, LEDState* state) {
     float len = (float)state->length / duration;
-    float x = (state->tick % duration) * len + state->index;
+    double x = (double)state->tick * len + state->index;
     if (wavelength <= mod(x, wavelength + wave_gap)) {
       return CRGB::Black;
     }

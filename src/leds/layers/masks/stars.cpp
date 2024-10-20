@@ -36,8 +36,7 @@ class StarsMask : public ILayer {
   }
 
   u8_t decay(u8_t multiplier) {
-    if (multiplier == 0) return multiplier;
-    if (multiplier < decaySpeed) return 0;
+    if (multiplier == 0 || multiplier < decaySpeed) return 0;
     return multiplier - decaySpeed;
   }
 
@@ -57,9 +56,14 @@ class StarsMask : public ILayer {
     this->frequency = frequency;
     this->decaySpeed = decaySpeed;
     this->starLength = starLength / 2;
-
   }
 
+  /**
+   * @brief Applies star-effect based on the current state (tick and index of led)
+   * @param color The original color of the LED.
+   * @param state The current state of the LED, including the tick count.
+   * @return The modified color after applying the blink pattern.
+   */
   CRGB apply(CRGB color, LEDState* state) {
     adjustVector(state->length);
     u8_t multiplier = decay(multipliers[state->index]);

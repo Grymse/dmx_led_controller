@@ -3,30 +3,30 @@
 #include "../layer.h"
 #include <vector>
 
-class SectionsMask : public ILayer {
+class SectionsColor : public ILayer {
   u16_t duration;
-  std::vector<u8_t> sections;
+  std::vector<CRGB> sections;
 
   public:
   String getName() {
-    return "Section Mask";
+    return "Section Color";
   }
 
   /**
    * @brief Construct a new Sections Mask object
    *
-   * @param sections define the sections and their amplitude
-   * @param duration The duration of the wave cycle.
+   * @param sections define the sections and their color
+   * @param duration The duration in ticks, it takes to go through all colors
    *
-   * @example SectionsMask({255, 0, 255, 0}, 10)
+   * @example SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue}, 50)
    */
-  SectionsMask(std::vector<u8_t> sections, u16_t duration) {
+  SectionsColor(std::vector<CRGB> sections, u16_t duration) {
     this->duration = duration / sections.size();
     this->sections = sections;
   }
 
   /**
-   * @brief Static sections switch through amplitude based on the current state (tick and index of led) and sections
+   * @brief Overwrites color to the sectionized colors based on the current state (tick and index of led)
    * @param color The original color of the LED.
    * @param state The current state of the LED, including the tick count.
    * @return The modified color after applying the blink pattern.
@@ -34,6 +34,6 @@ class SectionsMask : public ILayer {
   CRGB apply(CRGB color, LEDState* state) {
     float sectionLength = (float)state->length / sections.size();
     u16_t sectionIndex = state->tick / duration + (state->index / sectionLength);
-    return color.scale8(sections[sectionIndex % sections.size()]);
+    return sections[sectionIndex % sections.size()];
   }
 };

@@ -7,27 +7,69 @@
 #include "../debug.cpp"
 #include "layer_controller.h"
 
-// TODO: Add direction, such that the effect starts from the opposite side
 
 class LayerController : public Process, public ILayerController {
-  CRGB *leds;
+  CRGB* leds;
   std::vector<ILayer*> layers;
   LEDState* state;
 
-public:
-  LayerController(CRGB * leds, size_t size) {
-    state = new LEDState{0, 0, size};
+  /**
+   * @brief Reset the tick to 0 or 4320000 depending on the direction
+   *
+   */
+  void resetTick() {
+    if (state->direction == Direction::FORWARD) {
+      state->tick = 0;
+    }
+    else {
+      state->tick = 4320000; // 50 ticks * 3600 seconds * 24 hours
+    }
+  }
+
+  public:
+  /**
+   * @brief Construct a new Layer Controller object
+   *
+   * @param leds The LED strip to control
+   * @param size The size of the LED strip
+   */
+  LayerController(CRGB* leds, size_t size) {
+    state = new LEDState{ 0, 0, size, Direction::FORWARD };
     this->leds = leds;
     clear();
   }
 
+  String getName() override {
+    return "Layer Controller";
+  }
+
+  /**
+   * @brief Clear the layers
+   */
   void clear() {
     this->layers = {};
   }
-  
+
+  /**
+   * @brief Set the direction of the animation
+   *
+   * @param direction The direction of the animation
+   */
+  void setDirection(Direction direction) {
+    if (state->direction == direction) return;
+
+    state->direction = direction;
+    resetTick();
+  }
+
+  /**
+   * @brief Set the layers to be used in the animation
+   *
+   * @param layers The layers to use
+   */
   void set(std::vector<ILayer*> layers) {
-    state->tick = 0;
     this->layers = layers;
+    resetTick();
   }
 
   /**
@@ -42,13 +84,15 @@ public:
         leds[i] = CRGB::Black;
         continue;
       }
-      
+
       for (ILayer* layer : layers) {
         leds[i] = layer->apply(leds[i], state);
       }
-      
+
     }
-    state->tick++;
+
+    // Tick should not exceed: 50 ticks * 3600 seconds * 24 hours
+    state->tick = (state->tick + state->direction) % 4320000;
     FastLED.show();
   }
 };
