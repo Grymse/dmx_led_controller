@@ -1,0 +1,21 @@
+syntax = "proto3";
+package led_protocols;
+
+enum Direction {
+  FORWARD = 0;
+  BACKWARD = 1;
+}
+
+// The request message containing the desired effect and brightness.
+message Layer {
+  uint32 effect_p1 = 1;
+  uint32 p2_p3 = 2;
+  repeated uint32 effect_set = 3;
+}
+
+// The request message containing an array of effects.
+message SetLayersRequest {
+  Direction direction = 1;
+  uint32 brightness = 2;
+  repeated Layer layers = 3;
+}
