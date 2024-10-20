@@ -1,5 +1,5 @@
 syntax = "proto3";
-package led_protocols;
+package animation_protocol;
 
 enum Direction {
   FORWARD = 0;

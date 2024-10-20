@@ -1,5 +1,5 @@
-import { led_protocols } from "./dist/protocol.ts";
-const { Direction, Layer, Sequence } = led_protocols;
+import { animation_protocol } from "./dist/protocol.ts";
+const { Direction, Sequence } = animation_protocol;
 
 const animation = {
   direction: Direction.BACKWARD,
@@ -7,29 +7,13 @@ const animation = {
     {
       effect: 1,
       p1: 1,
-      p2: 2,
       p3: 3,
-      effect_set: [
-        255 * 255 * 255,
-        255 * 255 * 255,
-        255 * 255 * 255,
-        255 * 255 * 255,
-        255 * 255 * 255,
-        255 * 255 * 255,
-      ],
+      effect_set: [255 * 255 * 255, 255 * 255 * 255],
     },
     {
       effect: 1,
       p1: 1,
       p2: 2,
-      p3: 3,
-      effect_set: [255, 255, 255],
-    },
-    {
-      effect: 1,
-      p1: 1,
-      p2: 2,
-      p3: 3,
       effect_set: [255, 255, 255],
     },
   ],
@@ -37,7 +21,8 @@ const animation = {
 
 const layerRequest = Sequence.fromObject({
   brightness: 255,
-  animations: [animation, animation, animation, animation],
+  animations: [animation, animation],
 });
 
 const binary = layerRequest.serializeBinary();
+console.log(binary);
