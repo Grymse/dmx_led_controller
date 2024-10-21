@@ -1,5 +1,5 @@
 import { protocol } from "./lib/protobuf/protocol.ts";
-const { Direction, Sequence, LayerType } = protocol;
+const { Direction, Sequence, LayerType, MyPack } = protocol;
 
 const animation = {
   direction: Direction.BACKWARD,

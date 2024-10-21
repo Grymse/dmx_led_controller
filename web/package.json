@@ -1,7 +1,4 @@
 {
-  "scripts": {
-    "generate-proto": "protoc -I=./src --ts_out=dist protocol.proto && python3 ./nanopb-generator ./src/protocol.proto && mv ./src/protocol.pb.c ../lib/nanopb/ && mv ./src/protocol.pb.h ../lib/nanopb/"
-  },
   "dependencies": {
     "google-protobuf": "^3.21.4",
     "protoc-gen-ts": "^0.8.7"

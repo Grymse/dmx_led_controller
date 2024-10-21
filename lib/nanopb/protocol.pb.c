@@ -6,15 +6,58 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
-PB_BIND(protocol_Layer, protocol_Layer, AUTO)
-
-
 PB_BIND(protocol_Animation, protocol_Animation, AUTO)
 
 
 PB_BIND(protocol_Sequence, protocol_Sequence, AUTO)
 
 
+PB_BIND(protocol_Layer, protocol_Layer, AUTO)
+
+
+PB_BIND(protocol_FadeColor, protocol_FadeColor, AUTO)
+
+
+PB_BIND(protocol_RainbowColor, protocol_RainbowColor, AUTO)
+
+
+PB_BIND(protocol_SectionsWaveColor, protocol_SectionsWaveColor, AUTO)
+
+
+PB_BIND(protocol_SectionsColor, protocol_SectionsColor, AUTO)
+
+
+PB_BIND(protocol_SingleColor, protocol_SingleColor, AUTO)
+
+
+PB_BIND(protocol_SwitchColor, protocol_SwitchColor, AUTO)
+
+
+PB_BIND(protocol_BlinkMask, protocol_BlinkMask, AUTO)
+
+
+PB_BIND(protocol_InvertMask, protocol_InvertMask, AUTO)
+
+
+PB_BIND(protocol_PulseSawtoothMask, protocol_PulseSawtoothMask, AUTO)
+
+
+PB_BIND(protocol_PulseMask, protocol_PulseMask, AUTO)
+
+
+PB_BIND(protocol_SawtoothMask, protocol_SawtoothMask, AUTO)
+
+
+PB_BIND(protocol_SectionsWaveMask, protocol_SectionsWaveMask, AUTO)
+
+
+PB_BIND(protocol_SectionsMask, protocol_SectionsMask, AUTO)
+
+
+PB_BIND(protocol_StarsMask, protocol_StarsMask, AUTO)
+
+
+PB_BIND(protocol_WaveMask, protocol_WaveMask, AUTO)
 
 
 

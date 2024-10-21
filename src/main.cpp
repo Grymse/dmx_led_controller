@@ -53,6 +53,12 @@ class MyProcess : public Process {
     Sequence* sequence = new Sequence();
     sequenceDecoder->decode(&stream, sequence);
     printf("Decoded sequence with %d animations\n", sequence->animations.size());
+    for (Animation* animation : sequence->animations) {
+      printf("Animation with %d layers\n", animation->layers.size());
+      for (ILayer* layer : animation->layers) {
+        printf("Layer: %s\n", layer->getName().c_str());
+      }
+    }
   }
 };
 

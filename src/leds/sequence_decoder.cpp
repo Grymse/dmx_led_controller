@@ -52,15 +52,15 @@ class SequenceDecoder {
       return false;
     }
 
-    LayerResult result = LayerDecoder::decode(incomingLayer, effectSet);
+    ILayer* layer = LayerDecoder::decode(incomingLayer, *effectSet);
 
-    if (!result.success) {
+    if (layer == nullptr) {
       debug("\033[1;31mFailed to decode layer\033[0m\n", 0);
       return false;
     }
 
     Animation* animation = static_cast<Animation*>(*arg);
-    animation->layers.push_back(result.layer);
+    animation->layers.push_back(layer);
 
     return true;
   }
