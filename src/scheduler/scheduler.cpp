@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <vector>
 #include "process.h"
-#include "../debug.cpp"
+#include "debug.h"
 
 /**
  * @brief A struct to represent a scheduled process

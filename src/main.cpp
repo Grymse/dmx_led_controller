@@ -4,9 +4,9 @@
 // Local
 #include "scheduler/scheduler.cpp"
 #include "scheduler/process.h"
-#include "leds/layer_controller.cpp"
-#include "leds/layer_scheduler.cpp"
-#include "debug.cpp"
+#include "leds/animator.cpp"
+#include "leds/sequence_scheduler.cpp"
+#include "debug.h"
 #include "leds/sequence_decoder.cpp"
 // Masks
 #include <leds/layers/masks/blink.cpp>
@@ -34,8 +34,8 @@
 CRGB* leds = new CRGB[NUM_LEDS];
 
 ProcessScheduler scheduler = ProcessScheduler();
-LayerController* layerController;
-LayerScheduler* layerScheduler;
+Animator* animator;
+SequenceScheduler* sequenceScheduler;
 SequenceDecoder* sequenceDecoder;
 
 class MyProcess : public Process {
@@ -61,19 +61,12 @@ void setup() {
 
   FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
 
-  layerController = new LayerController(leds, NUM_LEDS);
-  layerScheduler = new LayerScheduler(layerController);
+  animator = new Animator(leds, NUM_LEDS);
+  sequenceScheduler = new SequenceScheduler(animator);
 
-  sequenceDecoder = new SequenceDecoder(layerScheduler);
+  sequenceDecoder = new SequenceDecoder(sequenceScheduler);
 
-
-  /* layerScheduler->add({
-    new SingleColor(CRGB::Blue),
-    new WaveMask(20, 2000),
-    }
-  ,2000); */
-
-  layerScheduler->add({
+  sequenceScheduler->add({
     /** COLORS */
     /* new SingleColor(CRGB::Red), */
     /* new FadeColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 300), */
@@ -97,12 +90,9 @@ void setup() {
 
   MyProcess* myProcess = new MyProcess();
 
-  scheduler.addProcess(layerScheduler, 20); // Update every 20ms
-  scheduler.addProcess(layerController, 20); // Update every 20ms
+  scheduler.addProcess(sequenceScheduler, 20); // Update every 20ms
+  scheduler.addProcess(animator, 20); // Update every 20ms
   scheduler.addProcess(myProcess, 500); // Update every 500ms
-
-  layerController->setDirection(Direction::BACKWARD);
-
 }
 
 void loop() {

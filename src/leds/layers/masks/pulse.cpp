@@ -2,7 +2,6 @@
 #include <FastLED.h>
 #include "../layer.h"
 #include <math.h>
-#include "../../../debug.cpp"
 
 class PulseMask : public ILayer {
   u16_t duration;

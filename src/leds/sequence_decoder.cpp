@@ -1,67 +1,98 @@
 // sequence_injector.cpp
 
-#include "layer_scheduler.h"
+#include "sequence_scheduler.h"
 #include "protocol.pb.h"
 #include <pb_decode.h>
+#include <vector>
+#include "debug.h"
 
 #define MAX_ANIMATIONS 8
 #define MAX_LAYERS 3
 #define MAX_EFFECTVALUES 50
 
+
+
 class SequenceDecoder {
   private:
-  ILayerScheduler* scheduler;
+  ISequenceScheduler* scheduler;
 
   static bool decode_animation(pb_istream_t* stream, const pb_field_iter_t* field, void** arg) {
-    _protocol_Animation animation = {};
-    animation.layers.funcs.decode = decode_layer;
+    _protocol_Animation incomingAnimation = protocol_Animation_init_zero;
+    Animation* animation = new Animation();
+    Sequence* sequence = static_cast<Sequence*>(*arg);
+    sequence->animations.push_back(animation);
 
-    // Decode the animation from the stream
-    if (!pb_decode(stream, protocol_Animation_fields, &animation)) {
-      printf("\033[1;31mFailed to decode animation\033[0m\n");
+    incomingAnimation.layers.funcs.decode = decode_layer;
+    incomingAnimation.layers.arg = animation;
+
+    // Decode the incomingAnimation from the stream
+    if (!pb_decode(stream, protocol_Animation_fields, &incomingAnimation)) {
+      debug("\033[1;31mFailed to decode animation\033[0m\n", 0);
       return false;  // Return false if decoding fails
     }
+
+    animation->direction = incomingAnimation.direction == protocol_Direction_FORWARD ? Direction::FORWARD : Direction::BACKWARD;
+    animation->tickDuration = incomingAnimation.duration;
 
     return true;  // Return true if decoding is successful
   }
 
   static bool decode_layer(pb_istream_t* stream, const pb_field_iter_t* field, void** arg) {
-    _protocol_Layer layer = {};
-    layer.effect_set.funcs.decode = decode_effect_set;
+    _protocol_Layer incomingLayer = protocol_Layer_init_zero;
 
-    // Decode the layer from the stream
-    if (!pb_decode(stream, protocol_Layer_fields, &layer)) {
-      printf("\033[1;31mFailed to decode layer\033[0m\n");
+    std::vector<u32_t>* effectSet = new std::vector<u32_t>();
+
+    incomingLayer.effect_set.funcs.decode = decode_effect_set;
+    incomingLayer.effect_set.arg = effectSet;
+
+    // Decode the incomingLayer from the stream
+    if (!pb_decode(stream, protocol_Layer_fields, &incomingLayer)) {
+      debug("\033[1;31mFailed to decode layer\033[0m\n", 0);
       return false;  // Return false if decoding fails
     }
+
+    printf("effect_size: %d\n", effectSet->size());
+
+    // Use external decoding from incomingLayer to ILayer
+    ILayer* decodedLayer;
+
+    Animation* animation = static_cast<Animation*>(*arg);
+    animation->layers.push_back(decodedLayer);
 
     return true;  // Return true if decoding is successful
   }
 
   static bool decode_effect_set(pb_istream_t* stream, const pb_field_iter_t* field, void** arg) {
-    _protocol_Layer layer = {};
+    std::vector<u32_t>* effect_set = static_cast<std::vector<u32_t>*>(*arg);
 
     while (stream->bytes_left) {
-      uint64_t value;
-      if (!pb_decode_varint(stream, &value)) {
-        printf("\033[1;31mFailed to decode effect_set\033[0m\n");
+      uint32_t value;
+      if (!pb_decode_varint32(stream, &value)) {
+        debug("\033[1;31mFailed to decode effect_set\033[0m\n", 0);
         return false;
       }
-      printf("%lld\n", value);
+      effect_set->push_back(value);
     }
     return true;
   }
 
   public:
-  SequenceDecoder(ILayerScheduler* scheduler) : scheduler(scheduler) {}
+  SequenceDecoder(ISequenceScheduler* scheduler) : scheduler(scheduler) {}
 
-  void decode(pb_istream_t* stream) {
-    protocol_Sequence sequence = {};
-    sequence.animations.funcs.decode = decode_animation;
+  Sequence* decode(pb_istream_t* stream) {
+    protocol_Sequence incomingSequence = protocol_Sequence_init_zero;
+    Sequence* sequence = new Sequence();
 
-    if (!pb_decode(stream, protocol_Sequence_fields, &sequence)) {
-      printf("\033[1;31mFailed to decode sequence\033[0m\n");
-      return;
+    incomingSequence.animations.funcs.decode = decode_animation;
+    incomingSequence.animations.arg = sequence;
+
+
+    if (!pb_decode(stream, protocol_Sequence_fields, &incomingSequence)) {
+      debug("\033[1;31mFailed to decode sequence\033[0m\n", 0);
+      return sequence;  // Return empty sequence if decoding fails
     }
+
+    sequence->brightness = incomingSequence.brightness;
+    return sequence;
   }
 };
