@@ -7,6 +7,7 @@ const animation = {
     {
       effect: 1,
       p1: 1,
+      p2: 3,
       p3: 3,
       effect_set: [255 * 255 * 255, 255 * 255 * 255],
     },
