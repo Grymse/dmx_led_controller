@@ -7,31 +7,22 @@
     "type": "git",
     "url": "https://github.com/nanopb/nanopb.git"
   },
-  "authors": [{
-    "name": "Petteri Aimonen",
-    "email": "jpa@nanopb.mail.kapsi.fi",
-    "url": "http://koti.kapsi.fi/jpa/nanopb/"
-  }],
+  "authors": [
+    {
+      "name": "Petteri Aimonen",
+      "email": "jpa@nanopb.mail.kapsi.fi",
+      "url": "http://koti.kapsi.fi/jpa/nanopb/"
+    }
+  ],
   "export": {
-    "include": [
-      "*.c",
-      "*.cpp",
-      "*.h",
-      "examples",
-      "generator"
-    ],
-    "exclude": [
-      "generator/**/__pycache__",
-      "examples/platformio/.gitignore"
-    ]
+    "include": ["*.c", "*.cpp", "*.h", "examples", "generator"],
+    "exclude": ["generator/**/__pycache__", "examples/platformio/.gitignore"]
   },
   "build": {
     "extraScript": "generator/platformio_generator.py",
     "includeDir": "",
     "srcDir": "",
-    "srcFilter": [
-      "+<*.c>"
-    ]
+    "srcFilter": ["+<*.c>"]
   },
   "examples": [
     "examples/platformio/platformio.ini",
