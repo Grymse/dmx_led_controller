@@ -50,7 +50,9 @@ class MyProcess : public Process {
     // create pb_istream_t
     pb_istream_t stream = pb_istream_from_buffer(buffer, sizeof(buffer));
 
-    sequenceDecoder->decode(&stream);
+    Sequence* sequence = new Sequence();
+    sequenceDecoder->decode(&stream, sequence);
+    printf("Decoded sequence with %d animations\n", sequence->animations.size());
   }
 };
 

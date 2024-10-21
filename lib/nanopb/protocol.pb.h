@@ -15,10 +15,30 @@ typedef enum _protocol_Direction {
     protocol_Direction_BACKWARD = 1
 } protocol_Direction;
 
+typedef enum _protocol_LayerType {
+    /* Colors */
+    protocol_LayerType_SingleColor = 0,
+    protocol_LayerType_RainbowColor = 1,
+    protocol_LayerType_Sections_waveColor = 2,
+    protocol_LayerType_SectionsColor = 3,
+    protocol_LayerType_FadeColor = 4,
+    protocol_LayerType_SwitchColor = 5,
+    /* Masks - 50 offset */
+    protocol_LayerType_BlinkMask = 50,
+    protocol_LayerType_InvertMask = 51,
+    protocol_LayerType_Pulse_sawtoothMask = 52,
+    protocol_LayerType_PulseMask = 53,
+    protocol_LayerType_SawtoothMask = 54,
+    protocol_LayerType_Sections_waveMask = 55,
+    protocol_LayerType_SectionsMask = 56,
+    protocol_LayerType_StarsMask = 57,
+    protocol_LayerType_WaveMask = 58
+} protocol_LayerType;
+
 /* Struct definitions */
 /* The request message containing the desired effect and brightness. */
 typedef struct _protocol_Layer {
-    uint32_t effect;
+    protocol_LayerType type;
     uint32_t p1;
     uint32_t p2;
     uint32_t p3;
@@ -47,21 +67,26 @@ extern "C" {
 #define _protocol_Direction_MAX protocol_Direction_BACKWARD
 #define _protocol_Direction_ARRAYSIZE ((protocol_Direction)(protocol_Direction_BACKWARD+1))
 
+#define _protocol_LayerType_MIN protocol_LayerType_SingleColor
+#define _protocol_LayerType_MAX protocol_LayerType_WaveMask
+#define _protocol_LayerType_ARRAYSIZE ((protocol_LayerType)(protocol_LayerType_WaveMask+1))
+
+#define protocol_Layer_type_ENUMTYPE protocol_LayerType
 
 #define protocol_Animation_direction_ENUMTYPE protocol_Direction
 
 
 
 /* Initializer values for message structs */
-#define protocol_Layer_init_default              {0, 0, 0, 0, {{NULL}, NULL}}
+#define protocol_Layer_init_default              {_protocol_LayerType_MIN, 0, 0, 0, {{NULL}, NULL}}
 #define protocol_Animation_init_default          {_protocol_Direction_MIN, 0, {{NULL}, NULL}}
 #define protocol_Sequence_init_default           {0, {{NULL}, NULL}}
-#define protocol_Layer_init_zero                 {0, 0, 0, 0, {{NULL}, NULL}}
+#define protocol_Layer_init_zero                 {_protocol_LayerType_MIN, 0, 0, 0, {{NULL}, NULL}}
 #define protocol_Animation_init_zero             {_protocol_Direction_MIN, 0, {{NULL}, NULL}}
 #define protocol_Sequence_init_zero              {0, {{NULL}, NULL}}
 
 /* Field tags (for use in manual encoding/decoding) */
-#define protocol_Layer_effect_tag                1
+#define protocol_Layer_type_tag                  1
 #define protocol_Layer_p1_tag                    2
 #define protocol_Layer_p2_tag                    3
 #define protocol_Layer_p3_tag                    4
@@ -74,7 +99,7 @@ extern "C" {
 
 /* Struct field encoding specification for nanopb */
 #define protocol_Layer_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   effect,            1) \
+X(a, STATIC,   SINGULAR, UENUM,    type,              1) \
 X(a, STATIC,   SINGULAR, UINT32,   p1,                2) \
 X(a, STATIC,   SINGULAR, UINT32,   p2,                3) \
 X(a, STATIC,   SINGULAR, UINT32,   p3,                4) \

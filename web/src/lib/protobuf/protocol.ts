@@ -9,10 +9,27 @@ export namespace protocol {
         FORWARD = 0,
         BACKWARD = 1
     }
+    export enum LayerType {
+        SingleColor = 0,
+        RainbowColor = 1,
+        Sections_waveColor = 2,
+        SectionsColor = 3,
+        FadeColor = 4,
+        SwitchColor = 5,
+        BlinkMask = 50,
+        InvertMask = 51,
+        Pulse_sawtoothMask = 52,
+        PulseMask = 53,
+        SawtoothMask = 54,
+        Sections_waveMask = 55,
+        SectionsMask = 56,
+        StarsMask = 57,
+        WaveMask = 58
+    }
     export class Layer extends pb_1.Message {
         #one_of_decls: number[][] = [];
         constructor(data?: any[] | {
-            effect?: number;
+            type?: LayerType;
             p1?: number;
             p2?: number;
             p3?: number;
@@ -21,8 +38,8 @@ export namespace protocol {
             super();
             pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [5], this.#one_of_decls);
             if (!Array.isArray(data) && typeof data == "object") {
-                if ("effect" in data && data.effect != undefined) {
-                    this.effect = data.effect;
+                if ("type" in data && data.type != undefined) {
+                    this.type = data.type;
                 }
                 if ("p1" in data && data.p1 != undefined) {
                     this.p1 = data.p1;
@@ -38,10 +55,10 @@ export namespace protocol {
                 }
             }
         }
-        get effect() {
-            return pb_1.Message.getFieldWithDefault(this, 1, 0) as number;
+        get type() {
+            return pb_1.Message.getFieldWithDefault(this, 1, LayerType.SingleColor) as LayerType;
         }
-        set effect(value: number) {
+        set type(value: LayerType) {
             pb_1.Message.setField(this, 1, value);
         }
         get p1() {
@@ -69,15 +86,15 @@ export namespace protocol {
             pb_1.Message.setField(this, 5, value);
         }
         static fromObject(data: {
-            effect?: number;
+            type?: LayerType;
             p1?: number;
             p2?: number;
             p3?: number;
             effect_set?: number[];
         }): Layer {
             const message = new Layer({});
-            if (data.effect != null) {
-                message.effect = data.effect;
+            if (data.type != null) {
+                message.type = data.type;
             }
             if (data.p1 != null) {
                 message.p1 = data.p1;
@@ -95,14 +112,14 @@ export namespace protocol {
         }
         toObject() {
             const data: {
-                effect?: number;
+                type?: LayerType;
                 p1?: number;
                 p2?: number;
                 p3?: number;
                 effect_set?: number[];
             } = {};
-            if (this.effect != null) {
-                data.effect = this.effect;
+            if (this.type != null) {
+                data.type = this.type;
             }
             if (this.p1 != null) {
                 data.p1 = this.p1;
@@ -122,8 +139,8 @@ export namespace protocol {
         serialize(w: pb_1.BinaryWriter): void;
         serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
             const writer = w || new pb_1.BinaryWriter();
-            if (this.effect != 0)
-                writer.writeUint32(1, this.effect);
+            if (this.type != LayerType.SingleColor)
+                writer.writeEnum(1, this.type);
             if (this.p1 != 0)
                 writer.writeUint32(2, this.p1);
             if (this.p2 != 0)
@@ -142,7 +159,7 @@ export namespace protocol {
                     break;
                 switch (reader.getFieldNumber()) {
                     case 1:
-                        message.effect = reader.readUint32();
+                        message.type = reader.readEnum();
                         break;
                     case 2:
                         message.p1 = reader.readUint32();

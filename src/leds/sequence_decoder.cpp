@@ -5,6 +5,7 @@
 #include <pb_decode.h>
 #include <vector>
 #include "debug.h"
+#include "layers/layer_decoder.cpp"
 
 #define MAX_ANIMATIONS 8
 #define MAX_LAYERS 3
@@ -47,19 +48,21 @@ class SequenceDecoder {
 
     // Decode the incomingLayer from the stream
     if (!pb_decode(stream, protocol_Layer_fields, &incomingLayer)) {
-      debug("\033[1;31mFailed to decode layer\033[0m\n", 0);
-      return false;  // Return false if decoding fails
+      debug("\033[1;31mFailed to decode effect_set\033[0m\n", 0);
+      return false;
     }
 
-    printf("effect_size: %d\n", effectSet->size());
+    LayerResult result = LayerDecoder::decode(incomingLayer, effectSet);
 
-    // Use external decoding from incomingLayer to ILayer
-    ILayer* decodedLayer;
+    if (!result.success) {
+      debug("\033[1;31mFailed to decode layer\033[0m\n", 0);
+      return false;
+    }
 
     Animation* animation = static_cast<Animation*>(*arg);
-    animation->layers.push_back(decodedLayer);
+    animation->layers.push_back(result.layer);
 
-    return true;  // Return true if decoding is successful
+    return true;
   }
 
   static bool decode_effect_set(pb_istream_t* stream, const pb_field_iter_t* field, void** arg) {
@@ -79,9 +82,8 @@ class SequenceDecoder {
   public:
   SequenceDecoder(ISequenceScheduler* scheduler) : scheduler(scheduler) {}
 
-  Sequence* decode(pb_istream_t* stream) {
+  bool decode(pb_istream_t* stream, Sequence* sequence) {
     protocol_Sequence incomingSequence = protocol_Sequence_init_zero;
-    Sequence* sequence = new Sequence();
 
     incomingSequence.animations.funcs.decode = decode_animation;
     incomingSequence.animations.arg = sequence;
@@ -89,10 +91,10 @@ class SequenceDecoder {
 
     if (!pb_decode(stream, protocol_Sequence_fields, &incomingSequence)) {
       debug("\033[1;31mFailed to decode sequence\033[0m\n", 0);
-      return sequence;  // Return empty sequence if decoding fails
+      return false;  // Return empty sequence if decoding fails
     }
 
     sequence->brightness = incomingSequence.brightness;
-    return sequence;
+    return true;
   }
 };

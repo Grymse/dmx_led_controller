@@ -1,18 +1,18 @@
 import { protocol } from "./lib/protobuf/protocol.ts";
-const { Direction, Sequence } = protocol;
+const { Direction, Sequence, LayerType } = protocol;
 
 const animation = {
   direction: Direction.BACKWARD,
   layers: [
     {
-      effect: 1,
+      type: 1,
       p1: 1,
       p2: 3,
       p3: 3,
       effect_set: [255 * 255 * 255, 255 * 255 * 255],
     },
     {
-      effect: 1,
+      type: 2,
       p1: 1,
       p2: 2,
       effect_set: [255, 255, 255],

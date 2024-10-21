@@ -6,9 +6,30 @@ enum Direction {
   BACKWARD = 1;
 }
 
+enum LayerType {
+  // Colors
+  SingleColor = 0;
+  RainbowColor = 1;
+  Sections_waveColor = 2;
+  SectionsColor = 3;
+  FadeColor = 4;
+  SwitchColor = 5;
+
+  // Masks - 50 offset
+  BlinkMask = 50;
+  InvertMask = 51;
+  Pulse_sawtoothMask = 52;
+  PulseMask = 53;
+  SawtoothMask = 54;
+  Sections_waveMask = 55;
+  SectionsMask = 56;
+  StarsMask = 57;
+  WaveMask = 58;
+}
+
 // The request message containing the desired effect and brightness.
 message Layer {
-  uint32 effect = 1;
+  LayerType type = 1;
   uint32 p1 = 2;
   uint32 p2 = 3;
   uint32 p3 = 4;
