@@ -13,11 +13,11 @@ class SequenceDecoder {
   ILayerScheduler* scheduler;
 
   static bool decode_animation(pb_istream_t* stream, const pb_field_iter_t* field, void** arg) {
-    _animation_protocol_Animation animation = {};
+    _protocol_Animation animation = {};
     animation.layers.funcs.decode = decode_layer;
 
     // Decode the animation from the stream
-    if (!pb_decode(stream, animation_protocol_Animation_fields, &animation)) {
+    if (!pb_decode(stream, protocol_Animation_fields, &animation)) {
       printf("\033[1;31mFailed to decode animation\033[0m\n");
       return false;  // Return false if decoding fails
     }
@@ -26,11 +26,11 @@ class SequenceDecoder {
   }
 
   static bool decode_layer(pb_istream_t* stream, const pb_field_iter_t* field, void** arg) {
-    _animation_protocol_Layer layer = {};
+    _protocol_Layer layer = {};
     layer.effect_set.funcs.decode = decode_effect_set;
 
     // Decode the layer from the stream
-    if (!pb_decode(stream, animation_protocol_Layer_fields, &layer)) {
+    if (!pb_decode(stream, protocol_Layer_fields, &layer)) {
       printf("\033[1;31mFailed to decode layer\033[0m\n");
       return false;  // Return false if decoding fails
     }
@@ -39,7 +39,7 @@ class SequenceDecoder {
   }
 
   static bool decode_effect_set(pb_istream_t* stream, const pb_field_iter_t* field, void** arg) {
-    _animation_protocol_Layer layer = {};
+    _protocol_Layer layer = {};
 
     while (stream->bytes_left) {
       uint64_t value;
@@ -56,10 +56,10 @@ class SequenceDecoder {
   SequenceDecoder(ILayerScheduler* scheduler) : scheduler(scheduler) {}
 
   void decode(pb_istream_t* stream) {
-    animation_protocol_Sequence sequence = {};
+    protocol_Sequence sequence = {};
     sequence.animations.funcs.decode = decode_animation;
 
-    if (!pb_decode(stream, animation_protocol_Sequence_fields, &sequence)) {
+    if (!pb_decode(stream, protocol_Sequence_fields, &sequence)) {
       printf("\033[1;31mFailed to decode sequence\033[0m\n");
       return;
     }

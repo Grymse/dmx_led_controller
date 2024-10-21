@@ -1,5 +1,5 @@
-import { animation_protocol } from "./dist/protocol.ts";
-const { Direction, Sequence } = animation_protocol;
+import { protocol } from "./lib/protobuf/protocol.ts";
+const { Direction, Sequence } = protocol;
 
 const animation = {
   direction: Direction.BACKWARD,
