@@ -23,82 +23,6 @@
 
 class LayerDecoder {
   private:
-  std::vector<CRGB> static toCRGBs(std::vector<u32_t> input) {
-    std::vector<CRGB> output;
-    output.reserve(input.size());
-
-    for (u32_t i : input) {
-      output.push_back(CRGB(i));
-    }
-
-    return output;
-  }
-
-  std::vector<uint8_t> static toUint8s(const std::vector<uint32_t>& input) {
-    std::vector<uint8_t> output;
-    output.reserve(input.size());
-
-    for (uint32_t value : input) {
-      output.push_back(static_cast<uint8_t>(value));
-    }
-
-    return output;
-  }
-
-  public:
-  /*
-  static ILayer* decode(_protocol_Layer incomingLayer, std::vector<u32_t> effectSet) {
-    switch (incomingLayer.type) {
-      case protocol_LayerType_SingleColor:
-        return new SingleColor(CRGB(effectSet[0]));
-
-      case protocol_LayerType_RainbowColor:
-        return new RainbowColor(incomingLayer.p1, incomingLayer.p2);
-
-      case protocol_LayerType_Sections_waveColor:
-        return new SectionsWaveColor(toCRGBs(effectSet), incomingLayer.p1);
-
-      case protocol_LayerType_SectionsColor:
-        return new SectionsColor(toCRGBs(effectSet), incomingLayer.p1);
-
-      case protocol_LayerType_FadeColor:
-        return new FadeColor(toCRGBs(effectSet), incomingLayer.p1);
-
-      case protocol_LayerType_SwitchColor:
-        return new SwitchColor(toCRGBs(effectSet), incomingLayer.p1);
-
-      case protocol_LayerType_BlinkMask:
-        return new BlinkMask(toUint8s(effectSet), incomingLayer.p1);
-
-      case protocol_LayerType_InvertMask:
-        return new InvertMask();
-
-      case protocol_LayerType_Pulse_sawtoothMask:
-        return new PulseSawtoothMask(incomingLayer.p1, incomingLayer.p2);
-
-      case protocol_LayerType_PulseMask:
-        return new PulseMask(incomingLayer.p1, incomingLayer.p2);
-
-      case protocol_LayerType_SawtoothMask:
-        return new SawtoothMask(incomingLayer.p1, incomingLayer.p2, incomingLayer.p3);
-
-      case protocol_LayerType_Sections_waveMask:
-        return new SectionsWaveMask(toUint8s(effectSet), incomingLayer.p1);
-
-      case protocol_LayerType_SectionsMask:
-        return new SectionsMask(toUint8s(effectSet), incomingLayer.p1);
-
-      case protocol_LayerType_StarsMask:
-        return new StarsMask(incomingLayer.p1, incomingLayer.p2, incomingLayer.p3);
-
-      case protocol_LayerType_WaveMask:
-        return new WaveMask(incomingLayer.p1, incomingLayer.p2, incomingLayer.p3);
-    }
-
-    debug("Missing layerId %d", incomingLayer.type);
-    return nullptr;
-  } */
-
   static bool decode_colors(pb_istream_t* stream, const pb_field_iter_t* field, void** arg) {
     std::vector<CRGB>* colors = static_cast<std::vector<CRGB>*>(*arg);
 
@@ -127,13 +51,15 @@ class LayerDecoder {
     return true;
   }
 
-  bool decode_layer(pb_istream_t* stream, const pb_field_iter_t* field, void** arg) {
+  public:
+  static bool decode_layer(pb_istream_t* stream, const pb_field_iter_t* field, void** arg) {
     protocol_Layer incomingLayer = protocol_Layer_init_zero;
     ILayer* layer;
     std::vector<CRGB> colors;
     std::vector<u8_t> bytes;
 
     // For any field that is a repeated field, we need to create a vector to store the values
+    // For colors, we can use the colors array along with the decode_colors
     incomingLayer.payload.fadeColor.colors.arg = &colors;
     incomingLayer.payload.fadeColor.colors.funcs.decode = decode_colors;
     incomingLayer.payload.sectionsWaveColor.sections.arg = &colors;
@@ -143,6 +69,7 @@ class LayerDecoder {
     incomingLayer.payload.switchColor.colors.arg = &colors;
     incomingLayer.payload.switchColor.colors.funcs.decode = decode_colors;
 
+    // For bytes, we can use the bytes array along with the decode_bytes
     incomingLayer.payload.blinkMask.pattern.arg = &bytes;
     incomingLayer.payload.blinkMask.pattern.funcs.decode = decode_bytes;
     incomingLayer.payload.sectionsWaveMask.sections.arg = &bytes;

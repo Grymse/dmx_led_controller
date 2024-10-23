@@ -26,7 +26,6 @@ message Layer {
     SectionsColor sectionsColor = 4;
     SingleColor singleColor = 5;
     SwitchColor switchColor = 6;
-
     BlinkMask blinkMask = 40;
     InvertMask invertMask = 41;
     PulseSawtoothMask pulseSawtoothMask = 42;

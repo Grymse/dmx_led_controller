@@ -1,27 +1,56 @@
 import { protocol } from "./lib/protobuf/protocol.ts";
-const { Direction, Sequence, LayerType, MyPack } = protocol;
 
-const animation = {
-  direction: Direction.BACKWARD,
+const {
+  Direction,
+  Sequence,
+  Animation,
+  Layer,
+  RainbowColor,
+  SawtoothMask,
+  SectionsMask,
+  SingleColor,
+} = protocol;
+
+class Requester {
+  sendSequence(sequence: protocol.Sequence) {
+    console.log(sequence.serializeBinary());
+  }
+}
+
+const layer = new Layer({
+  sawtoothMask: new SawtoothMask({
+    wavelength: 200,
+    wavegap: 50,
+    duration: 200,
+  }),
+});
+
+new Layer({
+  sawtoothMask: new SawtoothMask({
+    wavelength: 200,
+    wavegap: 50,
+    duration: 200,
+  }),
+});
+
+const animation = new Animation({
+  direction: Direction.FORWARD,
   layers: [
-    {
-      type: 1,
-      p1: 1,
-      p2: 3,
-      p3: 3,
-      effect_set: [255 * 255 * 255, 255 * 255 * 255],
-    },
-    {
-      type: 2,
-      p1: 1,
-      p2: 2,
-      effect_set: [255, 255, 255],
-    },
+    new Layer({
+      rainbowColor: new RainbowColor({ duration: 200, length: 50 }),
+    }),
+    new Layer({
+      sawtoothMask: new SawtoothMask({
+        wavelength: 200,
+        wavegap: 50,
+        duration: 200,
+      }),
+    }),
   ],
-};
+});
 
 const layerRequest = Sequence.fromObject({
-  brightness: 255,
+  brightness: 200,
   animations: [animation, animation],
 });
 

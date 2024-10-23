@@ -23,8 +23,9 @@ class SequenceDecoder {
     Sequence* sequence = static_cast<Sequence*>(*arg);
     sequence->animations.push_back(animation);
 
-    incomingAnimation.layers.funcs.decode = decode_layer;
-    incomingAnimation.layers.arg = animation;
+    std::vector<ILayer*>* layers;
+    incomingAnimation.layers.funcs.decode = LayerDecoder::decode_layer;
+    incomingAnimation.layers.arg = layers;
 
     // Decode the incomingAnimation from the stream
     if (!pb_decode(stream, protocol_Animation_fields, &incomingAnimation)) {
@@ -38,54 +39,13 @@ class SequenceDecoder {
     return true;  // Return true if decoding is successful
   }
 
-  static bool decode_layer(pb_istream_t* stream, const pb_field_iter_t* field, void** arg) {
-    _protocol_Layer incomingLayer = protocol_Layer_init_zero;
-
-    std::vector<u32_t>* effectSet = new std::vector<u32_t>();
-
-    incomingLayer.effect_set.funcs.decode = decode_effect_set;
-    incomingLayer.effect_set.arg = effectSet;
-
-    // Decode the incomingLayer from the stream
-    if (!pb_decode(stream, protocol_Layer_fields, &incomingLayer)) {
-      debug("\033[1;31mFailed to decode effect_set\033[0m\n", 0);
-      return false;
-    }
-
-    ILayer* layer = LayerDecoder::decode(incomingLayer, *effectSet);
-
-    if (layer == nullptr) {
-      debug("\033[1;31mFailed to decode layer\033[0m\n", 0);
-      return false;
-    }
-
-    Animation* animation = static_cast<Animation*>(*arg);
-    animation->layers.push_back(layer);
-
-    return true;
-  }
-
-  static bool decode_effect_set(pb_istream_t* stream, const pb_field_iter_t* field, void** arg) {
-    std::vector<u32_t>* effect_set = static_cast<std::vector<u32_t>*>(*arg);
-
-    while (stream->bytes_left) {
-      uint32_t value;
-      if (!pb_decode_varint32(stream, &value)) {
-        debug("\033[1;31mFailed to decode effect_set\033[0m\n", 0);
-        return false;
-      }
-      effect_set->push_back(value);
-    }
-    return true;
-  }
-
   public:
   SequenceDecoder(ISequenceScheduler* scheduler) : scheduler(scheduler) {}
 
   bool decode(pb_istream_t* stream, Sequence* sequence) {
     protocol_Sequence incomingSequence = protocol_Sequence_init_zero;
 
-    incomingSequence.animations.funcs.decode = decode_animation;
+    incomingSequence.animations.funcs.decode = SequenceDecoder::decode_animation;
     incomingSequence.animations.arg = sequence;
 
 

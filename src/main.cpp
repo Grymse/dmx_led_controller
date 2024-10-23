@@ -9,7 +9,7 @@
 #include "debug.h"
 #include "leds/sequence_decoder.cpp"
 // Masks
-#include <leds/layers/masks/blink.cpp>
+/* #include <leds/layers/masks/blink.cpp>
 #include <leds/layers/masks/invert.cpp>
 #include <leds/layers/masks/pulse.cpp>
 #include <leds/layers/masks/pulse_sawtooth.cpp>
@@ -24,7 +24,7 @@
 #include <leds/layers/colors/sections.cpp>
 #include <leds/layers/colors/sections_wave.cpp>
 #include <leds/layers/colors/single.cpp>
-#include <leds/layers/colors/switch.cpp>
+#include <leds/layers/colors/switch.cpp> */
 
 #define CE_PIN 0
 #define CSN_PIN 10
@@ -39,7 +39,7 @@ SequenceScheduler* sequenceScheduler;
 SequenceDecoder* sequenceDecoder;
 
 class MyProcess : public Process {
-  uint8_t buffer[79] = { 8, 255, 1, 18, 36, 8, 1, 26, 16, 8, 1, 16, 1, 32, 3, 42, 8, 255, 133, 244, 7, 255, 133, 244, 7, 26, 14, 8, 1, 16, 1, 24, 2, 42, 6, 255, 1, 255, 1, 255, 1, 18, 36, 8, 1, 26, 16, 8, 1, 16, 1, 32, 3, 42, 8, 255, 133, 244, 7, 255, 133, 244, 7, 26, 14, 8, 1, 16, 1, 24, 2, 42, 6, 255, 1, 255, 1, 255, 1 };
+  uint8_t buffer[51] = { 8, 200, 1, 18, 22, 26, 7, 18, 5, 8, 200, 1, 16, 50, 26, 11, 226, 2, 8, 8, 200, 1, 16, 50, 24, 200, 1, 18, 22, 26, 7, 18, 5, 8, 200, 1, 16, 50, 26, 11, 226, 2, 8, 8, 200, 1, 16, 50, 24, 200, 1 };
 
   public:
   String getName() {
@@ -78,7 +78,7 @@ void setup() {
     /** COLORS */
     /* new SingleColor(CRGB::Red), */
     /* new FadeColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 300), */
-    new RainbowColor(500, 0),
+    /* new RainbowColor(500, 0), */
     /* new SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100), */
     /* new SectionsColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100), */
     /* new SwitchColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100), */

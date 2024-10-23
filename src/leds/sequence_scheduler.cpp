@@ -53,6 +53,7 @@ class SequenceScheduler : public Process, public ISequenceScheduler {
    * @param animation The animation to add
    */
   virtual void add(Animation* animation) override {
+    animation->tickDuration == 0 ? ANIMATION_DURATION_MAX : animation->tickDuration; // Set duration to max if not set
     animations.push_back(animation);
   }
 
@@ -74,6 +75,9 @@ class SequenceScheduler : public Process, public ISequenceScheduler {
   void set(Sequence* sequence) {
     clear();
     animations = sequence->animations;
+    for (Animation* animation : animations) {
+      animation->tickDuration == 0 ? ANIMATION_DURATION_MAX : animation->tickDuration; // Set duration to max if not set
+    }
     setBrightness(sequence->brightness);
   }
 

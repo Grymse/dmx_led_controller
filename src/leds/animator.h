@@ -3,6 +3,7 @@
 
 #ifndef ANIMATOR_H
 #define ANIMATOR_H
+#define ANIMATION_DURATION_MAX 4320000
 
 class IAnimator {
   public:

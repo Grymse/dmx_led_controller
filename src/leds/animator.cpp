@@ -22,7 +22,7 @@ class Animator : public Process, public IAnimator {
       state->tick = 0;
     }
     else {
-      state->tick = 4320000; // 50 ticks * 3600 seconds * 24 hours
+      state->tick = ANIMATION_DURATION_MAX;
     }
   }
 
@@ -101,8 +101,8 @@ class Animator : public Process, public IAnimator {
       leds[i] = leds[i].scale8(brightness);
     }
 
-    // Tick should not exceed: 50 ticks * 3600 seconds * 24 hours
-    state->tick = (state->tick + state->direction) % 4320000;
+    // Tick should not exceed max
+    state->tick = (state->tick + state->direction) % ANIMATION_DURATION_MAX;
     FastLED.show();
   }
 };
