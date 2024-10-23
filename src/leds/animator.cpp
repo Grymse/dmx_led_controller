@@ -97,12 +97,10 @@ class Animator : public Process, public IAnimator {
       for (ILayer* layer : layers) {
         leds[i] = layer->apply(leds[i], state);
       }
-
-      leds[i] = leds[i].scale8(brightness);
     }
 
     // Tick should not exceed max
     state->tick = (state->tick + state->direction) % ANIMATION_DURATION_MAX;
-    FastLED.show();
+    FastLED.show(brightness);
   }
 };
