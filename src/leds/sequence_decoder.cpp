@@ -23,15 +23,16 @@ class SequenceDecoder {
     Sequence* sequence = static_cast<Sequence*>(*arg);
     sequence->animations.push_back(animation);
 
-    std::vector<ILayer*>* layers;
+    std::vector<ILayer*>* layers = new std::vector<ILayer*>();
     incomingAnimation.layers.funcs.decode = LayerDecoder::decode_layer;
-    incomingAnimation.layers.arg = layers;
+    incomingAnimation.layers.arg = &animation->layers;
 
     // Decode the incomingAnimation from the stream
     if (!pb_decode(stream, protocol_Animation_fields, &incomingAnimation)) {
       debug("\033[1;31mFailed to decode animation\033[0m\n", 0);
       return false;  // Return false if decoding fails
     }
+
 
     animation->direction = incomingAnimation.direction == protocol_Direction_FORWARD ? Direction::FORWARD : Direction::BACKWARD;
     animation->tickDuration = incomingAnimation.duration;
@@ -53,6 +54,7 @@ class SequenceDecoder {
       debug("\033[1;31mFailed to decode sequence\033[0m\n", 0);
       return false;  // Return empty sequence if decoding fails
     }
+
 
     sequence->brightness = incomingSequence.brightness;
     return true;

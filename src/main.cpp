@@ -78,7 +78,9 @@ void setup() {
     /** COLORS */
     /* new SingleColor(CRGB::Red), */
     /* new FadeColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 300), */
-    /* new RainbowColor(500, 0), */
+    /* new RainbowColor(500, 0),
+    new RainbowColor(500, 0),
+    new RainbowColor(500, 0), */
     /* new SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100), */
     /* new SectionsColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100), */
     /* new SwitchColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100), */
@@ -100,7 +102,7 @@ void setup() {
 
   scheduler.addProcess(sequenceScheduler, 20); // Update every 20ms
   scheduler.addProcess(animator, 20); // Update every 20ms
-  scheduler.addProcess(myProcess, 500); // Update every 500ms
+  //scheduler.addProcess(myProcess, 500); // Update every 500ms
 }
 
 void loop() {

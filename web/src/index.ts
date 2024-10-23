@@ -16,7 +16,7 @@ class Requester {
     console.log(sequence.serializeBinary());
   }
 }
-
+/* 
 const layer = new Layer({
   sawtoothMask: new SawtoothMask({
     wavelength: 200,
@@ -31,7 +31,7 @@ new Layer({
     wavegap: 50,
     duration: 200,
   }),
-});
+}); */
 
 const animation = new Animation({
   direction: Direction.FORWARD,
