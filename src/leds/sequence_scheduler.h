@@ -1,8 +1,11 @@
+#pragma once
+
 #include <vector>
 #include "layers/layer.h"
-
-#ifndef LAYER_SCHEDULER_H
-#define LAYER_SCHEDULER_H
+#include "../scheduler/scheduler.h"
+#include "debug.h"
+#include "animator.h"
+#include <Arduino.h>
 
 struct Animation {
   std::vector<ILayer*> layers;
@@ -15,52 +18,28 @@ struct Sequence {
   u8_t brightness;
 };
 
-class ISequenceScheduler {
+
+class SequenceScheduler : public Process {
+  u16_t currentAnimation = 0;
+  u16_t tick = 0;
+  std::vector<Animation*> animations;
+  Animator* animator;
+
+  /**
+   * @brief Reset the scheduler to the initial state
+   *
+   */
+  void reset();
+
   public:
-  virtual ~ISequenceScheduler() {}
+  SequenceScheduler(Animator* animator);
+  void add(std::vector<ILayer*> layers, u16_t tickDuration, Direction direction = Direction::FORWARD);
+  void add(Animation* animation);
+  void set(std::vector<Animation*> animations, u8_t brightness = 255);
+  void set(Sequence* sequence);
+  void setBrightness(u8_t brightness);
+  void clear();
 
-  /**
-   * @brief Clear the scheduler
-   *
-   */
-  virtual void clear() = 0;
-
-  /**
-   * @brief Add an animation to the scheduler
-   *
-   * @param layers The layers to add
-   * @param tickDuration The duration of the animation
-   * @param direction The direction of the animation
-   */
-  virtual void add(std::vector<ILayer*> layers, u16_t tickDuration, Direction direction) = 0;
-
-  /**
-   * @brief Add an animation to the scheduler
-   *
-   * @param animation The animation to add
-   */
-  virtual void add(Animation* animation) = 0;
-
-  /**
-   * @brief Set the Brightness of the LED strip
-   *
-   * @param brightness new brightness 0-255
-   */
-  virtual void setBrightness(u8_t brightness) = 0;
-
-  /**
-   * @brief Set sequence of animations in the scheduler
-   *
-   * @param animations The new sequence of animations
-   * @param brightness The brightness of the sequence (Optional)
-   */
-  virtual void set(std::vector<Animation*> animations, u8_t brightness = 255) = 0;
-
-  /**
-   * @brief Set sequence of animations in the scheduler
-   *
-   * @param sequence The new sequence of animations
-   */
-  virtual void set(Sequence* sequence) = 0;
-};
-#endif
+  String getName() override;
+  void update() override;
+};;

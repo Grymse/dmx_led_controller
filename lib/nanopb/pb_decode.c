@@ -1092,6 +1092,7 @@ static bool checkreturn pb_decode_inner(pb_istream_t *stream, const pb_msgdesc_t
          */
         if (PB_HTYPE(iter.type) == PB_HTYPE_REPEATED && iter.pSize == &iter.array_size)
         {
+            
             if (fixed_count_field != iter.index) {
                 /* If the new fixed count field does not match the previous one,
                  * check that the previous one is NULL or that it finished

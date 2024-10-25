@@ -2,29 +2,13 @@
 #include <Arduino.h>
 #include <FastLED.h>
 // Local
-#include "scheduler/scheduler.cpp"
-#include "scheduler/process.h"
-#include "leds/animator.cpp"
-#include "leds/sequence_scheduler.cpp"
+#include "scheduler/scheduler.h"
+#include "leds/animator.h"
+#include "leds/sequence_scheduler.h"
 #include "debug.h"
-#include "leds/sequence_decoder.cpp"
-// Masks
-/* #include <leds/layers/masks/blink.cpp>
-#include <leds/layers/masks/invert.cpp>
-#include <leds/layers/masks/pulse.cpp>
-#include <leds/layers/masks/pulse_sawtooth.cpp>
-#include <leds/layers/masks/sawtooth.cpp>
-#include <leds/layers/masks/sections.cpp>
-#include <leds/layers/masks/sections_wave.cpp>
-#include <leds/layers/masks/stars.cpp>
-#include <leds/layers/masks/wave.cpp>
-// Colors
-#include <leds/layers/colors/fade.cpp>
-#include <leds/layers/colors/rainbow.cpp>
-#include <leds/layers/colors/sections.cpp>
-#include <leds/layers/colors/sections_wave.cpp>
-#include <leds/layers/colors/single.cpp>
-#include <leds/layers/colors/switch.cpp> */
+#include "leds/sequence_decoder.h"
+#include "leds/layers/masks/masks.h"
+#include "leds/layers/colors/colors.h"
 
 #define CE_PIN 0
 #define CSN_PIN 10
@@ -33,13 +17,12 @@
 #define BUILTIN_LED 8
 CRGB* leds = new CRGB[NUM_LEDS];
 
-ProcessScheduler scheduler = ProcessScheduler();
+ProcessScheduler scheduler;
 Animator* animator;
 SequenceScheduler* sequenceScheduler;
-SequenceDecoder* sequenceDecoder;
 
 class MyProcess : public Process {
-  uint8_t buffer[51] = { 8, 200, 1, 18, 22, 26, 7, 18, 5, 8, 200, 1, 16, 50, 26, 11, 226, 2, 8, 8, 200, 1, 16, 50, 24, 200, 1, 18, 22, 26, 7, 18, 5, 8, 200, 1, 16, 50, 26, 11, 226, 2, 8, 8, 200, 1, 16, 50, 24, 200, 1 };
+  uint8_t buffer[22] = { 8, 200, 1, 18, 17, 26, 15, 242, 2, 12, 10, 8, 255, 1, 0, 255, 1, 0, 255, 1, 16, 100 };
 
   public:
   String getName() {
@@ -47,23 +30,33 @@ class MyProcess : public Process {
   }
 
   void update() {
-    // create pb_istream_t
     pb_istream_t stream = pb_istream_from_buffer(buffer, sizeof(buffer));
 
     Sequence* sequence = new Sequence();
-    sequenceDecoder->decode(&stream, sequence);
-    printf("Decoded sequence with %d animations\n", sequence->animations.size());
+    SequenceDecoder::decode(&stream, sequence);
+    /* printf("Decoded sequence with %d animations\n", sequence->animations.size());
     for (Animation* animation : sequence->animations) {
       printf("Animation with %d layers\n", animation->layers.size());
       for (ILayer* layer : animation->layers) {
         printf("Layer: %s\n", layer->getName().c_str());
+
+        if (layer->getName() == "Section Mask") {
+          SectionsMask* sectionsMask = (SectionsMask*)layer;
+          printf("Sections: %d\n", sectionsMask->sections.size());
+        }
+
+        if (layer->getName() == "Section Color") {
+          SectionsColor* sectionsColor = (SectionsColor*)layer;
+          printf("Colors: %d\n", sectionsColor->sections.size());
+        }
       }
-    }
+    } */
   }
 };
 
 void setup() {
   // put your setup code here, to run once:
+  scheduler = ProcessScheduler();
   Serial.begin(115200);
   pinMode(BUILTIN_LED, OUTPUT);
 
@@ -72,15 +65,11 @@ void setup() {
   animator = new Animator(leds, NUM_LEDS);
   sequenceScheduler = new SequenceScheduler(animator);
 
-  sequenceDecoder = new SequenceDecoder(sequenceScheduler);
-
   sequenceScheduler->add({
     /** COLORS */
     /* new SingleColor(CRGB::Red), */
     /* new FadeColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 300), */
-    /* new RainbowColor(500, 0),
-    new RainbowColor(500, 0),
-    new RainbowColor(500, 0), */
+    /* new RainbowColor(500, 10), */
     /* new SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100), */
     /* new SectionsColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100), */
     /* new SwitchColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100), */
@@ -102,7 +91,7 @@ void setup() {
 
   scheduler.addProcess(sequenceScheduler, 20); // Update every 20ms
   scheduler.addProcess(animator, 20); // Update every 20ms
-  //scheduler.addProcess(myProcess, 500); // Update every 500ms
+  scheduler.addProcess(myProcess, 20); // Update every 500ms
 }
 
 void loop() {

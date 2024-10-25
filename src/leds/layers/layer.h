@@ -1,8 +1,8 @@
+#pragma once
+
 #include <Arduino.h>
 #include <FastLED.h>
-#include "../utils/LEDstate.h"
-#ifndef LAYER_H
-#define LAYER_H
+#include "../state.h"
 
 class ILayer {
   public:
@@ -25,5 +25,16 @@ class ILayer {
   virtual CRGB apply(CRGB color, LEDState* state) = 0;
 };
 
-#endif
 
+class DynamicLayer : public ILayer {
+  private:
+  ILayer* currentLayer;
+
+  public:
+  DynamicLayer(ILayer* initialLayer = nullptr);
+
+  String getName() override;
+  void setLayer(ILayer* newLayer);
+  void removeLayer();
+  CRGB apply(CRGB color, LEDState* state) override;
+};

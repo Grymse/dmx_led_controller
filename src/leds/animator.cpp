@@ -1,106 +1,97 @@
 #include <Arduino.h>
 #include <FastLED.h>
 #include <vector>
-#include "layers/layer.h"
-#include "utils/LEDstate.h"
-#include "../scheduler/process.h"
 #include "animator.h"
+#include "layers/layer.h"
+#include "../scheduler/scheduler.h"
 
 
-class Animator : public Process, public IAnimator {
-  CRGB* leds;
-  std::vector<ILayer*> layers;
-  LEDState* state;
-  u8_t brightness = 255;
-
-  /**
-   * @brief Reset the tick to 0 or 4320000 depending on the direction
-   *
-   */
-  void resetTick() {
-    if (state->direction == Direction::FORWARD) {
-      state->tick = 0;
-    }
-    else {
-      state->tick = ANIMATION_DURATION_MAX;
-    }
+/**
+ * @brief Reset the tick to 0 or 4320000 depending on the direction
+ *
+ */
+void Animator::resetTick() {
+  if (state->direction == Direction::FORWARD) {
+    state->tick = 0;
   }
-
-  public:
-  /**
-   * @brief Construct a new Animator object
-   *
-   * @param leds The LED strip to control
-   * @param size The size of the LED strip
-   */
-  Animator(CRGB* leds, size_t size) {
-    state = new LEDState{ 0, 0, size, Direction::FORWARD };
-    this->leds = leds;
-    clear();
+  else {
+    state->tick = ANIMATION_DURATION_MAX;
   }
+}
 
-  String getName() override {
-    return "Animator";
-  }
+/**
+ * @brief Construct a new Animator object
+ *
+ * @param leds The LED strip to control
+ * @param size The size of the LED strip
+ */
+Animator::Animator(CRGB* leds, size_t size) {
+  state = new LEDState{ 0, 0, size, Direction::FORWARD };
+  this->leds = leds;
+  clear();
+}
 
-  /**
-   * @brief Clear the layers
-   */
-  void clear() override {
-    this->layers = {};
-  }
+String Animator::getName() {
+  return "Animator";
+}
 
-  /**
-   * @brief Set master brightness of LEDs
-   *
-   * @param brightness The brightness of the animation
-   */
-  virtual void setBrightness(u8_t brightness) override {
-    this->brightness = brightness;
-  }
+/**
+ * @brief Clear the layers
+ */
+void Animator::clear() {
+  this->layers = {};
+}
 
-  /**
-   * @brief Set the direction of the animation
-   *
-   * @param direction The direction of the animation
-   */
-  void setDirection(Direction direction) override {
-    if (state->direction == direction) return;
+/**
+ * @brief Set master brightness of LEDs
+ *
+ * @param brightness The brightness of the animation
+ */
+void Animator::setBrightness(u8_t brightness) {
+  this->brightness = brightness;
+}
 
-    state->direction = direction;
-    resetTick();
-  }
+/**
+ * @brief Set the direction of the animation
+ *
+ * @param direction The direction of the animation
+ */
+void Animator::setDirection(Direction direction) {
+  if (state->direction == direction) return;
 
-  /**
-   * @brief Set the layers to be used in the animation
-   *
-   * @param layers The layers to use
-   */
-  void setLayers(std::vector<ILayer*> layers) override {
-    this->layers = layers;
-    resetTick();
-  }
+  state->direction = direction;
+  resetTick();
+}
 
-  /**
-   * @brief A method to update the LED strip with the current layers
-   * It should be called every 20ms
-   */
-  void update() override {
-    for (u16_t i = 0; i < state->length; i++) {
-      state->index = i;
+/**
+ * @brief Set the layers to be used in the animation
+ *
+ * @param layers The layers to use
+ */
+void Animator::setLayers(std::vector<ILayer*> layers) {
+  this->layers = layers;
+  resetTick();
+}
 
-      if (layers.size() == 0) {
-        leds[i] = CRGB::Black;
-        continue;
-      }
+/**
+ * @brief A method to update the LED strip with the current layers
+ * It should be called every 20ms
+ */
+void Animator::update() {
+  for (u16_t i = 0; i < state->length; i++) {
+    state->index = i;
 
-      for (ILayer* layer : layers) {
-        leds[i] = layer->apply(leds[i], state);
-      }
+    if (layers.size() == 0) {
+      leds[i] = CRGB::Black;
+      continue;
     }
 
-    // Tick should not exceed max
-    state->tick = (state->tick + state->direction) % ANIMATION_DURATION_MAX;
-    FastLED.show(brightness);
+    for (ILayer* layer : layers) {
+      leds[i] = layer->apply(leds[i], state);
+    }
   }
-};
+
+  // Tick should not exceed max
+  state->tick = (state->tick + state->direction) % ANIMATION_DURATION_MAX;
+  FastLED.show(brightness);
+}

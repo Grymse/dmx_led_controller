@@ -9,6 +9,7 @@ const {
   SawtoothMask,
   SectionsMask,
   SingleColor,
+  SectionsColor,
 } = protocol;
 
 class Requester {
@@ -37,13 +38,9 @@ const animation = new Animation({
   direction: Direction.FORWARD,
   layers: [
     new Layer({
-      rainbowColor: new RainbowColor({ duration: 200, length: 50 }),
-    }),
-    new Layer({
-      sawtoothMask: new SawtoothMask({
-        wavelength: 200,
-        wavegap: 50,
-        duration: 200,
+      sectionsMask: new SectionsMask({
+        sections: [255, 0, 255, 0, 255],
+        duration: 100,
       }),
     }),
   ],
@@ -51,7 +48,7 @@ const animation = new Animation({
 
 const layerRequest = Sequence.fromObject({
   brightness: 200,
-  animations: [animation, animation],
+  animations: [animation],
 });
 
 const binary = layerRequest.serializeBinary();
