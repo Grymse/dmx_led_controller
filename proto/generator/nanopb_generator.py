@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 
 '''Generate header file for nanopb from a ProtoBuf FileDescriptorSet.'''
-nanopb_version = "nanopb-0.4.9"
+nanopb_version = "nanopb-1.0.0-dev"
 
 import sys
 import re
@@ -34,8 +34,8 @@ try:
     import google.protobuf.text_format as text_format
     import google.protobuf.descriptor_pb2 as descriptor
     import google.protobuf.compiler.plugin_pb2 as plugin_pb2
-    import google.protobuf.reflection as reflection
     import google.protobuf.descriptor
+    import google.protobuf.message_factory as message_factory
 except:
     sys.stderr.write('''
          **********************************************************************
@@ -46,6 +46,15 @@ except:
          **********************************************************************
     ''' + '\n')
     raise
+
+# GetMessageClass() is used by modern python-protobuf (around 5.x onwards)
+# Retain compatibility with older python-protobuf versions.
+try:
+    import google.protobuf.message_factory as message_factory
+    GetMessageClass = message_factory.GetMessageClass
+except AttributeError:
+    import google.protobuf.reflection as reflection
+    GetMessageClass = reflection.MakeClass
 
 # Depending on how this script is run, we may or may not have PEP366 package name
 # available for relative imports.
@@ -136,6 +145,9 @@ class NamingStyle:
     def struct_name(self, name):
         return "_%s" % (name)
 
+    def union_name(self, name):
+        return "_%s" % (name)
+
     def type_name(self, name):
         return "%s" % (name)
 
@@ -159,6 +171,9 @@ class NamingStyleC(NamingStyle):
         return self.underscore(name)
 
     def struct_name(self, name):
+        return self.underscore(name)
+
+    def union_name(self, name):
         return self.underscore(name)
 
     def type_name(self, name):
@@ -194,27 +209,12 @@ class Globals:
     protoc_insertion_points = False
     naming_style = NamingStyle()
 
-# String types and file encoding for Python2 UTF-8 support
-if sys.version_info.major == 2:
-    import codecs
-    open = codecs.open
-    strtypes = (unicode, str)
-
-    def str(x):
-        try:
-            return strtypes[1](x)
-        except UnicodeEncodeError:
-            return strtypes[0](x)
-else:
-    strtypes = (str, )
-
-
 class Names:
     '''Keeps a set of nested names and formats them to C identifier.'''
     def __init__(self, parts = ()):
         if isinstance(parts, Names):
             parts = parts.parts
-        elif isinstance(parts, strtypes):
+        elif isinstance(parts, str):
             parts = (parts,)
         self.parts = tuple(parts)
 
@@ -228,7 +228,7 @@ class Names:
         return 'Names(%s)' % ','.join("'%s'" % x for x in self.parts)
 
     def __add__(self, other):
-        if isinstance(other, strtypes):
+        if isinstance(other, str):
             return Names(self.parts + (other,))
         elif isinstance(other, Names):
             return Names(self.parts + other.parts)
@@ -274,7 +274,7 @@ class EncodedSize:
             self.symbols = value.symbols
             self.declarations = value.declarations
             self.required_defines = value.required_defines
-        elif isinstance(value, strtypes + (Names,)):
+        elif isinstance(value, (str, Names)):
             self.symbols = [str(value)]
             self.value = 0
             self.declarations = []
@@ -288,7 +288,7 @@ class EncodedSize:
     def __add__(self, other):
         if isinstance(other, int):
             return EncodedSize(self.value + other, self.symbols, self.declarations, self.required_defines)
-        elif isinstance(other, strtypes + (Names,)):
+        elif isinstance(other, (str, Names)):
             return EncodedSize(self.value, self.symbols + [str(other)], self.declarations, self.required_defines + [str(other)])
         elif isinstance(other, EncodedSize):
             return EncodedSize(self.value + other.value, self.symbols + other.symbols,
@@ -535,11 +535,10 @@ class Enum(ProtoElement):
         result += '    switch (v) {\n'
 
         for ((enumname, _), strname) in zip(self.values, self.value_longnames):
-            # Strip off the leading type name from the string value.
-            strval = str(strname)[len(str(self.names)) + 1:]
+            # Just use the last part of the string value.
             result += '        case %s: return "%s";\n' % (
                 Globals.naming_style.enum_entry(enumname),
-                Globals.naming_style.enum_entry(strval))
+                Globals.naming_style.enum_entry(strname.parts[-1]))
 
         result += '    }\n'
         result += '    return "unknown";\n'
@@ -814,7 +813,7 @@ class Field(ProtoElement):
     def types(self):
         '''Return definitions for any special types this field might need.'''
         if self.pbtype == 'BYTES' and self.allocation == 'STATIC':
-            result = 'typedef PB_BYTES_ARRAY_T(%d) %s;\n' % (self.max_size, Globals.naming_style.var_name(self.ctype))
+            result = 'typedef PB_BYTES_ARRAY_T(%d) %s;\n' % (self.max_size, self.ctype)
         else:
             result = ''
         return result
@@ -887,6 +886,8 @@ class Field(ProtoElement):
                     inner_init += '.0f'
                 elif self.pbtype == 'FLOAT':
                     inner_init += 'f'
+            elif self.pbtype in ('ENUM', 'UENUM'):
+                inner_init = Globals.naming_style.enum_entry(self.default)
             else:
                 inner_init = str(self.default)
 
@@ -1171,7 +1172,7 @@ class ExtensionField(Field):
         result = "/* Definition for extension field %s */\n" % self.fullname
         result += str(self.msg)
         result += self.msg.fields_declaration(dependencies)
-        result += 'pb_byte_t %s_default[] = {0x00};\n' % self.msg.name
+        result += 'pb_byte_t %s_default[] = {0x00};\n' % Globals.naming_style.var_name(self.msg.name)
         result += self.msg.fields_definition(dependencies)
         result += 'const pb_extension_type_t %s = {\n' % Globals.naming_style.var_name(self.fullname)
         result += '    NULL,\n'
@@ -1221,7 +1222,10 @@ class OneOf(Field):
                 result += '    pb_callback_t cb_' + Globals.naming_style.var_name(self.name) + ';\n'
 
             result += '    pb_size_t which_' + Globals.naming_style.var_name(self.name) + ";\n"
-            result += '    union {\n'
+            if self.anonymous:
+                result += '    union {\n'
+            else:
+                result += '    union ' + Globals.naming_style.union_name(self.struct_name + self.name) + ' {\n'
             for f in self.fields:
                 result += '    ' + str(f).replace('\n', '\n    ') + '\n'
             if self.anonymous:
@@ -1689,7 +1693,7 @@ class Message(ProtoElement):
         optional_only.name += str(id(self))
 
         desc = google.protobuf.descriptor.MakeDescriptor(optional_only)
-        msg = reflection.MakeClass(desc)()
+        msg = GetMessageClass(desc)()
 
         for field in optional_only.field:
             if field.type == FieldD.TYPE_STRING:
@@ -1851,6 +1855,11 @@ class MangleNames:
 
             self.name_mapping[str(names)] = new_name
             self.reverse_name_mapping[str(new_name)] = self.canonical_base + names
+
+            styled_name = Globals.naming_style.type_name(new_name)
+            if str(new_name) != str(self.canonical_base + names) and styled_name != str(new_name):
+                # If a custom styling doesn't match the canonical mangled name, which also doesn't match the mangled name, add a reverse mapping between them
+                self.reverse_name_mapping[styled_name] = new_name
 
         return self.name_mapping[str(names)]
 
@@ -2411,7 +2420,8 @@ def get_nanopb_suboptions(subdesc, options, name):
 
 import sys
 import os.path
-from optparse import OptionParser
+import importlib.util
+from optparse import OptionParser, OptionValueError
 
 optparser = OptionParser(
     usage = "Usage: nanopb_generator.py [options] file.pb ...",
@@ -2468,6 +2478,18 @@ optparser.add_option("--protoc-insertion-points", dest="protoc_insertion_points"
 optparser.add_option("-C", "--c-style", dest="c_style", action="store_true", default=False,
     help="Use C naming convention.")
 
+
+def parse_custom_style(option, opt_str, value, parser):
+    parts = value.rsplit(".", 1)
+    if len(parts) != 2 or not all(len(part) > 0 for part in parts):
+        raise OptionValueError("Invalid value for %s, must be in the form %s: %r" % (opt_str, option.metavar, value))
+    setattr(parser.values, option.dest, parts)
+
+
+optparser.add_option("--custom-style", dest="custom_style", type=str, metavar="MODULE.CLASS", action="callback", callback=parse_custom_style,
+                     help="Use a custom naming convention from a module/class that defines the methods from the NamingStyle class to be overridden. When paired with the -C/--c-style option, the NamingStyleC class is the fallback, otherwise it's the NamingStyle class.")
+
+
 def process_cmdline(args, is_plugin):
     '''Process command line options. Returns list of options, filenames.'''
 
@@ -2495,7 +2517,25 @@ def process_cmdline(args, is_plugin):
     options.libformat = include_formats.get(options.libformat, options.libformat)
     options.genformat = include_formats.get(options.genformat, options.genformat)
 
-    if options.c_style:
+    if options.custom_style:
+        module_path, class_name = options.custom_style
+        module_name = os.path.splitext(os.path.basename(module_path))[0]
+        if not module_path.endswith(".py"):
+            module_path = module_path + ".py"
+
+        spec = importlib.util.spec_from_file_location(module_name, module_path)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
+
+        custom_class = getattr(module, class_name)
+
+        class InheritNamingStyle(custom_class, NamingStyleC if options.c_style else NamingStyle):
+            """Class to inherit from the custom class and then NamingStyle or NamingCStyle, in case it doesn't implement all methods."""
+            pass
+
+        Globals.naming_style = InheritNamingStyle()
+    elif options.c_style:
         Globals.naming_style = NamingStyleC()
 
     Globals.verbose_options = options.verbose

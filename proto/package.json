@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "generate3": "protoc -I=./ --ts_out=../web/src/lib/protobuf protocol.proto && python3 ./nanopb-generator ./protocol.proto && mv ./protocol.pb.c ../lib/nanopb/ && mv ./protocol.pb.h ../lib/nanopb/",
-    "generate": "protoc -I=./ --ts_out=../web/src/lib/protobuf protocol.proto && python ./nanopb-generator ./protocol.proto && mv ./protocol.pb.c ../lib/nanopb/ && mv ./protocol.pb.h ../lib/nanopb/"
+    "generate3": "protoc -I=./ --ts_out=../web/src/lib/protobuf protocol.proto && python3 ./generator/nanopb_generator.py ./protocol.proto && mv ./protocol.pb.c ../lib/nanopb/ && mv ./protocol.pb.h ../lib/nanopb/",
+    "generate": "protoc -I=./ --ts_out=../web/src/lib/protobuf protocol.proto && python ./generator/nanopb_generator.py ./protocol.proto && mv ./protocol.pb.c ../lib/nanopb/ && mv ./protocol.pb.h ../lib/nanopb/"
   }
 }
