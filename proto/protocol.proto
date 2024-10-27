@@ -1,6 +1,6 @@
 syntax = "proto3";
 package protocol;
-import "generator/proto/nanopb.proto";
+// import "generator/proto/nanopb.proto";
 
 enum Direction {
   FORWARD = 0;
@@ -20,7 +20,7 @@ message Sequence {
 }
 
 message Layer {
-  option (nanopb_msgopt).submsg_callback = true;
+  // option (nanopb_msgopt).submsg_callback = true;
   oneof payload {
     FadeColor fadeColor = 1;
     RainbowColor rainbowColor = 2;

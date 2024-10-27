@@ -67,9 +67,9 @@ void setup() {
 
   sequenceScheduler->add({
     /** COLORS */
-    /* new SingleColor(CRGB::Red), */
+    /* new SingleColor(CRGB::Green), */
+    /* new RainbowColor(500, 0), */
     /* new FadeColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 300), */
-    /* new RainbowColor(500, 10), */
     /* new SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100), */
     /* new SectionsColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100), */
     /* new SwitchColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100), */
@@ -79,10 +79,19 @@ void setup() {
     /* new InvertMask(), */
     /* new PulseSawtoothMask(10, 50), */
     /* new PulseMask(10, 50), */
-    /* new SawtoothMask(100, 100, 50), */
+    /* new SawtoothMask(100, 0, 300), */
     /* new SectionsWaveMask({255, 0}, 150), */
     /* new SectionsMask({255, 0, 0, 255, 0}, 50), */
     /* new StarsMask(200, 10, 3), */
+
+    // Gang
+    new SingleColor(CRGB::Green),
+    new StarsMask(200, 5, 1),
+
+    // Indgang
+    /* new RainbowColor(500, 0),
+    new SawtoothMask(100, 0, 300),
+    new StarsMask(250, 5, 1), */
     /* new WaveMask(100, 100, 50), */
     }
   , 2000);
@@ -91,7 +100,7 @@ void setup() {
 
   scheduler.addProcess(sequenceScheduler, 20); // Update every 20ms
   scheduler.addProcess(animator, 20); // Update every 20ms
-  scheduler.addProcess(myProcess, 20); // Update every 500ms
+  // scheduler.addProcess(myProcess, 20); // Update every 500ms
 }
 
 void loop() {

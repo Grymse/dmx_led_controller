@@ -3,7 +3,6 @@
  * compiler version: 5.28.2
  * source: protocol.proto
  * git: https://github.com/thesayyn/protoc-gen-ts */
-import * as dependency_1 from "./generator/proto/nanopb";
 import * as pb_1 from "google-protobuf";
 export namespace protocol {
     export enum Direction {
