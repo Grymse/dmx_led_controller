@@ -1,8 +1,9 @@
+#pragma once
+
 #include <Arduino.h>
 #include <FastLED.h>
-#include "../utils/LEDstate.h"
-#ifndef LAYER_H
-#define LAYER_H
+#include "protocol.pb.h"
+#include "../state.h"
 
 class ILayer {
   public:
@@ -16,6 +17,20 @@ class ILayer {
   virtual String getName() = 0;
 
   /**
+   * @brief To String
+   * 
+   * @return String
+   */
+  virtual String toString() = 0;
+
+  /**
+   * @brief Encode the layer into a protocol buffer.
+   *
+   * @return protocol_Layer
+   */
+  virtual protocol_Layer toEncodable() = 0;
+
+  /**
    * @brief Apply the layer to the given color.
    *
    * @param color current color of the LED
@@ -25,5 +40,16 @@ class ILayer {
   virtual CRGB apply(CRGB color, LEDState* state) = 0;
 };
 
-#endif
 
+class DynamicLayer : public ILayer {
+  private:
+  ILayer* currentLayer;
+
+  public:
+  DynamicLayer(ILayer* initialLayer = nullptr);
+
+  String getName() override;
+  void setLayer(ILayer* newLayer);
+  void removeLayer();
+  CRGB apply(CRGB color, LEDState* state) override;
+};

@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "google-protobuf": "^3.21.4",
+    "protoc-gen-ts": "^0.8.7"
+  },
+  "name": "proto",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

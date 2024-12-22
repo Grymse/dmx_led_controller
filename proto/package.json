@@ -1,18 +1,6 @@
 {
   "scripts": {
-    "generate-proto": "protoc -I=./src --ts_out=dist protocol.proto && python3 ./nanopb/generator/nanopb_generator.py ./src/protocol.proto && mv ./src/protocol.pb.c ../lib/nanopb/ && mv ./src/protocol.pb.h ../lib/nanopb/"
-  },
-  "dependencies": {
-    "google-protobuf": "^3.21.4",
-    "protoc-gen-ts": "^0.8.7"
-  },
-  "name": "proto",
-  "module": "index.ts",
-  "type": "module",
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
+    "generate3": "protoc -I=./ --ts_out=../web/src/lib/protobuf protocol.proto && python3 ./generator/nanopb_generator.py ./protocol.proto && mv ./protocol.pb.c ../lib/nanopb/ && mv ./protocol.pb.h ../lib/nanopb/",
+    "generate": "protoc -I=./ --ts_out=../web/src/lib/protobuf protocol.proto && python ./generator/nanopb_generator.py ./protocol.proto && mv ./protocol.pb.c ../lib/nanopb/ && mv ./protocol.pb.h ../lib/nanopb/"
   }
 }

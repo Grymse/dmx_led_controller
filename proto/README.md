@@ -1,18 +1,17 @@
-# proto
+# Protobuf
 
-To install dependencies:
+Generates C++ and TypeScript code from protocol.proto
 
-[Bun](https://bun.sh)
-[Protobuf](https://grpc.io/docs/protoc-installation/) might not need to be installed
+# How to install
 
-```bash
-bun install
-```
+Install [Protobuf](https://grpc.io/docs/protoc-installation/)
+Install [Python](https://www.python.org/downloads/)
+Add libraries `pip3 install --upgrade protobuf grpcio-tools` or `pip install --upgrade protobuf grpcio-tools` depending on whether you are using python3 or python
 
-To run:
+# How to run
 
-```bash
-bun run index.ts
-```
+For pip:
+`yarn run generate` or `npm run generate`
 
-This project was created using `bun init` in bun v1.1.31. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+For pip3:
+`yarn run generate3` or `npm run generate3`

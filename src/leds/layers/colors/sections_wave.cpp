@@ -1,41 +1,54 @@
 #include <Arduino.h>
 #include <FastLED.h>
-#include "../layer.h"
 #include <vector>
+#include "colors.h"
+#include "../utils.h"
 
-class SectionsWaveColor : public ILayer {
-  u16_t duration;
-  std::vector<CRGB> sections;
+String SectionsWaveColor::getName() {
+  return "Sections Wave Color";
+}
 
-  public:
-  String getName() {
-    return "Section Color";
-  }
+/**
+ * @brief Construct a new Sections Mask object
+ *
+ * @param sections define the sections and their color
+ * @param duration The duration of the wave cycle.
+ *
+ * @example SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue}, 50)
+ */
+SectionsWaveColor::SectionsWaveColor(std::vector<CRGB> colors, u16_t duration) {
+  this->duration = duration;
+  this->colors = colors;
+}
 
-  /**
-   * @brief Construct a new Sections Mask object
-   *
-   * @param sections define the sections and their color
-   * @param duration The duration of the wave cycle.
-   *
-   * @example SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue}, 50)
-   */
-  SectionsWaveColor(std::vector<CRGB> sections, u16_t duration) {
-    this->duration = duration;
-    this->sections = sections;
-  }
+String SectionsWaveColor::toString() {
+  String str = "SectionsWaveColor: d: " + String(duration) + ", c: ";
+  str += LayerUtils::colors_to_string(colors);
+  
+  return str;
+}
 
-  /**
-   * @brief Overwrites color to the sectionized colors in wave-form based on the current state (tick and index of led)
-   * @param color The original color of the LED.
-   * @param state The current state of the LED, including the tick count.
-   * @return The modified color after applying the blink pattern.
-   */
-  CRGB apply(CRGB color, LEDState* state) {
-    float sectionLength = (float)state->length / sections.size();
-    u16_t tick = (state->tick % duration) * state->length / duration;
-    u16_t t = (tick + state->index) / sectionLength;
+/**
+ * @brief Overwrites color to the sectionized colors in wave-form based on the current state (tick and index of led)
+ * @param color The original color of the LED.
+ * @param state The current state of the LED, including the tick count.
+ * @return The modified color after applying the blink pattern.
+ */
+CRGB SectionsWaveColor::apply(CRGB color, LEDState* state) {
+  float sectionLength = (float)state->length / colors.size();
+  u16_t tick = (state->tick % duration) * state->length / duration;
+  u16_t t = (tick + state->index) / sectionLength;
 
-    return sections[t % sections.size()];
-  }
-};
+  return colors[t % colors.size()];
+}
+
+
+protocol_Layer SectionsWaveColor::toEncodable() {
+  return protocol_Layer {
+    .type = protocol_LayerType_SectionsWaveColor,
+    .duration = duration,
+    .colors = {
+      .arg = &colors
+    }
+  };
+}
