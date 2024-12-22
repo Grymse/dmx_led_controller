@@ -28,3 +28,13 @@ CRGB BlinkMask::apply(CRGB color, LEDState* state) {
   u16_t patternIndex = (state->tick % duration) / ((float)duration / pattern.size());
   return color.scale8(pattern[patternIndex % pattern.size()]);
 }
+
+protocol_Layer BlinkMask::toEncodable() {
+  return protocol_Layer {
+    .type = protocol_LayerType_BlinkMask,
+    .duration = duration,
+    .sections = {
+      .arg = &pattern
+    }
+  };
+}

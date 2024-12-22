@@ -4,7 +4,7 @@
 #include "colors.h"
 
 String SectionsWaveColor::getName() {
-  return "Section Color";
+  return "Sections Wave Color";
 }
 
 /**
@@ -32,4 +32,15 @@ CRGB SectionsWaveColor::apply(CRGB color, LEDState* state) {
   u16_t t = (tick + state->index) / sectionLength;
 
   return sections[t % sections.size()];
+}
+
+
+protocol_Layer SectionsWaveColor::toEncodable() {
+  return protocol_Layer {
+    .type = protocol_LayerType_SectionsWaveColor,
+    .duration = duration,
+    .sections = {
+      .arg = &sections
+    }
+  };
 }

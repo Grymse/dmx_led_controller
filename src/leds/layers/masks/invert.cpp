@@ -15,3 +15,9 @@ String InvertMask::getName() {
 CRGB InvertMask::apply(CRGB color, LEDState* state) {
   return CRGB::White - color;
 }
+
+protocol_Layer InvertMask::toEncodable() {
+  return protocol_Layer {
+    .type = protocol_LayerType_InvertMask
+  };
+}

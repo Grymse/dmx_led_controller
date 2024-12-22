@@ -9,6 +9,297 @@ export namespace protocol {
         FORWARD = 0,
         BACKWARD = 1
     }
+    export enum LayerType {
+        SingleColor = 0,
+        RainbowColor = 1,
+        SectionsWaveColor = 2,
+        SectionsColor = 3,
+        FadeColor = 4,
+        SwitchColor = 5,
+        BlinkMask = 50,
+        InvertMask = 51,
+        PulseSawtoothMask = 52,
+        PulseMask = 53,
+        SawtoothMask = 54,
+        SectionsWaveMask = 55,
+        SectionsMask = 56,
+        StarsMask = 57,
+        WaveMask = 58
+    }
+    export class Layer extends pb_1.Message {
+        #one_of_decls: number[][] = [];
+        constructor(data?: any[] | {
+            type?: LayerType;
+            duration?: number;
+            length?: number;
+            color?: number;
+            gap?: number;
+            frequency?: number;
+            speed?: number;
+            colors?: number[];
+            sections?: Uint8Array;
+            text?: string;
+        }) {
+            super();
+            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [8], this.#one_of_decls);
+            if (!Array.isArray(data) && typeof data == "object") {
+                if ("type" in data && data.type != undefined) {
+                    this.type = data.type;
+                }
+                if ("duration" in data && data.duration != undefined) {
+                    this.duration = data.duration;
+                }
+                if ("length" in data && data.length != undefined) {
+                    this.length = data.length;
+                }
+                if ("color" in data && data.color != undefined) {
+                    this.color = data.color;
+                }
+                if ("gap" in data && data.gap != undefined) {
+                    this.gap = data.gap;
+                }
+                if ("frequency" in data && data.frequency != undefined) {
+                    this.frequency = data.frequency;
+                }
+                if ("speed" in data && data.speed != undefined) {
+                    this.speed = data.speed;
+                }
+                if ("colors" in data && data.colors != undefined) {
+                    this.colors = data.colors;
+                }
+                if ("sections" in data && data.sections != undefined) {
+                    this.sections = data.sections;
+                }
+                if ("text" in data && data.text != undefined) {
+                    this.text = data.text;
+                }
+            }
+        }
+        get type() {
+            return pb_1.Message.getFieldWithDefault(this, 1, LayerType.SingleColor) as LayerType;
+        }
+        set type(value: LayerType) {
+            pb_1.Message.setField(this, 1, value);
+        }
+        get duration() {
+            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
+        }
+        set duration(value: number) {
+            pb_1.Message.setField(this, 2, value);
+        }
+        get length() {
+            return pb_1.Message.getFieldWithDefault(this, 3, 0) as number;
+        }
+        set length(value: number) {
+            pb_1.Message.setField(this, 3, value);
+        }
+        get color() {
+            return pb_1.Message.getFieldWithDefault(this, 4, 0) as number;
+        }
+        set color(value: number) {
+            pb_1.Message.setField(this, 4, value);
+        }
+        get gap() {
+            return pb_1.Message.getFieldWithDefault(this, 5, 0) as number;
+        }
+        set gap(value: number) {
+            pb_1.Message.setField(this, 5, value);
+        }
+        get frequency() {
+            return pb_1.Message.getFieldWithDefault(this, 6, 0) as number;
+        }
+        set frequency(value: number) {
+            pb_1.Message.setField(this, 6, value);
+        }
+        get speed() {
+            return pb_1.Message.getFieldWithDefault(this, 7, 0) as number;
+        }
+        set speed(value: number) {
+            pb_1.Message.setField(this, 7, value);
+        }
+        get colors() {
+            return pb_1.Message.getFieldWithDefault(this, 8, []) as number[];
+        }
+        set colors(value: number[]) {
+            pb_1.Message.setField(this, 8, value);
+        }
+        get sections() {
+            return pb_1.Message.getFieldWithDefault(this, 9, new Uint8Array(0)) as Uint8Array;
+        }
+        set sections(value: Uint8Array) {
+            pb_1.Message.setField(this, 9, value);
+        }
+        get text() {
+            return pb_1.Message.getFieldWithDefault(this, 10, "") as string;
+        }
+        set text(value: string) {
+            pb_1.Message.setField(this, 10, value);
+        }
+        static fromObject(data: {
+            type?: LayerType;
+            duration?: number;
+            length?: number;
+            color?: number;
+            gap?: number;
+            frequency?: number;
+            speed?: number;
+            colors?: number[];
+            sections?: Uint8Array;
+            text?: string;
+        }): Layer {
+            const message = new Layer({});
+            if (data.type != null) {
+                message.type = data.type;
+            }
+            if (data.duration != null) {
+                message.duration = data.duration;
+            }
+            if (data.length != null) {
+                message.length = data.length;
+            }
+            if (data.color != null) {
+                message.color = data.color;
+            }
+            if (data.gap != null) {
+                message.gap = data.gap;
+            }
+            if (data.frequency != null) {
+                message.frequency = data.frequency;
+            }
+            if (data.speed != null) {
+                message.speed = data.speed;
+            }
+            if (data.colors != null) {
+                message.colors = data.colors;
+            }
+            if (data.sections != null) {
+                message.sections = data.sections;
+            }
+            if (data.text != null) {
+                message.text = data.text;
+            }
+            return message;
+        }
+        toObject() {
+            const data: {
+                type?: LayerType;
+                duration?: number;
+                length?: number;
+                color?: number;
+                gap?: number;
+                frequency?: number;
+                speed?: number;
+                colors?: number[];
+                sections?: Uint8Array;
+                text?: string;
+            } = {};
+            if (this.type != null) {
+                data.type = this.type;
+            }
+            if (this.duration != null) {
+                data.duration = this.duration;
+            }
+            if (this.length != null) {
+                data.length = this.length;
+            }
+            if (this.color != null) {
+                data.color = this.color;
+            }
+            if (this.gap != null) {
+                data.gap = this.gap;
+            }
+            if (this.frequency != null) {
+                data.frequency = this.frequency;
+            }
+            if (this.speed != null) {
+                data.speed = this.speed;
+            }
+            if (this.colors != null) {
+                data.colors = this.colors;
+            }
+            if (this.sections != null) {
+                data.sections = this.sections;
+            }
+            if (this.text != null) {
+                data.text = this.text;
+            }
+            return data;
+        }
+        serialize(): Uint8Array;
+        serialize(w: pb_1.BinaryWriter): void;
+        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+            const writer = w || new pb_1.BinaryWriter();
+            if (this.type != LayerType.SingleColor)
+                writer.writeEnum(1, this.type);
+            if (this.duration != 0)
+                writer.writeUint32(2, this.duration);
+            if (this.length != 0)
+                writer.writeUint32(3, this.length);
+            if (this.color != 0)
+                writer.writeUint32(4, this.color);
+            if (this.gap != 0)
+                writer.writeUint32(5, this.gap);
+            if (this.frequency != 0)
+                writer.writeUint32(6, this.frequency);
+            if (this.speed != 0)
+                writer.writeUint32(7, this.speed);
+            if (this.colors.length)
+                writer.writePackedUint32(8, this.colors);
+            if (this.sections.length)
+                writer.writeBytes(9, this.sections);
+            if (this.text.length)
+                writer.writeString(10, this.text);
+            if (!w)
+                return writer.getResultBuffer();
+        }
+        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Layer {
+            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new Layer();
+            while (reader.nextField()) {
+                if (reader.isEndGroup())
+                    break;
+                switch (reader.getFieldNumber()) {
+                    case 1:
+                        message.type = reader.readEnum();
+                        break;
+                    case 2:
+                        message.duration = reader.readUint32();
+                        break;
+                    case 3:
+                        message.length = reader.readUint32();
+                        break;
+                    case 4:
+                        message.color = reader.readUint32();
+                        break;
+                    case 5:
+                        message.gap = reader.readUint32();
+                        break;
+                    case 6:
+                        message.frequency = reader.readUint32();
+                        break;
+                    case 7:
+                        message.speed = reader.readUint32();
+                        break;
+                    case 8:
+                        message.colors = reader.readPackedUint32();
+                        break;
+                    case 9:
+                        message.sections = reader.readBytes();
+                        break;
+                    case 10:
+                        message.text = reader.readString();
+                        break;
+                    default: reader.skipField();
+                }
+            }
+            return message;
+        }
+        serializeBinary(): Uint8Array {
+            return this.serialize();
+        }
+        static deserializeBinary(bytes: Uint8Array): Layer {
+            return Layer.deserialize(bytes);
+        }
+    }
     export class Animation extends pb_1.Message {
         #one_of_decls: number[][] = [];
         constructor(data?: any[] | {
@@ -210,2033 +501,6 @@ export namespace protocol {
         }
         static deserializeBinary(bytes: Uint8Array): Sequence {
             return Sequence.deserialize(bytes);
-        }
-    }
-    export class Layer extends pb_1.Message {
-        #one_of_decls: number[][] = [[1, 2, 3, 4, 5, 6, 40, 41, 42, 43, 44, 45, 46, 47, 48]];
-        constructor(data?: any[] | ({} & (({
-            fadeColor?: FadeColor;
-            rainbowColor?: never;
-            sectionsWaveColor?: never;
-            sectionsColor?: never;
-            singleColor?: never;
-            switchColor?: never;
-            blinkMask?: never;
-            invertMask?: never;
-            pulseSawtoothMask?: never;
-            pulseMask?: never;
-            sawtoothMask?: never;
-            sectionsWaveMask?: never;
-            sectionsMask?: never;
-            starsMask?: never;
-            waveMask?: never;
-        } | {
-            fadeColor?: never;
-            rainbowColor?: RainbowColor;
-            sectionsWaveColor?: never;
-            sectionsColor?: never;
-            singleColor?: never;
-            switchColor?: never;
-            blinkMask?: never;
-            invertMask?: never;
-            pulseSawtoothMask?: never;
-            pulseMask?: never;
-            sawtoothMask?: never;
-            sectionsWaveMask?: never;
-            sectionsMask?: never;
-            starsMask?: never;
-            waveMask?: never;
-        } | {
-            fadeColor?: never;
-            rainbowColor?: never;
-            sectionsWaveColor?: SectionsWaveColor;
-            sectionsColor?: never;
-            singleColor?: never;
-            switchColor?: never;
-            blinkMask?: never;
-            invertMask?: never;
-            pulseSawtoothMask?: never;
-            pulseMask?: never;
-            sawtoothMask?: never;
-            sectionsWaveMask?: never;
-            sectionsMask?: never;
-            starsMask?: never;
-            waveMask?: never;
-        } | {
-            fadeColor?: never;
-            rainbowColor?: never;
-            sectionsWaveColor?: never;
-            sectionsColor?: SectionsColor;
-            singleColor?: never;
-            switchColor?: never;
-            blinkMask?: never;
-            invertMask?: never;
-            pulseSawtoothMask?: never;
-            pulseMask?: never;
-            sawtoothMask?: never;
-            sectionsWaveMask?: never;
-            sectionsMask?: never;
-            starsMask?: never;
-            waveMask?: never;
-        } | {
-            fadeColor?: never;
-            rainbowColor?: never;
-            sectionsWaveColor?: never;
-            sectionsColor?: never;
-            singleColor?: SingleColor;
-            switchColor?: never;
-            blinkMask?: never;
-            invertMask?: never;
-            pulseSawtoothMask?: never;
-            pulseMask?: never;
-            sawtoothMask?: never;
-            sectionsWaveMask?: never;
-            sectionsMask?: never;
-            starsMask?: never;
-            waveMask?: never;
-        } | {
-            fadeColor?: never;
-            rainbowColor?: never;
-            sectionsWaveColor?: never;
-            sectionsColor?: never;
-            singleColor?: never;
-            switchColor?: SwitchColor;
-            blinkMask?: never;
-            invertMask?: never;
-            pulseSawtoothMask?: never;
-            pulseMask?: never;
-            sawtoothMask?: never;
-            sectionsWaveMask?: never;
-            sectionsMask?: never;
-            starsMask?: never;
-            waveMask?: never;
-        } | {
-            fadeColor?: never;
-            rainbowColor?: never;
-            sectionsWaveColor?: never;
-            sectionsColor?: never;
-            singleColor?: never;
-            switchColor?: never;
-            blinkMask?: BlinkMask;
-            invertMask?: never;
-            pulseSawtoothMask?: never;
-            pulseMask?: never;
-            sawtoothMask?: never;
-            sectionsWaveMask?: never;
-            sectionsMask?: never;
-            starsMask?: never;
-            waveMask?: never;
-        } | {
-            fadeColor?: never;
-            rainbowColor?: never;
-            sectionsWaveColor?: never;
-            sectionsColor?: never;
-            singleColor?: never;
-            switchColor?: never;
-            blinkMask?: never;
-            invertMask?: InvertMask;
-            pulseSawtoothMask?: never;
-            pulseMask?: never;
-            sawtoothMask?: never;
-            sectionsWaveMask?: never;
-            sectionsMask?: never;
-            starsMask?: never;
-            waveMask?: never;
-        } | {
-            fadeColor?: never;
-            rainbowColor?: never;
-            sectionsWaveColor?: never;
-            sectionsColor?: never;
-            singleColor?: never;
-            switchColor?: never;
-            blinkMask?: never;
-            invertMask?: never;
-            pulseSawtoothMask?: PulseSawtoothMask;
-            pulseMask?: never;
-            sawtoothMask?: never;
-            sectionsWaveMask?: never;
-            sectionsMask?: never;
-            starsMask?: never;
-            waveMask?: never;
-        } | {
-            fadeColor?: never;
-            rainbowColor?: never;
-            sectionsWaveColor?: never;
-            sectionsColor?: never;
-            singleColor?: never;
-            switchColor?: never;
-            blinkMask?: never;
-            invertMask?: never;
-            pulseSawtoothMask?: never;
-            pulseMask?: PulseMask;
-            sawtoothMask?: never;
-            sectionsWaveMask?: never;
-            sectionsMask?: never;
-            starsMask?: never;
-            waveMask?: never;
-        } | {
-            fadeColor?: never;
-            rainbowColor?: never;
-            sectionsWaveColor?: never;
-            sectionsColor?: never;
-            singleColor?: never;
-            switchColor?: never;
-            blinkMask?: never;
-            invertMask?: never;
-            pulseSawtoothMask?: never;
-            pulseMask?: never;
-            sawtoothMask?: SawtoothMask;
-            sectionsWaveMask?: never;
-            sectionsMask?: never;
-            starsMask?: never;
-            waveMask?: never;
-        } | {
-            fadeColor?: never;
-            rainbowColor?: never;
-            sectionsWaveColor?: never;
-            sectionsColor?: never;
-            singleColor?: never;
-            switchColor?: never;
-            blinkMask?: never;
-            invertMask?: never;
-            pulseSawtoothMask?: never;
-            pulseMask?: never;
-            sawtoothMask?: never;
-            sectionsWaveMask?: SectionsWaveMask;
-            sectionsMask?: never;
-            starsMask?: never;
-            waveMask?: never;
-        } | {
-            fadeColor?: never;
-            rainbowColor?: never;
-            sectionsWaveColor?: never;
-            sectionsColor?: never;
-            singleColor?: never;
-            switchColor?: never;
-            blinkMask?: never;
-            invertMask?: never;
-            pulseSawtoothMask?: never;
-            pulseMask?: never;
-            sawtoothMask?: never;
-            sectionsWaveMask?: never;
-            sectionsMask?: SectionsMask;
-            starsMask?: never;
-            waveMask?: never;
-        } | {
-            fadeColor?: never;
-            rainbowColor?: never;
-            sectionsWaveColor?: never;
-            sectionsColor?: never;
-            singleColor?: never;
-            switchColor?: never;
-            blinkMask?: never;
-            invertMask?: never;
-            pulseSawtoothMask?: never;
-            pulseMask?: never;
-            sawtoothMask?: never;
-            sectionsWaveMask?: never;
-            sectionsMask?: never;
-            starsMask?: StarsMask;
-            waveMask?: never;
-        } | {
-            fadeColor?: never;
-            rainbowColor?: never;
-            sectionsWaveColor?: never;
-            sectionsColor?: never;
-            singleColor?: never;
-            switchColor?: never;
-            blinkMask?: never;
-            invertMask?: never;
-            pulseSawtoothMask?: never;
-            pulseMask?: never;
-            sawtoothMask?: never;
-            sectionsWaveMask?: never;
-            sectionsMask?: never;
-            starsMask?: never;
-            waveMask?: WaveMask;
-        })))) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("fadeColor" in data && data.fadeColor != undefined) {
-                    this.fadeColor = data.fadeColor;
-                }
-                if ("rainbowColor" in data && data.rainbowColor != undefined) {
-                    this.rainbowColor = data.rainbowColor;
-                }
-                if ("sectionsWaveColor" in data && data.sectionsWaveColor != undefined) {
-                    this.sectionsWaveColor = data.sectionsWaveColor;
-                }
-                if ("sectionsColor" in data && data.sectionsColor != undefined) {
-                    this.sectionsColor = data.sectionsColor;
-                }
-                if ("singleColor" in data && data.singleColor != undefined) {
-                    this.singleColor = data.singleColor;
-                }
-                if ("switchColor" in data && data.switchColor != undefined) {
-                    this.switchColor = data.switchColor;
-                }
-                if ("blinkMask" in data && data.blinkMask != undefined) {
-                    this.blinkMask = data.blinkMask;
-                }
-                if ("invertMask" in data && data.invertMask != undefined) {
-                    this.invertMask = data.invertMask;
-                }
-                if ("pulseSawtoothMask" in data && data.pulseSawtoothMask != undefined) {
-                    this.pulseSawtoothMask = data.pulseSawtoothMask;
-                }
-                if ("pulseMask" in data && data.pulseMask != undefined) {
-                    this.pulseMask = data.pulseMask;
-                }
-                if ("sawtoothMask" in data && data.sawtoothMask != undefined) {
-                    this.sawtoothMask = data.sawtoothMask;
-                }
-                if ("sectionsWaveMask" in data && data.sectionsWaveMask != undefined) {
-                    this.sectionsWaveMask = data.sectionsWaveMask;
-                }
-                if ("sectionsMask" in data && data.sectionsMask != undefined) {
-                    this.sectionsMask = data.sectionsMask;
-                }
-                if ("starsMask" in data && data.starsMask != undefined) {
-                    this.starsMask = data.starsMask;
-                }
-                if ("waveMask" in data && data.waveMask != undefined) {
-                    this.waveMask = data.waveMask;
-                }
-            }
-        }
-        get fadeColor() {
-            return pb_1.Message.getWrapperField(this, FadeColor, 1) as FadeColor;
-        }
-        set fadeColor(value: FadeColor) {
-            pb_1.Message.setOneofWrapperField(this, 1, this.#one_of_decls[0], value);
-        }
-        get has_fadeColor() {
-            return pb_1.Message.getField(this, 1) != null;
-        }
-        get rainbowColor() {
-            return pb_1.Message.getWrapperField(this, RainbowColor, 2) as RainbowColor;
-        }
-        set rainbowColor(value: RainbowColor) {
-            pb_1.Message.setOneofWrapperField(this, 2, this.#one_of_decls[0], value);
-        }
-        get has_rainbowColor() {
-            return pb_1.Message.getField(this, 2) != null;
-        }
-        get sectionsWaveColor() {
-            return pb_1.Message.getWrapperField(this, SectionsWaveColor, 3) as SectionsWaveColor;
-        }
-        set sectionsWaveColor(value: SectionsWaveColor) {
-            pb_1.Message.setOneofWrapperField(this, 3, this.#one_of_decls[0], value);
-        }
-        get has_sectionsWaveColor() {
-            return pb_1.Message.getField(this, 3) != null;
-        }
-        get sectionsColor() {
-            return pb_1.Message.getWrapperField(this, SectionsColor, 4) as SectionsColor;
-        }
-        set sectionsColor(value: SectionsColor) {
-            pb_1.Message.setOneofWrapperField(this, 4, this.#one_of_decls[0], value);
-        }
-        get has_sectionsColor() {
-            return pb_1.Message.getField(this, 4) != null;
-        }
-        get singleColor() {
-            return pb_1.Message.getWrapperField(this, SingleColor, 5) as SingleColor;
-        }
-        set singleColor(value: SingleColor) {
-            pb_1.Message.setOneofWrapperField(this, 5, this.#one_of_decls[0], value);
-        }
-        get has_singleColor() {
-            return pb_1.Message.getField(this, 5) != null;
-        }
-        get switchColor() {
-            return pb_1.Message.getWrapperField(this, SwitchColor, 6) as SwitchColor;
-        }
-        set switchColor(value: SwitchColor) {
-            pb_1.Message.setOneofWrapperField(this, 6, this.#one_of_decls[0], value);
-        }
-        get has_switchColor() {
-            return pb_1.Message.getField(this, 6) != null;
-        }
-        get blinkMask() {
-            return pb_1.Message.getWrapperField(this, BlinkMask, 40) as BlinkMask;
-        }
-        set blinkMask(value: BlinkMask) {
-            pb_1.Message.setOneofWrapperField(this, 40, this.#one_of_decls[0], value);
-        }
-        get has_blinkMask() {
-            return pb_1.Message.getField(this, 40) != null;
-        }
-        get invertMask() {
-            return pb_1.Message.getWrapperField(this, InvertMask, 41) as InvertMask;
-        }
-        set invertMask(value: InvertMask) {
-            pb_1.Message.setOneofWrapperField(this, 41, this.#one_of_decls[0], value);
-        }
-        get has_invertMask() {
-            return pb_1.Message.getField(this, 41) != null;
-        }
-        get pulseSawtoothMask() {
-            return pb_1.Message.getWrapperField(this, PulseSawtoothMask, 42) as PulseSawtoothMask;
-        }
-        set pulseSawtoothMask(value: PulseSawtoothMask) {
-            pb_1.Message.setOneofWrapperField(this, 42, this.#one_of_decls[0], value);
-        }
-        get has_pulseSawtoothMask() {
-            return pb_1.Message.getField(this, 42) != null;
-        }
-        get pulseMask() {
-            return pb_1.Message.getWrapperField(this, PulseMask, 43) as PulseMask;
-        }
-        set pulseMask(value: PulseMask) {
-            pb_1.Message.setOneofWrapperField(this, 43, this.#one_of_decls[0], value);
-        }
-        get has_pulseMask() {
-            return pb_1.Message.getField(this, 43) != null;
-        }
-        get sawtoothMask() {
-            return pb_1.Message.getWrapperField(this, SawtoothMask, 44) as SawtoothMask;
-        }
-        set sawtoothMask(value: SawtoothMask) {
-            pb_1.Message.setOneofWrapperField(this, 44, this.#one_of_decls[0], value);
-        }
-        get has_sawtoothMask() {
-            return pb_1.Message.getField(this, 44) != null;
-        }
-        get sectionsWaveMask() {
-            return pb_1.Message.getWrapperField(this, SectionsWaveMask, 45) as SectionsWaveMask;
-        }
-        set sectionsWaveMask(value: SectionsWaveMask) {
-            pb_1.Message.setOneofWrapperField(this, 45, this.#one_of_decls[0], value);
-        }
-        get has_sectionsWaveMask() {
-            return pb_1.Message.getField(this, 45) != null;
-        }
-        get sectionsMask() {
-            return pb_1.Message.getWrapperField(this, SectionsMask, 46) as SectionsMask;
-        }
-        set sectionsMask(value: SectionsMask) {
-            pb_1.Message.setOneofWrapperField(this, 46, this.#one_of_decls[0], value);
-        }
-        get has_sectionsMask() {
-            return pb_1.Message.getField(this, 46) != null;
-        }
-        get starsMask() {
-            return pb_1.Message.getWrapperField(this, StarsMask, 47) as StarsMask;
-        }
-        set starsMask(value: StarsMask) {
-            pb_1.Message.setOneofWrapperField(this, 47, this.#one_of_decls[0], value);
-        }
-        get has_starsMask() {
-            return pb_1.Message.getField(this, 47) != null;
-        }
-        get waveMask() {
-            return pb_1.Message.getWrapperField(this, WaveMask, 48) as WaveMask;
-        }
-        set waveMask(value: WaveMask) {
-            pb_1.Message.setOneofWrapperField(this, 48, this.#one_of_decls[0], value);
-        }
-        get has_waveMask() {
-            return pb_1.Message.getField(this, 48) != null;
-        }
-        get payload() {
-            const cases: {
-                [index: number]: "none" | "fadeColor" | "rainbowColor" | "sectionsWaveColor" | "sectionsColor" | "singleColor" | "switchColor" | "blinkMask" | "invertMask" | "pulseSawtoothMask" | "pulseMask" | "sawtoothMask" | "sectionsWaveMask" | "sectionsMask" | "starsMask" | "waveMask";
-            } = {
-                0: "none",
-                1: "fadeColor",
-                2: "rainbowColor",
-                3: "sectionsWaveColor",
-                4: "sectionsColor",
-                5: "singleColor",
-                6: "switchColor",
-                40: "blinkMask",
-                41: "invertMask",
-                42: "pulseSawtoothMask",
-                43: "pulseMask",
-                44: "sawtoothMask",
-                45: "sectionsWaveMask",
-                46: "sectionsMask",
-                47: "starsMask",
-                48: "waveMask"
-            };
-            return cases[pb_1.Message.computeOneofCase(this, [1, 2, 3, 4, 5, 6, 40, 41, 42, 43, 44, 45, 46, 47, 48])];
-        }
-        static fromObject(data: {
-            fadeColor?: ReturnType<typeof FadeColor.prototype.toObject>;
-            rainbowColor?: ReturnType<typeof RainbowColor.prototype.toObject>;
-            sectionsWaveColor?: ReturnType<typeof SectionsWaveColor.prototype.toObject>;
-            sectionsColor?: ReturnType<typeof SectionsColor.prototype.toObject>;
-            singleColor?: ReturnType<typeof SingleColor.prototype.toObject>;
-            switchColor?: ReturnType<typeof SwitchColor.prototype.toObject>;
-            blinkMask?: ReturnType<typeof BlinkMask.prototype.toObject>;
-            invertMask?: ReturnType<typeof InvertMask.prototype.toObject>;
-            pulseSawtoothMask?: ReturnType<typeof PulseSawtoothMask.prototype.toObject>;
-            pulseMask?: ReturnType<typeof PulseMask.prototype.toObject>;
-            sawtoothMask?: ReturnType<typeof SawtoothMask.prototype.toObject>;
-            sectionsWaveMask?: ReturnType<typeof SectionsWaveMask.prototype.toObject>;
-            sectionsMask?: ReturnType<typeof SectionsMask.prototype.toObject>;
-            starsMask?: ReturnType<typeof StarsMask.prototype.toObject>;
-            waveMask?: ReturnType<typeof WaveMask.prototype.toObject>;
-        }): Layer {
-            const message = new Layer({});
-            if (data.fadeColor != null) {
-                message.fadeColor = FadeColor.fromObject(data.fadeColor);
-            }
-            if (data.rainbowColor != null) {
-                message.rainbowColor = RainbowColor.fromObject(data.rainbowColor);
-            }
-            if (data.sectionsWaveColor != null) {
-                message.sectionsWaveColor = SectionsWaveColor.fromObject(data.sectionsWaveColor);
-            }
-            if (data.sectionsColor != null) {
-                message.sectionsColor = SectionsColor.fromObject(data.sectionsColor);
-            }
-            if (data.singleColor != null) {
-                message.singleColor = SingleColor.fromObject(data.singleColor);
-            }
-            if (data.switchColor != null) {
-                message.switchColor = SwitchColor.fromObject(data.switchColor);
-            }
-            if (data.blinkMask != null) {
-                message.blinkMask = BlinkMask.fromObject(data.blinkMask);
-            }
-            if (data.invertMask != null) {
-                message.invertMask = InvertMask.fromObject(data.invertMask);
-            }
-            if (data.pulseSawtoothMask != null) {
-                message.pulseSawtoothMask = PulseSawtoothMask.fromObject(data.pulseSawtoothMask);
-            }
-            if (data.pulseMask != null) {
-                message.pulseMask = PulseMask.fromObject(data.pulseMask);
-            }
-            if (data.sawtoothMask != null) {
-                message.sawtoothMask = SawtoothMask.fromObject(data.sawtoothMask);
-            }
-            if (data.sectionsWaveMask != null) {
-                message.sectionsWaveMask = SectionsWaveMask.fromObject(data.sectionsWaveMask);
-            }
-            if (data.sectionsMask != null) {
-                message.sectionsMask = SectionsMask.fromObject(data.sectionsMask);
-            }
-            if (data.starsMask != null) {
-                message.starsMask = StarsMask.fromObject(data.starsMask);
-            }
-            if (data.waveMask != null) {
-                message.waveMask = WaveMask.fromObject(data.waveMask);
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                fadeColor?: ReturnType<typeof FadeColor.prototype.toObject>;
-                rainbowColor?: ReturnType<typeof RainbowColor.prototype.toObject>;
-                sectionsWaveColor?: ReturnType<typeof SectionsWaveColor.prototype.toObject>;
-                sectionsColor?: ReturnType<typeof SectionsColor.prototype.toObject>;
-                singleColor?: ReturnType<typeof SingleColor.prototype.toObject>;
-                switchColor?: ReturnType<typeof SwitchColor.prototype.toObject>;
-                blinkMask?: ReturnType<typeof BlinkMask.prototype.toObject>;
-                invertMask?: ReturnType<typeof InvertMask.prototype.toObject>;
-                pulseSawtoothMask?: ReturnType<typeof PulseSawtoothMask.prototype.toObject>;
-                pulseMask?: ReturnType<typeof PulseMask.prototype.toObject>;
-                sawtoothMask?: ReturnType<typeof SawtoothMask.prototype.toObject>;
-                sectionsWaveMask?: ReturnType<typeof SectionsWaveMask.prototype.toObject>;
-                sectionsMask?: ReturnType<typeof SectionsMask.prototype.toObject>;
-                starsMask?: ReturnType<typeof StarsMask.prototype.toObject>;
-                waveMask?: ReturnType<typeof WaveMask.prototype.toObject>;
-            } = {};
-            if (this.fadeColor != null) {
-                data.fadeColor = this.fadeColor.toObject();
-            }
-            if (this.rainbowColor != null) {
-                data.rainbowColor = this.rainbowColor.toObject();
-            }
-            if (this.sectionsWaveColor != null) {
-                data.sectionsWaveColor = this.sectionsWaveColor.toObject();
-            }
-            if (this.sectionsColor != null) {
-                data.sectionsColor = this.sectionsColor.toObject();
-            }
-            if (this.singleColor != null) {
-                data.singleColor = this.singleColor.toObject();
-            }
-            if (this.switchColor != null) {
-                data.switchColor = this.switchColor.toObject();
-            }
-            if (this.blinkMask != null) {
-                data.blinkMask = this.blinkMask.toObject();
-            }
-            if (this.invertMask != null) {
-                data.invertMask = this.invertMask.toObject();
-            }
-            if (this.pulseSawtoothMask != null) {
-                data.pulseSawtoothMask = this.pulseSawtoothMask.toObject();
-            }
-            if (this.pulseMask != null) {
-                data.pulseMask = this.pulseMask.toObject();
-            }
-            if (this.sawtoothMask != null) {
-                data.sawtoothMask = this.sawtoothMask.toObject();
-            }
-            if (this.sectionsWaveMask != null) {
-                data.sectionsWaveMask = this.sectionsWaveMask.toObject();
-            }
-            if (this.sectionsMask != null) {
-                data.sectionsMask = this.sectionsMask.toObject();
-            }
-            if (this.starsMask != null) {
-                data.starsMask = this.starsMask.toObject();
-            }
-            if (this.waveMask != null) {
-                data.waveMask = this.waveMask.toObject();
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.has_fadeColor)
-                writer.writeMessage(1, this.fadeColor, () => this.fadeColor.serialize(writer));
-            if (this.has_rainbowColor)
-                writer.writeMessage(2, this.rainbowColor, () => this.rainbowColor.serialize(writer));
-            if (this.has_sectionsWaveColor)
-                writer.writeMessage(3, this.sectionsWaveColor, () => this.sectionsWaveColor.serialize(writer));
-            if (this.has_sectionsColor)
-                writer.writeMessage(4, this.sectionsColor, () => this.sectionsColor.serialize(writer));
-            if (this.has_singleColor)
-                writer.writeMessage(5, this.singleColor, () => this.singleColor.serialize(writer));
-            if (this.has_switchColor)
-                writer.writeMessage(6, this.switchColor, () => this.switchColor.serialize(writer));
-            if (this.has_blinkMask)
-                writer.writeMessage(40, this.blinkMask, () => this.blinkMask.serialize(writer));
-            if (this.has_invertMask)
-                writer.writeMessage(41, this.invertMask, () => this.invertMask.serialize(writer));
-            if (this.has_pulseSawtoothMask)
-                writer.writeMessage(42, this.pulseSawtoothMask, () => this.pulseSawtoothMask.serialize(writer));
-            if (this.has_pulseMask)
-                writer.writeMessage(43, this.pulseMask, () => this.pulseMask.serialize(writer));
-            if (this.has_sawtoothMask)
-                writer.writeMessage(44, this.sawtoothMask, () => this.sawtoothMask.serialize(writer));
-            if (this.has_sectionsWaveMask)
-                writer.writeMessage(45, this.sectionsWaveMask, () => this.sectionsWaveMask.serialize(writer));
-            if (this.has_sectionsMask)
-                writer.writeMessage(46, this.sectionsMask, () => this.sectionsMask.serialize(writer));
-            if (this.has_starsMask)
-                writer.writeMessage(47, this.starsMask, () => this.starsMask.serialize(writer));
-            if (this.has_waveMask)
-                writer.writeMessage(48, this.waveMask, () => this.waveMask.serialize(writer));
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Layer {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new Layer();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        reader.readMessage(message.fadeColor, () => message.fadeColor = FadeColor.deserialize(reader));
-                        break;
-                    case 2:
-                        reader.readMessage(message.rainbowColor, () => message.rainbowColor = RainbowColor.deserialize(reader));
-                        break;
-                    case 3:
-                        reader.readMessage(message.sectionsWaveColor, () => message.sectionsWaveColor = SectionsWaveColor.deserialize(reader));
-                        break;
-                    case 4:
-                        reader.readMessage(message.sectionsColor, () => message.sectionsColor = SectionsColor.deserialize(reader));
-                        break;
-                    case 5:
-                        reader.readMessage(message.singleColor, () => message.singleColor = SingleColor.deserialize(reader));
-                        break;
-                    case 6:
-                        reader.readMessage(message.switchColor, () => message.switchColor = SwitchColor.deserialize(reader));
-                        break;
-                    case 40:
-                        reader.readMessage(message.blinkMask, () => message.blinkMask = BlinkMask.deserialize(reader));
-                        break;
-                    case 41:
-                        reader.readMessage(message.invertMask, () => message.invertMask = InvertMask.deserialize(reader));
-                        break;
-                    case 42:
-                        reader.readMessage(message.pulseSawtoothMask, () => message.pulseSawtoothMask = PulseSawtoothMask.deserialize(reader));
-                        break;
-                    case 43:
-                        reader.readMessage(message.pulseMask, () => message.pulseMask = PulseMask.deserialize(reader));
-                        break;
-                    case 44:
-                        reader.readMessage(message.sawtoothMask, () => message.sawtoothMask = SawtoothMask.deserialize(reader));
-                        break;
-                    case 45:
-                        reader.readMessage(message.sectionsWaveMask, () => message.sectionsWaveMask = SectionsWaveMask.deserialize(reader));
-                        break;
-                    case 46:
-                        reader.readMessage(message.sectionsMask, () => message.sectionsMask = SectionsMask.deserialize(reader));
-                        break;
-                    case 47:
-                        reader.readMessage(message.starsMask, () => message.starsMask = StarsMask.deserialize(reader));
-                        break;
-                    case 48:
-                        reader.readMessage(message.waveMask, () => message.waveMask = WaveMask.deserialize(reader));
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): Layer {
-            return Layer.deserialize(bytes);
-        }
-    }
-    export class FadeColor extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
-            colors?: number[];
-            duration?: number;
-        }) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [1], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("colors" in data && data.colors != undefined) {
-                    this.colors = data.colors;
-                }
-                if ("duration" in data && data.duration != undefined) {
-                    this.duration = data.duration;
-                }
-            }
-        }
-        get colors() {
-            return pb_1.Message.getFieldWithDefault(this, 1, []) as number[];
-        }
-        set colors(value: number[]) {
-            pb_1.Message.setField(this, 1, value);
-        }
-        get duration() {
-            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
-        }
-        set duration(value: number) {
-            pb_1.Message.setField(this, 2, value);
-        }
-        static fromObject(data: {
-            colors?: number[];
-            duration?: number;
-        }): FadeColor {
-            const message = new FadeColor({});
-            if (data.colors != null) {
-                message.colors = data.colors;
-            }
-            if (data.duration != null) {
-                message.duration = data.duration;
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                colors?: number[];
-                duration?: number;
-            } = {};
-            if (this.colors != null) {
-                data.colors = this.colors;
-            }
-            if (this.duration != null) {
-                data.duration = this.duration;
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.colors.length)
-                writer.writePackedUint32(1, this.colors);
-            if (this.duration != 0)
-                writer.writeUint32(2, this.duration);
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): FadeColor {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new FadeColor();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.colors = reader.readPackedUint32();
-                        break;
-                    case 2:
-                        message.duration = reader.readUint32();
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): FadeColor {
-            return FadeColor.deserialize(bytes);
-        }
-    }
-    export class RainbowColor extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
-            duration?: number;
-            length?: number;
-        }) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("duration" in data && data.duration != undefined) {
-                    this.duration = data.duration;
-                }
-                if ("length" in data && data.length != undefined) {
-                    this.length = data.length;
-                }
-            }
-        }
-        get duration() {
-            return pb_1.Message.getFieldWithDefault(this, 1, 0) as number;
-        }
-        set duration(value: number) {
-            pb_1.Message.setField(this, 1, value);
-        }
-        get length() {
-            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
-        }
-        set length(value: number) {
-            pb_1.Message.setField(this, 2, value);
-        }
-        static fromObject(data: {
-            duration?: number;
-            length?: number;
-        }): RainbowColor {
-            const message = new RainbowColor({});
-            if (data.duration != null) {
-                message.duration = data.duration;
-            }
-            if (data.length != null) {
-                message.length = data.length;
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                duration?: number;
-                length?: number;
-            } = {};
-            if (this.duration != null) {
-                data.duration = this.duration;
-            }
-            if (this.length != null) {
-                data.length = this.length;
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.duration != 0)
-                writer.writeUint32(1, this.duration);
-            if (this.length != 0)
-                writer.writeUint32(2, this.length);
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): RainbowColor {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new RainbowColor();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.duration = reader.readUint32();
-                        break;
-                    case 2:
-                        message.length = reader.readUint32();
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): RainbowColor {
-            return RainbowColor.deserialize(bytes);
-        }
-    }
-    export class SectionsWaveColor extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
-            sections?: number[];
-            duration?: number;
-        }) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [1], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("sections" in data && data.sections != undefined) {
-                    this.sections = data.sections;
-                }
-                if ("duration" in data && data.duration != undefined) {
-                    this.duration = data.duration;
-                }
-            }
-        }
-        get sections() {
-            return pb_1.Message.getFieldWithDefault(this, 1, []) as number[];
-        }
-        set sections(value: number[]) {
-            pb_1.Message.setField(this, 1, value);
-        }
-        get duration() {
-            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
-        }
-        set duration(value: number) {
-            pb_1.Message.setField(this, 2, value);
-        }
-        static fromObject(data: {
-            sections?: number[];
-            duration?: number;
-        }): SectionsWaveColor {
-            const message = new SectionsWaveColor({});
-            if (data.sections != null) {
-                message.sections = data.sections;
-            }
-            if (data.duration != null) {
-                message.duration = data.duration;
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                sections?: number[];
-                duration?: number;
-            } = {};
-            if (this.sections != null) {
-                data.sections = this.sections;
-            }
-            if (this.duration != null) {
-                data.duration = this.duration;
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.sections.length)
-                writer.writePackedUint32(1, this.sections);
-            if (this.duration != 0)
-                writer.writeUint32(2, this.duration);
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SectionsWaveColor {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new SectionsWaveColor();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.sections = reader.readPackedUint32();
-                        break;
-                    case 2:
-                        message.duration = reader.readUint32();
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): SectionsWaveColor {
-            return SectionsWaveColor.deserialize(bytes);
-        }
-    }
-    export class SectionsColor extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
-            sections?: number[];
-            duration?: number;
-        }) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [1], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("sections" in data && data.sections != undefined) {
-                    this.sections = data.sections;
-                }
-                if ("duration" in data && data.duration != undefined) {
-                    this.duration = data.duration;
-                }
-            }
-        }
-        get sections() {
-            return pb_1.Message.getFieldWithDefault(this, 1, []) as number[];
-        }
-        set sections(value: number[]) {
-            pb_1.Message.setField(this, 1, value);
-        }
-        get duration() {
-            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
-        }
-        set duration(value: number) {
-            pb_1.Message.setField(this, 2, value);
-        }
-        static fromObject(data: {
-            sections?: number[];
-            duration?: number;
-        }): SectionsColor {
-            const message = new SectionsColor({});
-            if (data.sections != null) {
-                message.sections = data.sections;
-            }
-            if (data.duration != null) {
-                message.duration = data.duration;
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                sections?: number[];
-                duration?: number;
-            } = {};
-            if (this.sections != null) {
-                data.sections = this.sections;
-            }
-            if (this.duration != null) {
-                data.duration = this.duration;
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.sections.length)
-                writer.writePackedUint32(1, this.sections);
-            if (this.duration != 0)
-                writer.writeUint32(2, this.duration);
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SectionsColor {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new SectionsColor();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.sections = reader.readPackedUint32();
-                        break;
-                    case 2:
-                        message.duration = reader.readUint32();
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): SectionsColor {
-            return SectionsColor.deserialize(bytes);
-        }
-    }
-    export class SingleColor extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
-            color?: number;
-        }) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("color" in data && data.color != undefined) {
-                    this.color = data.color;
-                }
-            }
-        }
-        get color() {
-            return pb_1.Message.getFieldWithDefault(this, 1, 0) as number;
-        }
-        set color(value: number) {
-            pb_1.Message.setField(this, 1, value);
-        }
-        static fromObject(data: {
-            color?: number;
-        }): SingleColor {
-            const message = new SingleColor({});
-            if (data.color != null) {
-                message.color = data.color;
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                color?: number;
-            } = {};
-            if (this.color != null) {
-                data.color = this.color;
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.color != 0)
-                writer.writeUint32(1, this.color);
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SingleColor {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new SingleColor();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.color = reader.readUint32();
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): SingleColor {
-            return SingleColor.deserialize(bytes);
-        }
-    }
-    export class SwitchColor extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
-            colors?: number[];
-            duration?: number;
-        }) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [1], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("colors" in data && data.colors != undefined) {
-                    this.colors = data.colors;
-                }
-                if ("duration" in data && data.duration != undefined) {
-                    this.duration = data.duration;
-                }
-            }
-        }
-        get colors() {
-            return pb_1.Message.getFieldWithDefault(this, 1, []) as number[];
-        }
-        set colors(value: number[]) {
-            pb_1.Message.setField(this, 1, value);
-        }
-        get duration() {
-            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
-        }
-        set duration(value: number) {
-            pb_1.Message.setField(this, 2, value);
-        }
-        static fromObject(data: {
-            colors?: number[];
-            duration?: number;
-        }): SwitchColor {
-            const message = new SwitchColor({});
-            if (data.colors != null) {
-                message.colors = data.colors;
-            }
-            if (data.duration != null) {
-                message.duration = data.duration;
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                colors?: number[];
-                duration?: number;
-            } = {};
-            if (this.colors != null) {
-                data.colors = this.colors;
-            }
-            if (this.duration != null) {
-                data.duration = this.duration;
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.colors.length)
-                writer.writePackedUint32(1, this.colors);
-            if (this.duration != 0)
-                writer.writeUint32(2, this.duration);
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SwitchColor {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new SwitchColor();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.colors = reader.readPackedUint32();
-                        break;
-                    case 2:
-                        message.duration = reader.readUint32();
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): SwitchColor {
-            return SwitchColor.deserialize(bytes);
-        }
-    }
-    export class BlinkMask extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
-            pattern?: number[];
-            duration?: number;
-        }) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [1], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("pattern" in data && data.pattern != undefined) {
-                    this.pattern = data.pattern;
-                }
-                if ("duration" in data && data.duration != undefined) {
-                    this.duration = data.duration;
-                }
-            }
-        }
-        get pattern() {
-            return pb_1.Message.getFieldWithDefault(this, 1, []) as number[];
-        }
-        set pattern(value: number[]) {
-            pb_1.Message.setField(this, 1, value);
-        }
-        get duration() {
-            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
-        }
-        set duration(value: number) {
-            pb_1.Message.setField(this, 2, value);
-        }
-        static fromObject(data: {
-            pattern?: number[];
-            duration?: number;
-        }): BlinkMask {
-            const message = new BlinkMask({});
-            if (data.pattern != null) {
-                message.pattern = data.pattern;
-            }
-            if (data.duration != null) {
-                message.duration = data.duration;
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                pattern?: number[];
-                duration?: number;
-            } = {};
-            if (this.pattern != null) {
-                data.pattern = this.pattern;
-            }
-            if (this.duration != null) {
-                data.duration = this.duration;
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.pattern.length)
-                writer.writePackedUint32(1, this.pattern);
-            if (this.duration != 0)
-                writer.writeUint32(2, this.duration);
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): BlinkMask {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new BlinkMask();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.pattern = reader.readPackedUint32();
-                        break;
-                    case 2:
-                        message.duration = reader.readUint32();
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): BlinkMask {
-            return BlinkMask.deserialize(bytes);
-        }
-    }
-    export class InvertMask extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {}) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") { }
-        }
-        static fromObject(data: {}): InvertMask {
-            const message = new InvertMask({});
-            return message;
-        }
-        toObject() {
-            const data: {} = {};
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): InvertMask {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new InvertMask();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): InvertMask {
-            return InvertMask.deserialize(bytes);
-        }
-    }
-    export class PulseSawtoothMask extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
-            pulse_gap?: number;
-            duration?: number;
-        }) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("pulse_gap" in data && data.pulse_gap != undefined) {
-                    this.pulse_gap = data.pulse_gap;
-                }
-                if ("duration" in data && data.duration != undefined) {
-                    this.duration = data.duration;
-                }
-            }
-        }
-        get pulse_gap() {
-            return pb_1.Message.getFieldWithDefault(this, 1, 0) as number;
-        }
-        set pulse_gap(value: number) {
-            pb_1.Message.setField(this, 1, value);
-        }
-        get duration() {
-            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
-        }
-        set duration(value: number) {
-            pb_1.Message.setField(this, 2, value);
-        }
-        static fromObject(data: {
-            pulse_gap?: number;
-            duration?: number;
-        }): PulseSawtoothMask {
-            const message = new PulseSawtoothMask({});
-            if (data.pulse_gap != null) {
-                message.pulse_gap = data.pulse_gap;
-            }
-            if (data.duration != null) {
-                message.duration = data.duration;
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                pulse_gap?: number;
-                duration?: number;
-            } = {};
-            if (this.pulse_gap != null) {
-                data.pulse_gap = this.pulse_gap;
-            }
-            if (this.duration != null) {
-                data.duration = this.duration;
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.pulse_gap != 0)
-                writer.writeUint32(1, this.pulse_gap);
-            if (this.duration != 0)
-                writer.writeUint32(2, this.duration);
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): PulseSawtoothMask {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new PulseSawtoothMask();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.pulse_gap = reader.readUint32();
-                        break;
-                    case 2:
-                        message.duration = reader.readUint32();
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): PulseSawtoothMask {
-            return PulseSawtoothMask.deserialize(bytes);
-        }
-    }
-    export class PulseMask extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
-            pulse_gap?: number;
-            duration?: number;
-        }) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("pulse_gap" in data && data.pulse_gap != undefined) {
-                    this.pulse_gap = data.pulse_gap;
-                }
-                if ("duration" in data && data.duration != undefined) {
-                    this.duration = data.duration;
-                }
-            }
-        }
-        get pulse_gap() {
-            return pb_1.Message.getFieldWithDefault(this, 1, 0) as number;
-        }
-        set pulse_gap(value: number) {
-            pb_1.Message.setField(this, 1, value);
-        }
-        get duration() {
-            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
-        }
-        set duration(value: number) {
-            pb_1.Message.setField(this, 2, value);
-        }
-        static fromObject(data: {
-            pulse_gap?: number;
-            duration?: number;
-        }): PulseMask {
-            const message = new PulseMask({});
-            if (data.pulse_gap != null) {
-                message.pulse_gap = data.pulse_gap;
-            }
-            if (data.duration != null) {
-                message.duration = data.duration;
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                pulse_gap?: number;
-                duration?: number;
-            } = {};
-            if (this.pulse_gap != null) {
-                data.pulse_gap = this.pulse_gap;
-            }
-            if (this.duration != null) {
-                data.duration = this.duration;
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.pulse_gap != 0)
-                writer.writeUint32(1, this.pulse_gap);
-            if (this.duration != 0)
-                writer.writeUint32(2, this.duration);
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): PulseMask {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new PulseMask();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.pulse_gap = reader.readUint32();
-                        break;
-                    case 2:
-                        message.duration = reader.readUint32();
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): PulseMask {
-            return PulseMask.deserialize(bytes);
-        }
-    }
-    export class SawtoothMask extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
-            wavelength?: number;
-            wavegap?: number;
-            duration?: number;
-        }) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("wavelength" in data && data.wavelength != undefined) {
-                    this.wavelength = data.wavelength;
-                }
-                if ("wavegap" in data && data.wavegap != undefined) {
-                    this.wavegap = data.wavegap;
-                }
-                if ("duration" in data && data.duration != undefined) {
-                    this.duration = data.duration;
-                }
-            }
-        }
-        get wavelength() {
-            return pb_1.Message.getFieldWithDefault(this, 1, 0) as number;
-        }
-        set wavelength(value: number) {
-            pb_1.Message.setField(this, 1, value);
-        }
-        get wavegap() {
-            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
-        }
-        set wavegap(value: number) {
-            pb_1.Message.setField(this, 2, value);
-        }
-        get duration() {
-            return pb_1.Message.getFieldWithDefault(this, 3, 0) as number;
-        }
-        set duration(value: number) {
-            pb_1.Message.setField(this, 3, value);
-        }
-        static fromObject(data: {
-            wavelength?: number;
-            wavegap?: number;
-            duration?: number;
-        }): SawtoothMask {
-            const message = new SawtoothMask({});
-            if (data.wavelength != null) {
-                message.wavelength = data.wavelength;
-            }
-            if (data.wavegap != null) {
-                message.wavegap = data.wavegap;
-            }
-            if (data.duration != null) {
-                message.duration = data.duration;
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                wavelength?: number;
-                wavegap?: number;
-                duration?: number;
-            } = {};
-            if (this.wavelength != null) {
-                data.wavelength = this.wavelength;
-            }
-            if (this.wavegap != null) {
-                data.wavegap = this.wavegap;
-            }
-            if (this.duration != null) {
-                data.duration = this.duration;
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.wavelength != 0)
-                writer.writeUint32(1, this.wavelength);
-            if (this.wavegap != 0)
-                writer.writeUint32(2, this.wavegap);
-            if (this.duration != 0)
-                writer.writeUint32(3, this.duration);
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SawtoothMask {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new SawtoothMask();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.wavelength = reader.readUint32();
-                        break;
-                    case 2:
-                        message.wavegap = reader.readUint32();
-                        break;
-                    case 3:
-                        message.duration = reader.readUint32();
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): SawtoothMask {
-            return SawtoothMask.deserialize(bytes);
-        }
-    }
-    export class SectionsWaveMask extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
-            sections?: number[];
-            duration?: number;
-        }) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [1], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("sections" in data && data.sections != undefined) {
-                    this.sections = data.sections;
-                }
-                if ("duration" in data && data.duration != undefined) {
-                    this.duration = data.duration;
-                }
-            }
-        }
-        get sections() {
-            return pb_1.Message.getFieldWithDefault(this, 1, []) as number[];
-        }
-        set sections(value: number[]) {
-            pb_1.Message.setField(this, 1, value);
-        }
-        get duration() {
-            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
-        }
-        set duration(value: number) {
-            pb_1.Message.setField(this, 2, value);
-        }
-        static fromObject(data: {
-            sections?: number[];
-            duration?: number;
-        }): SectionsWaveMask {
-            const message = new SectionsWaveMask({});
-            if (data.sections != null) {
-                message.sections = data.sections;
-            }
-            if (data.duration != null) {
-                message.duration = data.duration;
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                sections?: number[];
-                duration?: number;
-            } = {};
-            if (this.sections != null) {
-                data.sections = this.sections;
-            }
-            if (this.duration != null) {
-                data.duration = this.duration;
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.sections.length)
-                writer.writePackedUint32(1, this.sections);
-            if (this.duration != 0)
-                writer.writeUint32(2, this.duration);
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SectionsWaveMask {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new SectionsWaveMask();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.sections = reader.readPackedUint32();
-                        break;
-                    case 2:
-                        message.duration = reader.readUint32();
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): SectionsWaveMask {
-            return SectionsWaveMask.deserialize(bytes);
-        }
-    }
-    export class SectionsMask extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
-            sections?: number[];
-            duration?: number;
-        }) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [1], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("sections" in data && data.sections != undefined) {
-                    this.sections = data.sections;
-                }
-                if ("duration" in data && data.duration != undefined) {
-                    this.duration = data.duration;
-                }
-            }
-        }
-        get sections() {
-            return pb_1.Message.getFieldWithDefault(this, 1, []) as number[];
-        }
-        set sections(value: number[]) {
-            pb_1.Message.setField(this, 1, value);
-        }
-        get duration() {
-            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
-        }
-        set duration(value: number) {
-            pb_1.Message.setField(this, 2, value);
-        }
-        static fromObject(data: {
-            sections?: number[];
-            duration?: number;
-        }): SectionsMask {
-            const message = new SectionsMask({});
-            if (data.sections != null) {
-                message.sections = data.sections;
-            }
-            if (data.duration != null) {
-                message.duration = data.duration;
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                sections?: number[];
-                duration?: number;
-            } = {};
-            if (this.sections != null) {
-                data.sections = this.sections;
-            }
-            if (this.duration != null) {
-                data.duration = this.duration;
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.sections.length)
-                writer.writePackedUint32(1, this.sections);
-            if (this.duration != 0)
-                writer.writeUint32(2, this.duration);
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SectionsMask {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new SectionsMask();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.sections = reader.readPackedUint32();
-                        break;
-                    case 2:
-                        message.duration = reader.readUint32();
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): SectionsMask {
-            return SectionsMask.deserialize(bytes);
-        }
-    }
-    export class StarsMask extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
-            frequency?: number;
-            decaySpeed?: number;
-            starLength?: number;
-        }) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("frequency" in data && data.frequency != undefined) {
-                    this.frequency = data.frequency;
-                }
-                if ("decaySpeed" in data && data.decaySpeed != undefined) {
-                    this.decaySpeed = data.decaySpeed;
-                }
-                if ("starLength" in data && data.starLength != undefined) {
-                    this.starLength = data.starLength;
-                }
-            }
-        }
-        get frequency() {
-            return pb_1.Message.getFieldWithDefault(this, 1, 0) as number;
-        }
-        set frequency(value: number) {
-            pb_1.Message.setField(this, 1, value);
-        }
-        get decaySpeed() {
-            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
-        }
-        set decaySpeed(value: number) {
-            pb_1.Message.setField(this, 2, value);
-        }
-        get starLength() {
-            return pb_1.Message.getFieldWithDefault(this, 3, 0) as number;
-        }
-        set starLength(value: number) {
-            pb_1.Message.setField(this, 3, value);
-        }
-        static fromObject(data: {
-            frequency?: number;
-            decaySpeed?: number;
-            starLength?: number;
-        }): StarsMask {
-            const message = new StarsMask({});
-            if (data.frequency != null) {
-                message.frequency = data.frequency;
-            }
-            if (data.decaySpeed != null) {
-                message.decaySpeed = data.decaySpeed;
-            }
-            if (data.starLength != null) {
-                message.starLength = data.starLength;
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                frequency?: number;
-                decaySpeed?: number;
-                starLength?: number;
-            } = {};
-            if (this.frequency != null) {
-                data.frequency = this.frequency;
-            }
-            if (this.decaySpeed != null) {
-                data.decaySpeed = this.decaySpeed;
-            }
-            if (this.starLength != null) {
-                data.starLength = this.starLength;
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.frequency != 0)
-                writer.writeUint32(1, this.frequency);
-            if (this.decaySpeed != 0)
-                writer.writeUint32(2, this.decaySpeed);
-            if (this.starLength != 0)
-                writer.writeUint32(3, this.starLength);
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): StarsMask {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new StarsMask();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.frequency = reader.readUint32();
-                        break;
-                    case 2:
-                        message.decaySpeed = reader.readUint32();
-                        break;
-                    case 3:
-                        message.starLength = reader.readUint32();
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): StarsMask {
-            return StarsMask.deserialize(bytes);
-        }
-    }
-    export class WaveMask extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
-            wavelength?: number;
-            wavegap?: number;
-            duration?: number;
-        }) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("wavelength" in data && data.wavelength != undefined) {
-                    this.wavelength = data.wavelength;
-                }
-                if ("wavegap" in data && data.wavegap != undefined) {
-                    this.wavegap = data.wavegap;
-                }
-                if ("duration" in data && data.duration != undefined) {
-                    this.duration = data.duration;
-                }
-            }
-        }
-        get wavelength() {
-            return pb_1.Message.getFieldWithDefault(this, 1, 0) as number;
-        }
-        set wavelength(value: number) {
-            pb_1.Message.setField(this, 1, value);
-        }
-        get wavegap() {
-            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
-        }
-        set wavegap(value: number) {
-            pb_1.Message.setField(this, 2, value);
-        }
-        get duration() {
-            return pb_1.Message.getFieldWithDefault(this, 3, 0) as number;
-        }
-        set duration(value: number) {
-            pb_1.Message.setField(this, 3, value);
-        }
-        static fromObject(data: {
-            wavelength?: number;
-            wavegap?: number;
-            duration?: number;
-        }): WaveMask {
-            const message = new WaveMask({});
-            if (data.wavelength != null) {
-                message.wavelength = data.wavelength;
-            }
-            if (data.wavegap != null) {
-                message.wavegap = data.wavegap;
-            }
-            if (data.duration != null) {
-                message.duration = data.duration;
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                wavelength?: number;
-                wavegap?: number;
-                duration?: number;
-            } = {};
-            if (this.wavelength != null) {
-                data.wavelength = this.wavelength;
-            }
-            if (this.wavegap != null) {
-                data.wavegap = this.wavegap;
-            }
-            if (this.duration != null) {
-                data.duration = this.duration;
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.wavelength != 0)
-                writer.writeUint32(1, this.wavelength);
-            if (this.wavegap != 0)
-                writer.writeUint32(2, this.wavegap);
-            if (this.duration != 0)
-                writer.writeUint32(3, this.duration);
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): WaveMask {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new WaveMask();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.wavelength = reader.readUint32();
-                        break;
-                    case 2:
-                        message.wavegap = reader.readUint32();
-                        break;
-                    case 3:
-                        message.duration = reader.readUint32();
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): WaveMask {
-            return WaveMask.deserialize(bytes);
         }
     }
 }

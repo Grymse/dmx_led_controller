@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <FastLED.h>
+#include "protocol.pb.h"
 #include "../state.h"
 
 class ILayer {
@@ -14,6 +15,13 @@ class ILayer {
    * @return String
    */
   virtual String getName() = 0;
+
+  /**
+   * @brief Encode the layer into a protocol buffer.
+   *
+   * @return protocol_Layer
+   */
+  virtual protocol_Layer toEncodable() = 0;
 
   /**
    * @brief Apply the layer to the given color.

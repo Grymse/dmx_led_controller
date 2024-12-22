@@ -32,3 +32,11 @@ CRGB RainbowColor::apply(CRGB color, LEDState* state) {
 
   return CHSV(hueFromIndex + hueFromTick, 255, 255);
 }
+
+protocol_Layer RainbowColor::toEncodable() {
+  return protocol_Layer {
+    .type = protocol_LayerType_RainbowColor,
+    .duration = static_cast<uint32_t>(duration),
+    .length = static_cast<uint32_t>(length)
+  };
+}

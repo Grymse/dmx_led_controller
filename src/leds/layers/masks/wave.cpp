@@ -20,7 +20,7 @@ String WaveMask::getName() {
  */
 WaveMask::WaveMask(u16_t wavelength, u16_t wavegap, u16_t duration) {
   this->wavelength = wavelength;
-  this->wave_gap = wavegap;
+  this->wavegap = wavegap;
   this->duration = duration;
 }
 
@@ -34,11 +34,11 @@ WaveMask::WaveMask(u16_t wavelength, u16_t wavegap, u16_t duration) {
 CRGB WaveMask::apply(CRGB color, LEDState* state) {
   float len = (float)state->length / duration;
   double x = (double)state->tick * len + state->index;
-  if (wavelength <= LayerUtils::mod(x, wavelength + wave_gap)) {
+  if (wavelength <= LayerUtils::mod(x, wavelength + wavegap)) {
     return CRGB::Black;
   }
 
-  float intensity = (LayerUtils::mod(x, wavelength + wave_gap) / wavelength) * 512;
+  float intensity = (LayerUtils::mod(x, wavelength + wavegap) / wavelength) * 512;
 
   if (255 < intensity) {
     intensity = 511 - intensity;
@@ -49,4 +49,13 @@ CRGB WaveMask::apply(CRGB color, LEDState* state) {
   intensity = intensity * intensity * 255;
 
   return color.scale8(intensity);
+}
+
+protocol_Layer WaveMask::toEncodable() {
+  return protocol_Layer {
+    .type = protocol_LayerType_WaveMask,
+    .duration = duration,
+    .length = wavelength,
+    .gap = wavegap,
+  };
 }

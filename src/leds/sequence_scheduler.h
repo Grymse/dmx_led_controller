@@ -37,6 +37,7 @@ class SequenceScheduler : public Process {
   void add(Animation* animation);
   void set(std::vector<Animation*> animations, u8_t brightness = 255);
   void set(Sequence* sequence);
+  Sequence * getSequence();
   void setBrightness(u8_t brightness);
   void clear();
 

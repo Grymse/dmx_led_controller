@@ -21,6 +21,7 @@ class Animator : public Process {
   Animator(CRGB* leds, size_t size);
   void clear();
   void setBrightness(u8_t brightness);
+  u8_t getBrightness();
   void setDirection(Direction direction);
   void setLayers(std::vector<ILayer*> layers);
 

@@ -40,3 +40,11 @@ CRGB PulseMask::apply(CRGB color, LEDState* state) {
 
   return color.scale8(intensity);
 }
+
+protocol_Layer PulseMask::toEncodable() {
+  return protocol_Layer {
+    .type = protocol_LayerType_PulseMask,
+    .duration = duration,
+    .gap = pulse_gap
+  };
+}

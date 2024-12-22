@@ -4,7 +4,7 @@
 #include "masks.h"
 
 String SectionsWaveMask::getName() {
-  return "Section Mask";
+  return "Sections Wave Mask";
 }
 
 /**
@@ -32,4 +32,14 @@ CRGB SectionsWaveMask::apply(CRGB color, LEDState* state) {
   u16_t t = (tick + state->index) / sectionLength;
 
   return color.scale8(sections[t % sections.size()]);
+}
+
+protocol_Layer SectionsWaveMask::toEncodable() {
+  return protocol_Layer {
+    .type = protocol_LayerType_SectionsWaveMask,
+    .duration = duration,
+    .sections = {
+      .arg = &sections
+    }
+  };
 }

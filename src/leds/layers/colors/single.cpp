@@ -26,3 +26,10 @@ SingleColor::SingleColor(CRGB color) {
 CRGB SingleColor::apply(CRGB color, LEDState* state) {
   return localColor;
 }
+
+protocol_Layer SingleColor::toEncodable() {
+  return protocol_Layer {
+    .type = protocol_LayerType_SingleColor,
+    .color = (uint32_t)0 | localColor.r << 16 | localColor.g << 8 | localColor.b
+  };
+}

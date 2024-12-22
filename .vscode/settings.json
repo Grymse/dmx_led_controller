@@ -60,5 +60,7 @@
     "thread": "cpp",
     "protocol.pb.h": "c"
   },
-  "cSpell.words": ["CRGB"]
+  "cSpell.words": [
+    "CRGB"
+  ],
 }

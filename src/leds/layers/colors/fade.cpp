@@ -18,7 +18,15 @@ String FadeColor::getName() {
  */
 FadeColor::FadeColor(std::vector<CRGB> colors, u16_t duration) {
   this->colors = colors;
-  this->duration = duration / colors.size();
+  this->duration = duration;
+}
+
+CRGB fadeBetween(CRGB from, CRGB to, float percentage) {
+  return CRGB(
+    (1 - percentage) * from.r + percentage * to.r,
+    (1 - percentage) * from.g + percentage * to.g,
+    (1 - percentage) * from.b + percentage * to.b
+  );
 }
 
 /**
@@ -28,9 +36,20 @@ FadeColor::FadeColor(std::vector<CRGB> colors, u16_t duration) {
  * @return The modified color after applying the blink pattern.
  */
 CRGB FadeColor::apply(CRGB color, LEDState* state) {
+  u16_t duration = duration / colors.size();
   float percentage = (state->tick % duration) / (float)duration;
   u8_t fromIndex = (state->tick / duration) % colors.size();
   u8_t toIndex = (fromIndex + 1) % colors.size();
 
-  return nblend(colors[fromIndex], colors[toIndex], percentage * 255);
+  return fadeBetween(colors[fromIndex], colors[toIndex], percentage);
+}
+
+protocol_Layer FadeColor::toEncodable() {
+  return protocol_Layer {
+    .type = protocol_LayerType_FadeColor,
+    .duration = duration,
+    .colors = {
+      .arg = &colors
+    }
+  };
 }

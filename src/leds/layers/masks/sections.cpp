@@ -4,7 +4,7 @@
 #include "masks.h"
 
 String SectionsMask::getName() {
-  return "Section Mask";
+  return "Sections Mask";
 }
 
 /**
@@ -16,7 +16,7 @@ String SectionsMask::getName() {
  * @example SectionsMask({255, 0, 255, 0}, 10)
  */
 SectionsMask::SectionsMask(std::vector<u8_t> sections, u16_t duration) {
-  this->duration = duration / sections.size();
+  this->duration = duration;
   this->sections = sections;
 }
 
@@ -27,7 +27,18 @@ SectionsMask::SectionsMask(std::vector<u8_t> sections, u16_t duration) {
  * @return The modified color after applying the blink pattern.
  */
 CRGB SectionsMask::apply(CRGB color, LEDState* state) {
+  u16_t duration = duration / sections.size();
   float sectionLength = (float)state->length / sections.size();
   u16_t sectionIndex = state->tick / duration + (state->index / sectionLength);
   return color.scale8(sections[sectionIndex % sections.size()]);
+}
+
+protocol_Layer SectionsMask::toEncodable() {
+  return protocol_Layer {
+    .type = protocol_LayerType_SectionsMask,
+    .duration = duration,
+    .sections = {
+      .arg = &sections
+    }
+  };
 }

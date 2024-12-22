@@ -15,7 +15,41 @@ typedef enum _protocol_Direction {
     protocol_Direction_BACKWARD = 1
 } protocol_Direction;
 
+typedef enum _protocol_LayerType {
+    /* Colors */
+    protocol_LayerType_SingleColor = 0,
+    protocol_LayerType_RainbowColor = 1,
+    protocol_LayerType_SectionsWaveColor = 2,
+    protocol_LayerType_SectionsColor = 3,
+    protocol_LayerType_FadeColor = 4,
+    protocol_LayerType_SwitchColor = 5,
+    /* Masks - 50 offset */
+    protocol_LayerType_BlinkMask = 50,
+    protocol_LayerType_InvertMask = 51,
+    protocol_LayerType_PulseSawtoothMask = 52,
+    protocol_LayerType_PulseMask = 53,
+    protocol_LayerType_SawtoothMask = 54,
+    protocol_LayerType_SectionsWaveMask = 55,
+    protocol_LayerType_SectionsMask = 56,
+    protocol_LayerType_StarsMask = 57,
+    protocol_LayerType_WaveMask = 58
+} protocol_LayerType;
+
 /* Struct definitions */
+/* The request message containing the desired effect and brightness. */
+typedef struct _protocol_Layer {
+    protocol_LayerType type;
+    uint32_t duration;
+    uint32_t length;
+    uint32_t color;
+    uint32_t gap;
+    uint32_t frequency;
+    uint32_t speed;
+    pb_callback_t colors;
+    pb_callback_t sections;
+    pb_callback_t text;
+} protocol_Layer;
+
 /* The request message containing an array of effects. */
 typedef struct _protocol_Animation {
     protocol_Direction direction;
@@ -28,103 +62,6 @@ typedef struct _protocol_Sequence {
     pb_callback_t animations;
 } protocol_Sequence;
 
-typedef struct _protocol_FadeColor {
-    pb_callback_t colors;
-    uint32_t duration;
-} protocol_FadeColor;
-
-typedef struct _protocol_RainbowColor {
-    uint32_t duration;
-    uint32_t length;
-} protocol_RainbowColor;
-
-typedef struct _protocol_SectionsWaveColor {
-    pb_callback_t sections;
-    uint32_t duration;
-} protocol_SectionsWaveColor;
-
-typedef struct _protocol_SectionsColor {
-    pb_callback_t sections;
-    uint32_t duration;
-} protocol_SectionsColor;
-
-typedef struct _protocol_SingleColor {
-    uint32_t color;
-} protocol_SingleColor;
-
-typedef struct _protocol_SwitchColor {
-    pb_callback_t colors;
-    uint32_t duration;
-} protocol_SwitchColor;
-
-typedef struct _protocol_BlinkMask {
-    pb_callback_t pattern;
-    uint32_t duration;
-} protocol_BlinkMask;
-
-typedef struct _protocol_InvertMask {
-    char dummy_field;
-} protocol_InvertMask;
-
-typedef struct _protocol_PulseSawtoothMask {
-    uint32_t pulse_gap;
-    uint32_t duration;
-} protocol_PulseSawtoothMask;
-
-typedef struct _protocol_PulseMask {
-    uint32_t pulse_gap;
-    uint32_t duration;
-} protocol_PulseMask;
-
-typedef struct _protocol_SawtoothMask {
-    uint32_t wavelength;
-    uint32_t wavegap;
-    uint32_t duration;
-} protocol_SawtoothMask;
-
-typedef struct _protocol_SectionsWaveMask {
-    pb_callback_t sections;
-    uint32_t duration;
-} protocol_SectionsWaveMask;
-
-typedef struct _protocol_SectionsMask {
-    pb_callback_t sections;
-    uint32_t duration;
-} protocol_SectionsMask;
-
-typedef struct _protocol_StarsMask {
-    uint32_t frequency;
-    uint32_t decaySpeed;
-    uint32_t starLength;
-} protocol_StarsMask;
-
-typedef struct _protocol_WaveMask {
-    uint32_t wavelength;
-    uint32_t wavegap;
-    uint32_t duration;
-} protocol_WaveMask;
-
-typedef struct _protocol_Layer {
-    pb_size_t which_payload;
-    union _protocol_Layer_payload {
-        protocol_FadeColor fadeColor;
-        protocol_RainbowColor rainbowColor;
-        protocol_SectionsWaveColor sectionsWaveColor;
-        protocol_SectionsColor sectionsColor;
-        protocol_SingleColor singleColor;
-        protocol_SwitchColor switchColor;
-        protocol_BlinkMask blinkMask;
-        protocol_InvertMask invertMask;
-        protocol_PulseSawtoothMask pulseSawtoothMask;
-        protocol_PulseMask pulseMask;
-        protocol_SawtoothMask sawtoothMask;
-        protocol_SectionsWaveMask sectionsWaveMask;
-        protocol_SectionsMask sectionsMask;
-        protocol_StarsMask starsMask;
-        protocol_WaveMask waveMask;
-    } payload;
-} protocol_Layer;
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -135,117 +72,56 @@ extern "C" {
 #define _protocol_Direction_MAX protocol_Direction_BACKWARD
 #define _protocol_Direction_ARRAYSIZE ((protocol_Direction)(protocol_Direction_BACKWARD+1))
 
+#define _protocol_LayerType_MIN protocol_LayerType_SingleColor
+#define _protocol_LayerType_MAX protocol_LayerType_WaveMask
+#define _protocol_LayerType_ARRAYSIZE ((protocol_LayerType)(protocol_LayerType_WaveMask+1))
+
+#define protocol_Layer_type_ENUMTYPE protocol_LayerType
+
 #define protocol_Animation_direction_ENUMTYPE protocol_Direction
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* Initializer values for message structs */
+#define protocol_Layer_init_default              {_protocol_LayerType_MIN, 0, 0, 0, 0, 0, 0, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}}
 #define protocol_Animation_init_default          {_protocol_Direction_MIN, 0, {{NULL}, NULL}}
 #define protocol_Sequence_init_default           {0, {{NULL}, NULL}}
-#define protocol_Layer_init_default              {0, {protocol_FadeColor_init_default}}
-#define protocol_FadeColor_init_default          {{{NULL}, NULL}, 0}
-#define protocol_RainbowColor_init_default       {0, 0}
-#define protocol_SectionsWaveColor_init_default  {{{NULL}, NULL}, 0}
-#define protocol_SectionsColor_init_default      {{{NULL}, NULL}, 0}
-#define protocol_SingleColor_init_default        {0}
-#define protocol_SwitchColor_init_default        {{{NULL}, NULL}, 0}
-#define protocol_BlinkMask_init_default          {{{NULL}, NULL}, 0}
-#define protocol_InvertMask_init_default         {0}
-#define protocol_PulseSawtoothMask_init_default  {0, 0}
-#define protocol_PulseMask_init_default          {0, 0}
-#define protocol_SawtoothMask_init_default       {0, 0, 0}
-#define protocol_SectionsWaveMask_init_default   {{{NULL}, NULL}, 0}
-#define protocol_SectionsMask_init_default       {{{NULL}, NULL}, 0}
-#define protocol_StarsMask_init_default          {0, 0, 0}
-#define protocol_WaveMask_init_default           {0, 0, 0}
+#define protocol_Layer_init_zero                 {_protocol_LayerType_MIN, 0, 0, 0, 0, 0, 0, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}}
 #define protocol_Animation_init_zero             {_protocol_Direction_MIN, 0, {{NULL}, NULL}}
 #define protocol_Sequence_init_zero              {0, {{NULL}, NULL}}
-#define protocol_Layer_init_zero                 {0, {protocol_FadeColor_init_zero}}
-#define protocol_FadeColor_init_zero             {{{NULL}, NULL}, 0}
-#define protocol_RainbowColor_init_zero          {0, 0}
-#define protocol_SectionsWaveColor_init_zero     {{{NULL}, NULL}, 0}
-#define protocol_SectionsColor_init_zero         {{{NULL}, NULL}, 0}
-#define protocol_SingleColor_init_zero           {0}
-#define protocol_SwitchColor_init_zero           {{{NULL}, NULL}, 0}
-#define protocol_BlinkMask_init_zero             {{{NULL}, NULL}, 0}
-#define protocol_InvertMask_init_zero            {0}
-#define protocol_PulseSawtoothMask_init_zero     {0, 0}
-#define protocol_PulseMask_init_zero             {0, 0}
-#define protocol_SawtoothMask_init_zero          {0, 0, 0}
-#define protocol_SectionsWaveMask_init_zero      {{{NULL}, NULL}, 0}
-#define protocol_SectionsMask_init_zero          {{{NULL}, NULL}, 0}
-#define protocol_StarsMask_init_zero             {0, 0, 0}
-#define protocol_WaveMask_init_zero              {0, 0, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
+#define protocol_Layer_type_tag                  1
+#define protocol_Layer_duration_tag              2
+#define protocol_Layer_length_tag                3
+#define protocol_Layer_color_tag                 4
+#define protocol_Layer_gap_tag                   5
+#define protocol_Layer_frequency_tag             6
+#define protocol_Layer_speed_tag                 7
+#define protocol_Layer_colors_tag                8
+#define protocol_Layer_sections_tag              9
+#define protocol_Layer_text_tag                  10
 #define protocol_Animation_direction_tag         1
 #define protocol_Animation_duration_tag          2
 #define protocol_Animation_layers_tag            3
 #define protocol_Sequence_brightness_tag         1
 #define protocol_Sequence_animations_tag         2
-#define protocol_FadeColor_colors_tag            1
-#define protocol_FadeColor_duration_tag          2
-#define protocol_RainbowColor_duration_tag       1
-#define protocol_RainbowColor_length_tag         2
-#define protocol_SectionsWaveColor_sections_tag  1
-#define protocol_SectionsWaveColor_duration_tag  2
-#define protocol_SectionsColor_sections_tag      1
-#define protocol_SectionsColor_duration_tag      2
-#define protocol_SingleColor_color_tag           1
-#define protocol_SwitchColor_colors_tag          1
-#define protocol_SwitchColor_duration_tag        2
-#define protocol_BlinkMask_pattern_tag           1
-#define protocol_BlinkMask_duration_tag          2
-#define protocol_PulseSawtoothMask_pulse_gap_tag 1
-#define protocol_PulseSawtoothMask_duration_tag  2
-#define protocol_PulseMask_pulse_gap_tag         1
-#define protocol_PulseMask_duration_tag          2
-#define protocol_SawtoothMask_wavelength_tag     1
-#define protocol_SawtoothMask_wavegap_tag        2
-#define protocol_SawtoothMask_duration_tag       3
-#define protocol_SectionsWaveMask_sections_tag   1
-#define protocol_SectionsWaveMask_duration_tag   2
-#define protocol_SectionsMask_sections_tag       1
-#define protocol_SectionsMask_duration_tag       2
-#define protocol_StarsMask_frequency_tag         1
-#define protocol_StarsMask_decaySpeed_tag        2
-#define protocol_StarsMask_starLength_tag        3
-#define protocol_WaveMask_wavelength_tag         1
-#define protocol_WaveMask_wavegap_tag            2
-#define protocol_WaveMask_duration_tag           3
-#define protocol_Layer_fadeColor_tag             1
-#define protocol_Layer_rainbowColor_tag          2
-#define protocol_Layer_sectionsWaveColor_tag     3
-#define protocol_Layer_sectionsColor_tag         4
-#define protocol_Layer_singleColor_tag           5
-#define protocol_Layer_switchColor_tag           6
-#define protocol_Layer_blinkMask_tag             40
-#define protocol_Layer_invertMask_tag            41
-#define protocol_Layer_pulseSawtoothMask_tag     42
-#define protocol_Layer_pulseMask_tag             43
-#define protocol_Layer_sawtoothMask_tag          44
-#define protocol_Layer_sectionsWaveMask_tag      45
-#define protocol_Layer_sectionsMask_tag          46
-#define protocol_Layer_starsMask_tag             47
-#define protocol_Layer_waveMask_tag              48
 
 /* Struct field encoding specification for nanopb */
+#define protocol_Layer_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UENUM,    type,              1) \
+X(a, STATIC,   SINGULAR, UINT32,   duration,          2) \
+X(a, STATIC,   SINGULAR, UINT32,   length,            3) \
+X(a, STATIC,   SINGULAR, UINT32,   color,             4) \
+X(a, STATIC,   SINGULAR, UINT32,   gap,               5) \
+X(a, STATIC,   SINGULAR, UINT32,   frequency,         6) \
+X(a, STATIC,   SINGULAR, UINT32,   speed,             7) \
+X(a, CALLBACK, REPEATED, UINT32,   colors,            8) \
+X(a, CALLBACK, SINGULAR, BYTES,    sections,          9) \
+X(a, CALLBACK, SINGULAR, STRING,   text,             10)
+#define protocol_Layer_CALLBACK pb_default_field_callback
+#define protocol_Layer_DEFAULT NULL
+
 #define protocol_Animation_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UENUM,    direction,         1) \
 X(a, STATIC,   SINGULAR, UINT32,   duration,          2) \
@@ -261,190 +137,19 @@ X(a, CALLBACK, REPEATED, MESSAGE,  animations,        2)
 #define protocol_Sequence_DEFAULT NULL
 #define protocol_Sequence_animations_MSGTYPE protocol_Animation
 
-#define protocol_Layer_FIELDLIST(X, a) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,fadeColor,payload.fadeColor),   1) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,rainbowColor,payload.rainbowColor),   2) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,sectionsWaveColor,payload.sectionsWaveColor),   3) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,sectionsColor,payload.sectionsColor),   4) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,singleColor,payload.singleColor),   5) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,switchColor,payload.switchColor),   6) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,blinkMask,payload.blinkMask),  40) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,invertMask,payload.invertMask),  41) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,pulseSawtoothMask,payload.pulseSawtoothMask),  42) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,pulseMask,payload.pulseMask),  43) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,sawtoothMask,payload.sawtoothMask),  44) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,sectionsWaveMask,payload.sectionsWaveMask),  45) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,sectionsMask,payload.sectionsMask),  46) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,starsMask,payload.starsMask),  47) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,waveMask,payload.waveMask),  48)
-#define protocol_Layer_CALLBACK NULL
-#define protocol_Layer_DEFAULT NULL
-#define protocol_Layer_payload_fadeColor_MSGTYPE protocol_FadeColor
-#define protocol_Layer_payload_rainbowColor_MSGTYPE protocol_RainbowColor
-#define protocol_Layer_payload_sectionsWaveColor_MSGTYPE protocol_SectionsWaveColor
-#define protocol_Layer_payload_sectionsColor_MSGTYPE protocol_SectionsColor
-#define protocol_Layer_payload_singleColor_MSGTYPE protocol_SingleColor
-#define protocol_Layer_payload_switchColor_MSGTYPE protocol_SwitchColor
-#define protocol_Layer_payload_blinkMask_MSGTYPE protocol_BlinkMask
-#define protocol_Layer_payload_invertMask_MSGTYPE protocol_InvertMask
-#define protocol_Layer_payload_pulseSawtoothMask_MSGTYPE protocol_PulseSawtoothMask
-#define protocol_Layer_payload_pulseMask_MSGTYPE protocol_PulseMask
-#define protocol_Layer_payload_sawtoothMask_MSGTYPE protocol_SawtoothMask
-#define protocol_Layer_payload_sectionsWaveMask_MSGTYPE protocol_SectionsWaveMask
-#define protocol_Layer_payload_sectionsMask_MSGTYPE protocol_SectionsMask
-#define protocol_Layer_payload_starsMask_MSGTYPE protocol_StarsMask
-#define protocol_Layer_payload_waveMask_MSGTYPE protocol_WaveMask
-
-#define protocol_FadeColor_FIELDLIST(X, a) \
-X(a, CALLBACK, REPEATED, UINT32,   colors,            1) \
-X(a, STATIC,   SINGULAR, UINT32,   duration,          2)
-#define protocol_FadeColor_CALLBACK pb_default_field_callback
-#define protocol_FadeColor_DEFAULT NULL
-
-#define protocol_RainbowColor_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   duration,          1) \
-X(a, STATIC,   SINGULAR, UINT32,   length,            2)
-#define protocol_RainbowColor_CALLBACK NULL
-#define protocol_RainbowColor_DEFAULT NULL
-
-#define protocol_SectionsWaveColor_FIELDLIST(X, a) \
-X(a, CALLBACK, REPEATED, UINT32,   sections,          1) \
-X(a, STATIC,   SINGULAR, UINT32,   duration,          2)
-#define protocol_SectionsWaveColor_CALLBACK pb_default_field_callback
-#define protocol_SectionsWaveColor_DEFAULT NULL
-
-#define protocol_SectionsColor_FIELDLIST(X, a) \
-X(a, CALLBACK, REPEATED, UINT32,   sections,          1) \
-X(a, STATIC,   SINGULAR, UINT32,   duration,          2)
-#define protocol_SectionsColor_CALLBACK pb_default_field_callback
-#define protocol_SectionsColor_DEFAULT NULL
-
-#define protocol_SingleColor_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   color,             1)
-#define protocol_SingleColor_CALLBACK NULL
-#define protocol_SingleColor_DEFAULT NULL
-
-#define protocol_SwitchColor_FIELDLIST(X, a) \
-X(a, CALLBACK, REPEATED, UINT32,   colors,            1) \
-X(a, STATIC,   SINGULAR, UINT32,   duration,          2)
-#define protocol_SwitchColor_CALLBACK pb_default_field_callback
-#define protocol_SwitchColor_DEFAULT NULL
-
-#define protocol_BlinkMask_FIELDLIST(X, a) \
-X(a, CALLBACK, REPEATED, UINT32,   pattern,           1) \
-X(a, STATIC,   SINGULAR, UINT32,   duration,          2)
-#define protocol_BlinkMask_CALLBACK pb_default_field_callback
-#define protocol_BlinkMask_DEFAULT NULL
-
-#define protocol_InvertMask_FIELDLIST(X, a) \
-
-#define protocol_InvertMask_CALLBACK NULL
-#define protocol_InvertMask_DEFAULT NULL
-
-#define protocol_PulseSawtoothMask_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   pulse_gap,         1) \
-X(a, STATIC,   SINGULAR, UINT32,   duration,          2)
-#define protocol_PulseSawtoothMask_CALLBACK NULL
-#define protocol_PulseSawtoothMask_DEFAULT NULL
-
-#define protocol_PulseMask_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   pulse_gap,         1) \
-X(a, STATIC,   SINGULAR, UINT32,   duration,          2)
-#define protocol_PulseMask_CALLBACK NULL
-#define protocol_PulseMask_DEFAULT NULL
-
-#define protocol_SawtoothMask_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   wavelength,        1) \
-X(a, STATIC,   SINGULAR, UINT32,   wavegap,           2) \
-X(a, STATIC,   SINGULAR, UINT32,   duration,          3)
-#define protocol_SawtoothMask_CALLBACK NULL
-#define protocol_SawtoothMask_DEFAULT NULL
-
-#define protocol_SectionsWaveMask_FIELDLIST(X, a) \
-X(a, CALLBACK, REPEATED, UINT32,   sections,          1) \
-X(a, STATIC,   SINGULAR, UINT32,   duration,          2)
-#define protocol_SectionsWaveMask_CALLBACK pb_default_field_callback
-#define protocol_SectionsWaveMask_DEFAULT NULL
-
-#define protocol_SectionsMask_FIELDLIST(X, a) \
-X(a, CALLBACK, REPEATED, UINT32,   sections,          1) \
-X(a, STATIC,   SINGULAR, UINT32,   duration,          2)
-#define protocol_SectionsMask_CALLBACK pb_default_field_callback
-#define protocol_SectionsMask_DEFAULT NULL
-
-#define protocol_StarsMask_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   frequency,         1) \
-X(a, STATIC,   SINGULAR, UINT32,   decaySpeed,        2) \
-X(a, STATIC,   SINGULAR, UINT32,   starLength,        3)
-#define protocol_StarsMask_CALLBACK NULL
-#define protocol_StarsMask_DEFAULT NULL
-
-#define protocol_WaveMask_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   wavelength,        1) \
-X(a, STATIC,   SINGULAR, UINT32,   wavegap,           2) \
-X(a, STATIC,   SINGULAR, UINT32,   duration,          3)
-#define protocol_WaveMask_CALLBACK NULL
-#define protocol_WaveMask_DEFAULT NULL
-
+extern const pb_msgdesc_t protocol_Layer_msg;
 extern const pb_msgdesc_t protocol_Animation_msg;
 extern const pb_msgdesc_t protocol_Sequence_msg;
-extern const pb_msgdesc_t protocol_Layer_msg;
-extern const pb_msgdesc_t protocol_FadeColor_msg;
-extern const pb_msgdesc_t protocol_RainbowColor_msg;
-extern const pb_msgdesc_t protocol_SectionsWaveColor_msg;
-extern const pb_msgdesc_t protocol_SectionsColor_msg;
-extern const pb_msgdesc_t protocol_SingleColor_msg;
-extern const pb_msgdesc_t protocol_SwitchColor_msg;
-extern const pb_msgdesc_t protocol_BlinkMask_msg;
-extern const pb_msgdesc_t protocol_InvertMask_msg;
-extern const pb_msgdesc_t protocol_PulseSawtoothMask_msg;
-extern const pb_msgdesc_t protocol_PulseMask_msg;
-extern const pb_msgdesc_t protocol_SawtoothMask_msg;
-extern const pb_msgdesc_t protocol_SectionsWaveMask_msg;
-extern const pb_msgdesc_t protocol_SectionsMask_msg;
-extern const pb_msgdesc_t protocol_StarsMask_msg;
-extern const pb_msgdesc_t protocol_WaveMask_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
+#define protocol_Layer_fields &protocol_Layer_msg
 #define protocol_Animation_fields &protocol_Animation_msg
 #define protocol_Sequence_fields &protocol_Sequence_msg
-#define protocol_Layer_fields &protocol_Layer_msg
-#define protocol_FadeColor_fields &protocol_FadeColor_msg
-#define protocol_RainbowColor_fields &protocol_RainbowColor_msg
-#define protocol_SectionsWaveColor_fields &protocol_SectionsWaveColor_msg
-#define protocol_SectionsColor_fields &protocol_SectionsColor_msg
-#define protocol_SingleColor_fields &protocol_SingleColor_msg
-#define protocol_SwitchColor_fields &protocol_SwitchColor_msg
-#define protocol_BlinkMask_fields &protocol_BlinkMask_msg
-#define protocol_InvertMask_fields &protocol_InvertMask_msg
-#define protocol_PulseSawtoothMask_fields &protocol_PulseSawtoothMask_msg
-#define protocol_PulseMask_fields &protocol_PulseMask_msg
-#define protocol_SawtoothMask_fields &protocol_SawtoothMask_msg
-#define protocol_SectionsWaveMask_fields &protocol_SectionsWaveMask_msg
-#define protocol_SectionsMask_fields &protocol_SectionsMask_msg
-#define protocol_StarsMask_fields &protocol_StarsMask_msg
-#define protocol_WaveMask_fields &protocol_WaveMask_msg
 
 /* Maximum encoded size of messages (where known) */
+/* protocol_Layer_size depends on runtime parameters */
 /* protocol_Animation_size depends on runtime parameters */
 /* protocol_Sequence_size depends on runtime parameters */
-/* protocol_Layer_size depends on runtime parameters */
-/* protocol_FadeColor_size depends on runtime parameters */
-/* protocol_SectionsWaveColor_size depends on runtime parameters */
-/* protocol_SectionsColor_size depends on runtime parameters */
-/* protocol_SwitchColor_size depends on runtime parameters */
-/* protocol_BlinkMask_size depends on runtime parameters */
-/* protocol_SectionsWaveMask_size depends on runtime parameters */
-/* protocol_SectionsMask_size depends on runtime parameters */
-#define PROTOCOL_PROTOCOL_PB_H_MAX_SIZE          protocol_SawtoothMask_size
-#define protocol_InvertMask_size                 0
-#define protocol_PulseMask_size                  12
-#define protocol_PulseSawtoothMask_size          12
-#define protocol_RainbowColor_size               12
-#define protocol_SawtoothMask_size               18
-#define protocol_SingleColor_size                6
-#define protocol_StarsMask_size                  18
-#define protocol_WaveMask_size                   18
 
 #ifdef __cplusplus
 } /* extern "C" */

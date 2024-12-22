@@ -4,7 +4,7 @@
 #include "colors.h"
 
 String SectionsColor::getName() {
-  return "Section Color";
+  return "Sections Color";
 }
 
 /**
@@ -16,7 +16,7 @@ String SectionsColor::getName() {
  * @example SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue}, 50)
  */
 SectionsColor::SectionsColor(std::vector<CRGB> sections, u16_t duration) {
-  this->duration = duration / sections.size();
+  this->duration = duration;
   this->sections = sections;
 }
 
@@ -27,7 +27,18 @@ SectionsColor::SectionsColor(std::vector<CRGB> sections, u16_t duration) {
  * @return The modified color after applying the blink pattern.
  */
 CRGB SectionsColor::apply(CRGB color, LEDState* state) {
+  u16_t duration = duration / sections.size();
   float sectionLength = (float)state->length / sections.size();
   u16_t sectionIndex = state->tick / duration + (state->index / sectionLength);
   return sections[sectionIndex % sections.size()];
+}
+
+protocol_Layer SectionsColor::toEncodable() {
+  return protocol_Layer {
+    .type = protocol_LayerType_SectionsColor,
+    .duration = duration,
+    .sections = {
+      .arg = &sections
+    }
+  };
 }

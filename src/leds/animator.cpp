@@ -70,7 +70,17 @@ void Animator::setDirection(Direction direction) {
  */
 void Animator::setLayers(std::vector<ILayer*> layers) {
   this->layers = layers;
+
   resetTick();
+}
+
+/**
+ * @brief Get the current brightness of the animation
+ *
+ * @return u8_t
+ */
+u8_t Animator::getBrightness() {
+  return brightness;
 }
 
 /**

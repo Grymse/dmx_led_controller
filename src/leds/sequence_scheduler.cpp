@@ -65,7 +65,7 @@ void SequenceScheduler::set(Sequence* sequence) {
   clear();
   animations = sequence->animations;
   for (Animation* animation : animations) {
-    animation->tickDuration == 0 ? ANIMATION_DURATION_MAX : animation->tickDuration; // Set duration to max if not set
+    animation->tickDuration = animation->tickDuration == 0 ? ANIMATION_DURATION_MAX : animation->tickDuration; // Set duration to max if not set
   }
   setBrightness(sequence->brightness);
 }
@@ -88,6 +88,15 @@ void SequenceScheduler::clear() {
   setBrightness(255);
   animator->clear();
   reset();
+}
+
+/**
+ * @brief Get the current sequence
+ *
+ * @return Sequence* The current sequence
+ */
+Sequence* SequenceScheduler::getSequence() {
+  return new Sequence({ animations, animator->getBrightness() });
 }
 
 /**
