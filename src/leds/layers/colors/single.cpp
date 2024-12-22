@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <FastLED.h>
 #include "colors.h"
+#include "../utils.h"
 
 String SingleColor::getName() {
   return "Single Color";
@@ -15,6 +16,12 @@ String SingleColor::getName() {
  */
 SingleColor::SingleColor(CRGB color) {
   this->localColor = color;
+}
+
+String SingleColor::toString() {
+  String str = "SingleColor: c: " + LayerUtils::color_to_string(localColor);
+  
+  return str;
 }
 
 /**

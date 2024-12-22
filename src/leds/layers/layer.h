@@ -17,6 +17,13 @@ class ILayer {
   virtual String getName() = 0;
 
   /**
+   * @brief To String
+   * 
+   * @return String
+   */
+  virtual String toString() = 0;
+
+  /**
    * @brief Encode the layer into a protocol buffer.
    *
    * @return protocol_Layer

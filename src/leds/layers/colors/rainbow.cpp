@@ -20,6 +20,11 @@ RainbowColor::RainbowColor(u16_t duration, u16_t length) {
   this->length = length;
 }
 
+String RainbowColor::toString() {
+  String str = "RainbowColor: d: " + String(duration) + ", l: " + String(length);
+  return str;
+}
+
 /**
  * @brief Overwrites color to a rainbow based on the current state (tick and index of led)
  * @param color The original color of the LED.

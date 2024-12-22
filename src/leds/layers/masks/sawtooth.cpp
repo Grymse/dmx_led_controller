@@ -23,6 +23,11 @@ SawtoothMask::SawtoothMask(u16_t wavelength, u16_t wavegap, u16_t duration) {
   this->duration = duration;
 }
 
+String SawtoothMask::toString() {
+  return "SawtoothMask: d: " + String(duration) + ", l: " + String(wavelength) + ", g: " + String(wavegap);
+}
+
+
 /**
  * @brief Applies a sawtooth wave to the given color based on the current state (tick and index of led)
  * @param color The original color of the LED.

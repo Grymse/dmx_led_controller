@@ -3,6 +3,7 @@
 #include <colorutils.h>
 #include <vector>
 #include "colors.h"
+#include "../utils.h"
 
 String FadeColor::getName() {
   return "Fade Color";
@@ -27,6 +28,13 @@ CRGB fadeBetween(CRGB from, CRGB to, float percentage) {
     (1 - percentage) * from.g + percentage * to.g,
     (1 - percentage) * from.b + percentage * to.b
   );
+}
+
+String FadeColor::toString() {
+  String str = "FadeColor: d: " + String(duration) + ", c: ";
+  str += LayerUtils::colors_to_string(colors);
+  
+  return str;
 }
 
 /**

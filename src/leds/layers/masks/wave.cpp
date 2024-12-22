@@ -24,6 +24,9 @@ WaveMask::WaveMask(u16_t wavelength, u16_t wavegap, u16_t duration) {
   this->duration = duration;
 }
 
+String WaveMask::toString() {
+  return "WaveMask: d: " + String(duration) + ", l: " + String(wavelength) + ", g: " + String(wavegap);
+}
 
 /**
  * @brief Applies a wave to the given color based on the current state (tick and index of led)

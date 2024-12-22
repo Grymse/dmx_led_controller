@@ -20,6 +20,10 @@ PulseMask::PulseMask(u16_t pulse_gap, u16_t duration) {
   this->duration = duration;
 }
 
+String PulseMask::toString() {
+  return "PulseMask: d: " + String(duration) + ", p: " + String(pulse_gap);
+}
+
 /**
  * @brief Applies a pulse wave to the given color based on the current state (tick and index of led)
  * @param color The original color of the LED.

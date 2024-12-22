@@ -2,6 +2,7 @@
 #include <FastLED.h>
 #include <vector>
 #include "masks.h"
+#include "../utils.h"
 
 
 /**
@@ -16,6 +17,13 @@ BlinkMask::BlinkMask(std::vector<u8_t> pattern, u16_t duration)
 
 String BlinkMask::getName() {
   return "Blink Mask";
+}
+
+String BlinkMask::toString() {
+  String str = "BlinkMask: d: " + String(duration) + ", c: ";
+  str += LayerUtils::bytes_to_string(pattern);
+  
+  return str;
 }
 
 /**

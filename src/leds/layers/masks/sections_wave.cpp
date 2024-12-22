@@ -2,6 +2,7 @@
 #include <FastLED.h>
 #include <vector>
 #include "masks.h"
+#include "../utils.h"
 
 String SectionsWaveMask::getName() {
   return "Sections Wave Mask";
@@ -19,6 +20,14 @@ SectionsWaveMask::SectionsWaveMask(std::vector<u8_t> sections, u16_t duration) {
   this->duration = duration;
   this->sections = sections;
 }
+
+String SectionsWaveMask::toString() {
+  String str = "SectionsWaveMask: d: " + String(duration) + ", c: ";
+  str += LayerUtils::bytes_to_string(sections);
+  
+  return str;
+}
+
 
 /**
  * @brief Applies a wave defined by its sections to the given color based on the current state (tick and index of led)

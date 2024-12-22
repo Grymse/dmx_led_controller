@@ -79,6 +79,10 @@ StarsMask::StarsMask(u16_t frequency, u8_t decaySpeed, u8_t starLength) {
   this->starLength = starLength;
 }
 
+String StarsMask::toString() {
+  return "StarsMask: f: " + String(frequency) + ", s: " + String(decaySpeed) + ", l: " + String(starLength);
+}
+
 /**
  * @brief Applies star-effect based on the current state (tick and index of led)
  * @param color The original color of the LED.

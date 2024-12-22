@@ -2,6 +2,7 @@
 #include <FastLED.h>
 #include <vector>
 #include "masks.h"
+#include "../utils.h"
 
 String SectionsMask::getName() {
   return "Sections Mask";
@@ -19,6 +20,14 @@ SectionsMask::SectionsMask(std::vector<u8_t> sections, u16_t duration) {
   this->duration = duration;
   this->sections = sections;
 }
+
+String SectionsMask::toString() {
+  String str = "SectionsMask: d: " + String(duration) + ", c: ";
+  str += LayerUtils::bytes_to_string(sections);
+  
+  return str;
+}
+
 
 /**
  * @brief Static sections switch through amplitude based on the current state (tick and index of led) and sections

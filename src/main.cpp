@@ -22,7 +22,7 @@ CRGB* leds = new CRGB[NUM_LEDS];
 ProcessScheduler scheduler;
 Animator* animator;
 SequenceScheduler* sequenceScheduler;
-
+/* 
 class MyProcess : public Process {
   uint8_t buffer[12] = { 8, 255, 1, 18, 7, 26, 5, 32, 128, 128, 252, 7 };
 
@@ -60,15 +60,6 @@ class MyProcess2 : public Process {
     pb_ostream_t ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 
     SequenceEncoder::encode(&ostream, sequenceScheduler->getSequence());
-/* 
-    printf("\nSIZE %zu\n", ostream.bytes_written);
-
-    printf("Buffer content: ");
-    for (size_t i = 0; i < ostream.bytes_written; ++i) {
-      printf("%d, ", buffer[i]);
-    }
-    printf("\n"); */
-    // Example of writing to the stream
 
     // Reset the stream for reading
     pb_istream_t stream = pb_istream_from_buffer(buffer, ostream.bytes_written);
@@ -76,27 +67,9 @@ class MyProcess2 : public Process {
     Sequence* sequence = new Sequence();
     SequenceDecoder::decode(&stream, sequence);
     sequenceScheduler->set(sequence);
-    printf("Decoded sequence with %d animations\n", sequence->animations.size());
-    for (Animation* animation : sequence->animations) {
-      printf("Animation with %d layers\n", animation->layers.size());
-      for (ILayer* layer : animation->layers) {
-        printf("Layer: %s\n", layer->getName().c_str());
-
-        if (layer->getName() == "Sections Wave Mask") {
-          SectionsWaveMask* mask = static_cast<SectionsWaveMask*>(layer);
-          printf("Duration: %d\n", mask->duration);
-          // print all colors
-          printf("Sections: ");
-          for (u8_t section : mask->sections) {
-            printf("%d, ", section);
-          }
-          printf("\n");
-        }
-      }
-    }
   } 
 };
-
+ */
 void setup() {
   // put your setup code here, to run once:
   scheduler = ProcessScheduler();
@@ -108,29 +81,29 @@ void setup() {
   animator = new Animator(leds, NUM_LEDS);
   sequenceScheduler = new SequenceScheduler(animator);
 
-  // TODO: vector with multiple colors. First color is always the same as the second. Independent of what the first color is.
+
   sequenceScheduler->add({
     /** COLORS */
     new SingleColor(CRGB::Blue),
-    /* new RainbowColor(500, 0), */
+    /* new RainbowColor(500, 0),
     new FadeColor({CRGB(0,0,255),CRGB(0,255,0) ,CRGB(255,0,0)}, 50),
-    /* new SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100), */
-    /* new SectionsColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100), */
-    /* new SwitchColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100), */
-
+    new SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
+    new SectionsColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
+    new SwitchColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
+ */
     /** MASKS */
-    /* new BlinkMask({255, 0, 0, 0}, 50), */
-    /* new InvertMask(), */
-    /* new PulseSawtoothMask(10, 50), */
-    /* new PulseMask(10, 50), */
-    /* new SawtoothMask(100, 0, 300), */
+    /* new BlinkMask({255, 0, 0, 0}, 50),
+    new InvertMask(),
+    new PulseSawtoothMask(10, 50),
+    new PulseMask(10, 50),
+    new SawtoothMask(100, 0, 300),
     new SectionsWaveMask({0}, 50),
-    /* new SectionsMask({255, 0, 0, 255, 0}, 50), */
-    /* new StarsMask(200, 10, 3), */
+    new SectionsMask({255, 0, 0, 255, 0}, 50),
+    new StarsMask(200, 10, 3), */
 
     // Gang
-    /* new SingleColor(CRGB::Red), */
-    /* new StarsMask(200, 5, 1), */
+    /* new SingleColor(CRGB::Red),
+    new StarsMask(200, 5, 1), */
 
     // Indgang
     /* new RainbowColor(500, 0),
@@ -139,46 +112,16 @@ void setup() {
     /* new WaveMask(100, 100, 50), */
     }
   , 2000);
-/* 
-  sequenceScheduler->add({
-    new SingleColor(CRGB::Blue),
-    new FadeColor({CRGB(0,0,255),CRGB(0,255,0) ,CRGB(255,0,0)}, 50),
-    new SectionsWaveMask({255, 255, 125, 0}, 50),
-    }, 2000);
-  
-  sequenceScheduler->add({
-    new SingleColor(CRGB::Blue),
-    new FadeColor({CRGB(0,0,255),CRGB(0,255,0) ,CRGB(255,0,0)}, 50),
-    new SectionsWaveMask({255, 255, 125, 0}, 50),
-    }, 2000);
-  
-  sequenceScheduler->add({
-    new SingleColor(CRGB::Blue),
-    new FadeColor({CRGB(0,0,255),CRGB(0,255,0) ,CRGB(255,0,0)}, 50),
-    new SectionsWaveMask({255, 255, 125, 0}, 50),
-    }, 2000); */
 
   // 8, 255, 1, 18, 39, 16, 208, 15, 26, 27, 8, 55, 16, 150, 1, 74, 20, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 26, 5, 32, 128, 128, 252, 7
   // 8, 255, 1, 18, 39, 16, 208, 15, 26, 27, 8, 55, 16, 150, 1, 74, 20, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 255, 1, 26, 5, 32, 128, 128, 252, 7
-  MyProcess2* myProcess = new MyProcess2();
 
   scheduler.addProcess(sequenceScheduler, 20); // Update every 20ms
   scheduler.addProcess(animator, 20); // Update every 20ms */
-  scheduler.addProcess(myProcess, 20); // Update every 2000ms
+  /* scheduler.addProcess(myProcess, 20); // Update every 2000ms */
 }
 
 void loop() {
   scheduler.update();
   delay(1); // Stability
 }
-/* 
-void loop() {
-  protocol_Layer layer = FadeColor({CRGB::Green,CRGB::Blue}, 300).toEncodable();
-  std::vector<CRGB>* colors = static_cast<std::vector<CRGB>*>(layer.colors.arg);
-  printf("Colors:\n");
-
-  for (const CRGB& color : *colors) {
-    printf("R: %d, G: %d, B: %d\n", color.r, color.g, color.b);
-  }
-  delay(1000); // Stability
-} */

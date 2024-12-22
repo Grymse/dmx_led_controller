@@ -2,6 +2,7 @@
 #include <FastLED.h>
 #include <vector>
 #include "colors.h"
+#include "../utils.h"
 
 String SectionsWaveColor::getName() {
   return "Sections Wave Color";
@@ -15,9 +16,16 @@ String SectionsWaveColor::getName() {
  *
  * @example SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue}, 50)
  */
-SectionsWaveColor::SectionsWaveColor(std::vector<CRGB> sections, u16_t duration) {
+SectionsWaveColor::SectionsWaveColor(std::vector<CRGB> colors, u16_t duration) {
   this->duration = duration;
-  this->sections = sections;
+  this->colors = colors;
+}
+
+String SectionsWaveColor::toString() {
+  String str = "SectionsWaveColor: d: " + String(duration) + ", c: ";
+  str += LayerUtils::colors_to_string(colors);
+  
+  return str;
 }
 
 /**
@@ -27,11 +35,11 @@ SectionsWaveColor::SectionsWaveColor(std::vector<CRGB> sections, u16_t duration)
  * @return The modified color after applying the blink pattern.
  */
 CRGB SectionsWaveColor::apply(CRGB color, LEDState* state) {
-  float sectionLength = (float)state->length / sections.size();
+  float sectionLength = (float)state->length / colors.size();
   u16_t tick = (state->tick % duration) * state->length / duration;
   u16_t t = (tick + state->index) / sectionLength;
 
-  return sections[t % sections.size()];
+  return colors[t % colors.size()];
 }
 
 
@@ -39,8 +47,8 @@ protocol_Layer SectionsWaveColor::toEncodable() {
   return protocol_Layer {
     .type = protocol_LayerType_SectionsWaveColor,
     .duration = duration,
-    .sections = {
-      .arg = &sections
+    .colors = {
+      .arg = &colors
     }
   };
 }

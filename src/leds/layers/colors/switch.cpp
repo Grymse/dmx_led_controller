@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <FastLED.h>
 #include "colors.h"
+#include "../utils.h"
 
 String SwitchColor::getName() {
   return "Switch Color";
@@ -18,6 +19,14 @@ SwitchColor::SwitchColor(std::vector<CRGB> colors, u16_t duration) {
   this->colors = colors;
   this->duration = duration;
 }
+
+String SwitchColor::toString() {
+  String str = "SwitchColor: d: " + String(duration) + ", c: ";
+  str += LayerUtils::colors_to_string(colors);
+  
+  return str;
+}
+
 
 /**
  * @brief Overwrites color to the colors given by the constructor, and switches color every duration ticks.

@@ -46,6 +46,10 @@ CRGB PulseSawtoothMask::apply(CRGB color, LEDState* state) {
   return color.scale8(intensity * 255);
 }
 
+String PulseSawtoothMask::toString() {
+  return "PulseSawtoothMask: d: " + String(duration) + ", p: " + String(pulse_gap);
+}
+
 protocol_Layer PulseSawtoothMask::toEncodable() {
   return protocol_Layer {
     .type = protocol_LayerType_PulseSawtoothMask,

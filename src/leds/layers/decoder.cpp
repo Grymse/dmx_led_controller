@@ -107,6 +107,7 @@ bool LayerDecoder::decode_layer(pb_istream_t* stream, const pb_field_iter_t* fie
     case protocol_LayerType_SwitchColor:
       layer = new SwitchColor(colors, incomingLayer.duration);
       break;
+    
     case protocol_LayerType_BlinkMask:
       layer = new BlinkMask(bytes, incomingLayer.duration);
       break;
