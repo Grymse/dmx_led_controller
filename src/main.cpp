@@ -24,32 +24,6 @@ Animator* animator;
 SequenceScheduler* sequenceScheduler;
 /* 
 class MyProcess : public Process {
-  uint8_t buffer[12] = { 8, 255, 1, 18, 7, 26, 5, 32, 128, 128, 252, 7 };
-
-  public:
-  String getName() {
-    return "My Process";
-  }
-
-  void update() {
-    pb_istream_t stream = pb_istream_from_buffer(buffer, sizeof(buffer));
-
-    Sequence* sequence = new Sequence();
-    SequenceDecoder::decode(&stream, sequence);
-    sequenceScheduler->set(sequence);
-    printf("Decoded sequence with %d animations\n", sequence->animations.size());
-    
-    for (Animation* animation : sequence->animations) {
-      printf("Animation with %d layers\n", animation->layers.size());
-      for (ILayer* layer : animation->layers) {
-        printf("Layer: %s\n", layer->getName().c_str());
-      }
-    }
-  } 
-};
-
-
-class MyProcess2 : public Process {
   uint8_t buffer[512];
   public:
   String getName() {
