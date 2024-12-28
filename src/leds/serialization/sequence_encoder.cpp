@@ -1,8 +1,8 @@
 #include "sequence_encoder.h"
 #include "protocol.pb.h"
 #include <vector>
-#include "layers/encoder.h"
-#include "./animator.h"
+#include "layer_encoder.h"
+#include "../animator.h"
 
 
 bool SequenceEncoder::animations_callback(pb_ostream_t *stream, const pb_field_iter_t *field, void * const *arg)

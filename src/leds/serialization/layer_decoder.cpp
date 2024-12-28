@@ -1,11 +1,11 @@
-#include "layer.h"
+#include "../layers/layer.h"
 #include "debug.h"
 #include "protocol.pb.h"
 #include <pb_decode.h>
 #include <vector>
-#include "decoder.h"
-#include "masks/masks.h"
-#include "colors/colors.h"
+#include "layer_decoder.h"
+#include "../layers/masks/masks.h"
+#include "../layers/colors/colors.h"
 
 /**
  * This function reads a stream of varint-encoded color values and decodes them into

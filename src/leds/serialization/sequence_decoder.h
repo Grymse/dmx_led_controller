@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sequence_scheduler.h"
+#include "../sequence_scheduler.h"
 #include <pb_decode.h>
 #include <vector>
 

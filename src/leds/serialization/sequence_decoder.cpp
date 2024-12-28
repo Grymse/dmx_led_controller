@@ -1,11 +1,11 @@
 // sequence_injector.cpp
 
-#include "sequence_scheduler.h"
+#include "../sequence_scheduler.h"
 #include "protocol.pb.h"
 #include <pb_decode.h>
 #include <vector>
 #include "debug.h"
-#include "layers/decoder.h"
+#include "layer_decoder.h"
 #include "sequence_decoder.h"
 
 /**

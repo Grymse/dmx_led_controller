@@ -6,8 +6,8 @@
 #include "leds/animator.h"
 #include "leds/sequence_scheduler.h"
 #include "debug.h"
-#include "leds/sequence_decoder.h"
-#include "leds/sequence_encoder.h"
+#include "leds/serialization/sequence_decoder.h"
+#include "leds/serialization/sequence_encoder.h"
 #include "leds/layers/masks/masks.h"
 #include "leds/layers/colors/colors.h"
 #include <pb_encode.h>

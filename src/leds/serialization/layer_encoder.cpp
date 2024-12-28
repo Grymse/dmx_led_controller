@@ -1,8 +1,8 @@
-#include "encoder.h"
-#include "layer.h"
+#include "layer_encoder.h"
+#include "../layers/layer.h"
 #include <vector>
-#include "masks/masks.h"
-#include "colors/colors.h"
+#include "../layers/masks/masks.h"
+#include "../layers/colors/colors.h"
 
 
 u8_t calculate_encoding_size(u32_t value) {
