@@ -28,6 +28,6 @@ void ProcessScheduler::update() {
     if (processTookTooLong) {
       printf("\033[1;31m%s took %dms\033[0m\n", process->process->getName().c_str(), diff);
     }
-    debug("t%d\n", diff);
+    //debug("t%d\n", diff);
   }
 }

@@ -1,4 +1,6 @@
 #pragma once
+#include <utility>
+#include <stdexcept>
 template <typename T>
 class Option {
 private:
@@ -12,7 +14,7 @@ public:
     Option() : hasValue(false) {}
     Option(const T& val) : hasValue(true), value(val) {}
     Option(T&& val) : hasValue(true), value(std::move(val)) {}
-    bool isPresent() const { return hasValue; }
+    bool isEmpty() const { return !hasValue; }
     const T& getValue() const {
         if (!hasValue) {
             throw std::runtime_error("No value present");
