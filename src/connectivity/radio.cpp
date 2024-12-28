@@ -1,5 +1,11 @@
 #include "radio.h"
 
+// TODO: WORK IN PROGRESS
+// This is a work in progress. The current implementation is not working as expected.
+// Only sends 32 bytes of data at a time. This is not sufficient for the protocol
+// The implementation should support larger messages and handle the splitting of the message into smaller parts.
+// Implement a protocol for sending these larger messages.
+
 /**
  * @brief Construct a new Radio object
  * 
@@ -68,7 +74,7 @@ bool Radio::write(RadioPayload payload) {
         mode = RadioMode::WRITER;
     }
     // copy the data into the local payload
-    size_t block_index = 0;
+/*     size_t block_index = 0;
     while(block_index < payload.length) {
         u8_t end_of_block_index = block_index + 31;
         u8_t end_of_block = payload.data[end_of_block_index];
@@ -78,7 +84,7 @@ bool Radio::write(RadioPayload payload) {
         
         payload.data[end_of_block_index] = end_of_block;
         block_index += 31;
-    }
+    } */
 
     return radio.write(payload.data, payload.length);
 }
@@ -94,8 +100,8 @@ Option<RadioPayload> Radio::read() {
     {
         radio.read(payload.data + payload.length, 32);
         payload.length += 32;
-        payload.receivedAt = millis();
     }
+    payload.receivedAt = millis();
 
     if (payload.length > 0) {
         return Option<RadioPayload>(payload);
