@@ -13,6 +13,7 @@
 #include <pb_encode.h>
 #include "connectivity/radio.h"
 #include "connectivity/espnow.h"
+#include "leds/randomizers/randomizer.h"
 
 #define CE_PIN 0
 #define CSN_PIN 10
@@ -230,6 +231,9 @@ void setup() {
 }
 
 void loop() {
+  buildLayers();
+
+
   scheduler.update();
   delay(1); // Stability
 }
