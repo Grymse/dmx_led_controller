@@ -88,17 +88,21 @@ u8_t Animator::getBrightness() {
  * It should be called every 20ms
  */
 void Animator::update() {
-  for (u16_t i = 0; i < state->length; i++) {
-    state->index = i;
 
-    if (layers.size() == 0) {
+  if (layers.size() == 0) {
+    for (u16_t i = 0; i < state->length; i++) {
       leds[i] = CRGB::Black;
-      continue;
     }
+  }
 
-    for (ILayer* layer : layers) {
-      leds[i] = layer->apply(leds[i], state);
+  for (ILayer* layer : layers) {
+    /* auto before = millis(); */
+    for (u16_t i = 0; i < state->length; i++) {
+        state->index = i;
+        leds[i] = layer->apply(leds[i], state);
     }
+    /* auto after = millis();
+    printf("Layer %s took %d ms\n", layer->getName().c_str(), after - before); */
   }
 
   // Tick should not exceed max

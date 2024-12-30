@@ -58,7 +58,8 @@
     "iostream": "cpp",
     "mutex": "cpp",
     "thread": "cpp",
-    "protocol.pb.h": "c"
+    "protocol.pb.h": "c",
+    "list": "cpp"
   },
   "cSpell.words": [
     "CRGB"

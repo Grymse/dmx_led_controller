@@ -6,13 +6,14 @@
 #include "leds/animator.h"
 #include "leds/sequence_scheduler.h"
 #include "debug.h"
-#include "leds/sequence_decoder.h"
-#include "leds/sequence_encoder.h"
+#include "leds/serialization/sequence_decoder.h"
+#include "leds/serialization/sequence_encoder.h"
 #include "leds/layers/masks/masks.h"
 #include "leds/layers/colors/colors.h"
 #include <pb_encode.h>
 #include "connectivity/radio.h"
 #include "connectivity/espnow.h"
+#include "leds/generators/generators.h"
 
 #define CE_PIN 0
 #define CSN_PIN 10
@@ -122,49 +123,47 @@ uint32_t getESP32ChipID() {
 bool isReader = getESP32ChipID() == 0xDAF89C10;
 ESPNetwork * reader;
 
+
 class ProgramController : public Process {
   ESPNetwork espnow = ESPNetwork(ConnectivityMode::WRITER);
-  u8_t program = 0;
+  SequenceGenerator * generator = getTechnoGenerator();
+  uint8_t buffer[256];
   
   public:
   String getName() {
-    return "Esp Now Process";
+    return "Program Generator";
   }
 
   void update() {
-    sequenceScheduler->clear();
+    auto nextSequence = generator->getSequence();
+    printf("\n\nGenerated sequence with %d animations\n", nextSequence->animations.size());
+    for (Animation* animation : nextSequence->animations) {
+      printf("Animation with %d layers\n", animation->layers.size());
 
-    if (program % 2 == 0) {
-        sequenceScheduler->add({
-          new SingleColor(CRGB::Blue),
-        }, 2000);
-    } else {
-        sequenceScheduler->add({
-          new RainbowColor(500, 0),
-        }, 2000);
+      for (ILayer* layer : animation->layers) {
+        printf("Layer: %s\n", layer->toString().c_str());
+      }
     }
-
-    program++;
-
-    Sequence* sequence = sequenceScheduler->getSequence();
-    uint8_t buffer[128];
+    
     pb_ostream_t ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-    SequenceEncoder::encode(&ostream, sequence);
+    SequenceEncoder::encode(&ostream, nextSequence);
     espnow.write({buffer, ostream.bytes_written});
+
+    sequenceScheduler->set(nextSequence);
   } 
 };
 
 
 void onRecv(const uint8_t *receiver_mac_addr, const uint8_t *data, int data_len) {
-  printf("received %d\n", data_len);
   pb_istream_t stream = pb_istream_from_buffer(data, data_len);
 
   Sequence* sequence = new Sequence();
   SequenceDecoder::decode(&stream, sequence);
   sequenceScheduler->set(sequence);
+  /* 
   for (Animation* animation : sequence->animations) {
     printf("Animation with %d layers\n", animation->layers.size());
-  }
+  } */
 }
 
 void setup() {
@@ -178,9 +177,18 @@ void setup() {
   animator = new Animator(leds, NUM_LEDS);
   sequenceScheduler = new SequenceScheduler(animator);
 
-  sequenceScheduler->add({
+  //sequenceScheduler->add({
+  //  new FadeColor({CRGB::Red, CRGB::Lime, CRGB::Blue, CRGB::Yellow, CRGB::Fuchsia, CRGB::Aqua}, 300),
+    /* new WaveMask(1200, 100, 300),
+    new SawtoothMask(300, 150, 500), */
+
+    //Layer: WaveMask: d: 500, l: 600, g: 50
+    /* new WaveMask(500, 50, 600), */
+  //Layer: SawtoothMask: d: 50, l: 300, g: 300
+    /* new SawtoothMask(50, 300, 300), */
+  //}
     // COLORS
-    new SingleColor(CRGB::Blue),
+    /* new SingleColor(CRGB::Blue), */
     /* new RainbowColor(500, 0),
         new FadeColor({CRGB(0,0,255),CRGB(0,255,0) ,CRGB(255,0,0)}, 50),
         new SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
@@ -206,19 +214,19 @@ void setup() {
     new SawtoothMask(100, 0, 300),
     new StarsMask(250, 5, 1), */
     /* new WaveMask(100, 100, 50), */
-    }
-  , 2000);
+  //  }
+  // , 2000);
 
 
   // SenderRadioProcess * sender = 
-  scheduler.addProcess(sequenceScheduler, 20); // Update every 20ms
-  scheduler.addProcess(animator, 20); // Update every 20ms */
+  scheduler.addProcess(sequenceScheduler, 25); // Update every 20ms
+  scheduler.addProcess(animator, 25); // Update every 20ms */
   
   if (isReader) {
     reader = new ESPNetwork(ConnectivityMode::READER);
     reader->setOnReceive(onRecv);
   } else {
-    scheduler.addProcess(new ProgramController(), 1000); // Update every 1000ms
+    scheduler.addProcess(new ProgramController(), 30000); // Update every 1000ms
   }
  /* if (getESP32ChipID() == 0xDAF89C10) {
     scheduler.addProcess(new ReceiverRadioProcess(), 20); // Update every 20ms

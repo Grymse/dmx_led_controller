@@ -4,9 +4,6 @@
 #include <vector>
 #include "../layer.h"
 
-
-
-
 class BlinkMask : public ILayer {
   u16_t duration;
   std::vector<u8_t> pattern;

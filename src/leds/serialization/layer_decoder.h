@@ -1,6 +1,6 @@
 #pragma once
 
-#include "layer.h"
+#include "../layers/layer.h"
 #include "debug.h"
 #include "protocol.pb.h"
 #include <pb_decode.h>
