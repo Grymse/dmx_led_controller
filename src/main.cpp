@@ -22,36 +22,24 @@
 #define BUILTIN_LED 8
 CRGB* leds = new CRGB[NUM_LEDS];
 RF24 radio = RF24(CE_PIN, CSN_PIN);
+u8_t frames_per_second = 40;
 
 ProcessScheduler scheduler;
 Animator* animator;
 SequenceScheduler* sequenceScheduler;
-/* 
-class MyProcess : public Process {
-  uint8_t buffer[512];
-  public:
-  String getName() {
-    return "My Process";
+
+uint32_t getESP32ChipID() {
+  uint32_t chipId = 0;
+  for (int i = 0; i < 17; i++) {
+    chipId |= ((ESP.getEfuseMac() >> (40 - i * 8)) & 0xff) << (i * 8);
   }
+  return chipId;
+}
 
-  void update() {
-    pb_ostream_t ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 
-    SequenceEncoder::encode(&ostream, sequenceScheduler->getSequence());
-
-    // Reset the stream for reading
-    pb_istream_t stream = pb_istream_from_buffer(buffer, ostream.bytes_written);
-
-    Sequence* sequence = new Sequence();
-    SequenceDecoder::decode(&stream, sequence);
-    sequenceScheduler->set(sequence);
-  } 
-};
- */
-
-/* 
 class SenderRadioProcess : public Process {
   Radio radio = Radio("1Node", "2Node");
+  int counter = 0;
 
   public:
   SenderRadioProcess() {
@@ -67,13 +55,26 @@ class SenderRadioProcess : public Process {
   }
 
   void update() {
-    char str[128] = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. lol";
-    RadioPayload payload = {(u8_t*)str, 128, 0};
+    char str[32] = "The current number is:         ";
+    counter++;
+    snprintf(str + 28, 4, "%04d", counter);
+    RadioPayload payload = {(u8_t*)str, 32, 0};
     radio.write(payload);
     printf("Sent: %s\n", str);
   } 
 };
 
+
+class SayMyNameProcess : public Process {
+  public:
+  String getName() {
+    return "Say My Name";
+  }
+
+  void update() {
+    printf("My name is: %d\n", getESP32ChipID());
+  } 
+};
 
 class ReceiverRadioProcess : public Process {
   Radio radio = Radio("2Node", "1Node");
@@ -95,7 +96,6 @@ class ReceiverRadioProcess : public Process {
     Option<RadioPayload> optional = radio.read();
 
     if (optional.isEmpty()) {
-      printf("x");
       return;
     }
 
@@ -107,25 +107,13 @@ class ReceiverRadioProcess : public Process {
     printf("\n");
   } 
 };
- */
-
-
-uint32_t getESP32ChipID() {
-  uint32_t chipId = 0;
-  for (int i = 0; i < 17; i++) {
-    chipId |= ((ESP.getEfuseMac() >> (40 - i * 8)) & 0xff) << (i * 8);
-  }
-  return chipId;
-}
-
 
  //{0x34, 0xB7, 0xDA, 0xF8, 0x9C, 0x10};
-bool isReader = getESP32ChipID() == 0xDAF89C10;
-ESPNetwork * reader;
+// ESPNetwork * reader;
 
 
 class ProgramController : public Process {
-  ESPNetwork espnow = ESPNetwork(ConnectivityMode::WRITER);
+  // ESPNetwork espnow = ESPNetwork(ConnectivityMode::WRITER);
   SequenceGenerator * generator = getTechnoGenerator();
   uint8_t buffer[256];
   
@@ -147,7 +135,7 @@ class ProgramController : public Process {
     
     pb_ostream_t ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
     SequenceEncoder::encode(&ostream, nextSequence);
-    espnow.write({buffer, ostream.bytes_written});
+    // espnow.write({buffer, ostream.bytes_written});
 
     sequenceScheduler->set(nextSequence);
   } 
@@ -177,7 +165,7 @@ void setup() {
   animator = new Animator(leds, NUM_LEDS);
   sequenceScheduler = new SequenceScheduler(animator);
 
-  //sequenceScheduler->add({
+  sequenceScheduler->add({
   //  new FadeColor({CRGB::Red, CRGB::Lime, CRGB::Blue, CRGB::Yellow, CRGB::Fuchsia, CRGB::Aqua}, 300),
     /* new WaveMask(1200, 100, 300),
     new SawtoothMask(300, 150, 500), */
@@ -188,53 +176,53 @@ void setup() {
     /* new SawtoothMask(50, 300, 300), */
   //}
     // COLORS
-    /* new SingleColor(CRGB::Blue), */
-    /* new RainbowColor(500, 0),
-        new FadeColor({CRGB(0,0,255),CRGB(0,255,0) ,CRGB(255,0,0)}, 50),
-        new SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
-        new SectionsColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
-        new SwitchColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
-    */
+    // new SingleColor(CRGB::Blue),
+    new RainbowColor(500, 0),
+    // new FadeColor({CRGB(0,0,255),CRGB(0,255,0) ,CRGB(255,0,0)}, 50),
+    // new SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
+    // new SectionsColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
+    // new SwitchColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
+   
     // MASKS
-    /* new BlinkMask({255, 0, 0, 0}, 50),
-    new InvertMask(),
-    new PulseSawtoothMask(10, 50),
+    // new BlinkMask({255, 0, 0, 0}, 50),
+    // new InvertMask(),
+    // new PulseSawtoothMask(10, 50),
     new PulseMask(10, 50),
-    new SawtoothMask(100, 0, 300),
-    new SectionsWaveMask({0}, 50),
-    new SectionsMask({255, 0, 0, 255, 0}, 50),
-    new StarsMask(200, 10, 3), */
+    // new SawtoothMask(100, 0, 300),
+    // new SectionsWaveMask({0}, 50),
+    // new SectionsMask({255, 0, 0, 255, 0}, 50),
+    // new StarsMask(200, 10, 3),
 
     // Gang
-    /* new SingleColor(CRGB::Red),
-    new StarsMask(200, 5, 1), */
+    // new SingleColor(CRGB::Red),
+    // new StarsMask(200, 5, 1),
 
     // Indgang
     /* new RainbowColor(500, 0),
     new SawtoothMask(100, 0, 300),
     new StarsMask(250, 5, 1), */
     /* new WaveMask(100, 100, 50), */
-  //  }
-  // , 2000);
+  }
+  , 2000);
 
 
   // SenderRadioProcess * sender = 
-  scheduler.addProcess(sequenceScheduler, 25); // Update every 20ms
-  scheduler.addProcess(animator, 25); // Update every 20ms */
+  scheduler.addProcess(sequenceScheduler, 1000 / frames_per_second); // Update every 20ms
+  scheduler.addProcess(animator, 1000 / frames_per_second); // Update every 20ms */
+  scheduler.addProcess(new SayMyNameProcess(), 1000); // Update every 1000ms
   
-  if (isReader) {
+  /* if (isReader) {
     reader = new ESPNetwork(ConnectivityMode::READER);
     reader->setOnReceive(onRecv);
   } else {
     scheduler.addProcess(new ProgramController(), 30000); // Update every 1000ms
-  }
- /* if (getESP32ChipID() == 0xDAF89C10) {
+  } */
+
+ /* if (getESP32ChipID() != 989929244) { // TODO: Get ID of one of the ESP32
     scheduler.addProcess(new ReceiverRadioProcess(), 20); // Update every 20ms
   } else {
-    scheduler.addProcess(new SenderRadioProcess(), 500); // Update every 500ms
+    scheduler.addProcess(new SenderRadioProcess(), 100); // Update every 100ms
   } */
-  /* scheduler.addProcess(myProcess, 20); // Update every 2000ms */
-
 }
 
 void loop() {

@@ -29,11 +29,13 @@ Radio::Radio(const char* writer, const char* reader, RadioPayload payload) {
 
 bool Radio::setup(u8_t CE_PIN, u8_t CSN_PIN) {
     radio = RF24(CE_PIN, CSN_PIN);
+    uint16_t counter = 0;
 
     while (!radio.begin())
     {
-        printf("radio hardware is not responding!!\n");
+        printf("radio hardware is not responding - %d\n", counter);
         delay(200);
+        counter++;
     }
 
     // Set the PA Level low to try preventing power supply related problems
@@ -94,6 +96,7 @@ Option<RadioPayload> Radio::read() {
         radio.startListening();
         mode = RadioMode::READER;
     }
+
     payload.length = 0;
     uint8_t pipe = 0;
     while (radio.available(&pipe))
@@ -106,5 +109,6 @@ Option<RadioPayload> Radio::read() {
     if (payload.length > 0) {
         return Option<RadioPayload>(payload);
     }
+    
     return Option<RadioPayload>().empty();
 }

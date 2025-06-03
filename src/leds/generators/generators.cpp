@@ -48,7 +48,7 @@ SequenceGenerator * getTechnoGenerator() {
     auto colorLayer = new LayerGenerator();
     auto maskLayer = new LayerGenerator();
     auto effectLayer = new LayerGenerator();
-    
+
     colorLayer->addGen([]() -> ILayer* {
         return new SingleColor(pickOne(myColors));
     }, 1);
