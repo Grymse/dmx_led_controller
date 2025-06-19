@@ -38,7 +38,6 @@ export namespace protocol {
             speed?: number;
             colors?: number[];
             sections?: Uint8Array;
-            text?: string;
         }) {
             super();
             pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [8], this.#one_of_decls);
@@ -69,9 +68,6 @@ export namespace protocol {
                 }
                 if ("sections" in data && data.sections != undefined) {
                     this.sections = data.sections;
-                }
-                if ("text" in data && data.text != undefined) {
-                    this.text = data.text;
                 }
             }
         }
@@ -129,12 +125,6 @@ export namespace protocol {
         set sections(value: Uint8Array) {
             pb_1.Message.setField(this, 9, value);
         }
-        get text() {
-            return pb_1.Message.getFieldWithDefault(this, 10, "") as string;
-        }
-        set text(value: string) {
-            pb_1.Message.setField(this, 10, value);
-        }
         static fromObject(data: {
             type?: LayerType;
             duration?: number;
@@ -145,7 +135,6 @@ export namespace protocol {
             speed?: number;
             colors?: number[];
             sections?: Uint8Array;
-            text?: string;
         }): Layer {
             const message = new Layer({});
             if (data.type != null) {
@@ -175,9 +164,6 @@ export namespace protocol {
             if (data.sections != null) {
                 message.sections = data.sections;
             }
-            if (data.text != null) {
-                message.text = data.text;
-            }
             return message;
         }
         toObject() {
@@ -191,7 +177,6 @@ export namespace protocol {
                 speed?: number;
                 colors?: number[];
                 sections?: Uint8Array;
-                text?: string;
             } = {};
             if (this.type != null) {
                 data.type = this.type;
@@ -220,9 +205,6 @@ export namespace protocol {
             if (this.sections != null) {
                 data.sections = this.sections;
             }
-            if (this.text != null) {
-                data.text = this.text;
-            }
             return data;
         }
         serialize(): Uint8Array;
@@ -247,8 +229,6 @@ export namespace protocol {
                 writer.writePackedUint32(8, this.colors);
             if (this.sections.length)
                 writer.writeBytes(9, this.sections);
-            if (this.text.length)
-                writer.writeString(10, this.text);
             if (!w)
                 return writer.getResultBuffer();
         }
@@ -284,9 +264,6 @@ export namespace protocol {
                         break;
                     case 9:
                         message.sections = reader.readBytes();
-                        break;
-                    case 10:
-                        message.text = reader.readString();
                         break;
                     default: reader.skipField();
                 }

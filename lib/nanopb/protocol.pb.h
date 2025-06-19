@@ -47,7 +47,6 @@ typedef struct _protocol_Layer {
     uint32_t speed;
     pb_callback_t colors;
     pb_callback_t sections;
-    pb_callback_t text;
 } protocol_Layer;
 
 /* The request message containing an array of effects. */
@@ -83,10 +82,10 @@ extern "C" {
 
 
 /* Initializer values for message structs */
-#define protocol_Layer_init_default              {_protocol_LayerType_MIN, 0, 0, 0, 0, 0, 0, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}}
+#define protocol_Layer_init_default              {_protocol_LayerType_MIN, 0, 0, 0, 0, 0, 0, {{NULL}, NULL}, {{NULL}, NULL}}
 #define protocol_Animation_init_default          {_protocol_Direction_MIN, 0, {{NULL}, NULL}}
 #define protocol_Sequence_init_default           {0, {{NULL}, NULL}}
-#define protocol_Layer_init_zero                 {_protocol_LayerType_MIN, 0, 0, 0, 0, 0, 0, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}}
+#define protocol_Layer_init_zero                 {_protocol_LayerType_MIN, 0, 0, 0, 0, 0, 0, {{NULL}, NULL}, {{NULL}, NULL}}
 #define protocol_Animation_init_zero             {_protocol_Direction_MIN, 0, {{NULL}, NULL}}
 #define protocol_Sequence_init_zero              {0, {{NULL}, NULL}}
 
@@ -100,7 +99,6 @@ extern "C" {
 #define protocol_Layer_speed_tag                 7
 #define protocol_Layer_colors_tag                8
 #define protocol_Layer_sections_tag              9
-#define protocol_Layer_text_tag                  10
 #define protocol_Animation_direction_tag         1
 #define protocol_Animation_duration_tag          2
 #define protocol_Animation_layers_tag            3
@@ -117,8 +115,7 @@ X(a, STATIC,   SINGULAR, UINT32,   gap,               5) \
 X(a, STATIC,   SINGULAR, UINT32,   frequency,         6) \
 X(a, STATIC,   SINGULAR, UINT32,   speed,             7) \
 X(a, CALLBACK, REPEATED, UINT32,   colors,            8) \
-X(a, CALLBACK, SINGULAR, BYTES,    sections,          9) \
-X(a, CALLBACK, SINGULAR, STRING,   text,             10)
+X(a, CALLBACK, SINGULAR, BYTES,    sections,          9)
 #define protocol_Layer_CALLBACK pb_default_field_callback
 #define protocol_Layer_DEFAULT NULL
 
