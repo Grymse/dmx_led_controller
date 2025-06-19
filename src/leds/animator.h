@@ -14,11 +14,13 @@ class Animator : public Process {
   std::vector<ILayer*> layers;
   LEDState* state;
   u8_t brightness = 255;
+  u16_t virtual_offset = 0;
 
   void resetTick();
 
   public:
   Animator(CRGB* leds, size_t size);
+  void setVirtualOffset(u16_t virtual_offset);
   void clear();
   void setBrightness(u8_t brightness);
   u8_t getBrightness();

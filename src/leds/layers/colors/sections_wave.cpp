@@ -36,8 +36,8 @@ String SectionsWaveColor::toString() {
  */
 CRGB SectionsWaveColor::apply(CRGB color, LEDState* state) {
   float sectionLength = (float)state->length / colors.size();
-  u16_t tick = (state->tick % duration) * state->length / duration;
-  u16_t t = (tick + state->index) / sectionLength;
+  u16_t tick = (state->virtual_index % duration) * state->length / duration;
+  u16_t t = (tick + state->virtual_index) / sectionLength;
 
   return colors[t % colors.size()];
 }

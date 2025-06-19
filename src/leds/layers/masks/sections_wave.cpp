@@ -38,7 +38,7 @@ String SectionsWaveMask::toString() {
 CRGB SectionsWaveMask::apply(CRGB color, LEDState* state) {
   float sectionLength = (float)state->length / sections.size();
   u16_t tick = (state->tick % duration) * state->length / duration;
-  u16_t t = (tick + state->index) / sectionLength;
+  u16_t t = (tick + state->virtual_index) / sectionLength;
 
   return color.scale8(sections[t % sections.size()]);
 }

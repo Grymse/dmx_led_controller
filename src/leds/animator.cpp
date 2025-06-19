@@ -35,6 +35,11 @@ String Animator::getName() {
   return "Animator";
 }
 
+
+void Animator::setVirtualOffset(u16_t virtual_offset) {
+  this->virtual_offset = virtual_offset;
+}
+
 /**
  * @brief Clear the layers
  */
@@ -99,6 +104,7 @@ void Animator::update() {
     /* auto before = millis(); */
     for (u16_t i = 0; i < state->length; i++) {
         state->index = i;
+        state->virtual_index = (i + virtual_offset);
         leds[i] = layer->apply(leds[i], state);
     }
     /* auto after = millis();

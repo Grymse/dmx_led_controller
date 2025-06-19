@@ -37,7 +37,7 @@ String SawtoothMask::toString() {
 CRGB SawtoothMask::apply(CRGB color, LEDState* state) {
   float totalLength = wavegap + wavelength;
   float len = (float)state->length / duration;
-  double x = ((double)state->tick * len + state->index) * state->direction;
+  double x = ((double)state->tick * len + state->virtual_index) * state->direction;
 
   if (wavelength <= LayerUtils::mod(x, totalLength)) {
     return CRGB::Black;

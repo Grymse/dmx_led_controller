@@ -45,8 +45,8 @@ String FadeColor::toString() {
  */
 CRGB FadeColor::apply(CRGB color, LEDState* state) {
   u16_t duration = duration / colors.size();
-  float percentage = (state->tick % duration) / (float)duration;
-  u8_t fromIndex = (state->tick / duration) % colors.size();
+  float percentage = (state->virtual_index % duration) / (float)duration;
+  u8_t fromIndex = (state->virtual_index / duration) % colors.size();
   u8_t toIndex = (fromIndex + 1) % colors.size();
 
   return fadeBetween(colors[fromIndex], colors[toIndex], percentage);

@@ -32,7 +32,7 @@ String RainbowColor::toString() {
  * @return The modified color after applying the blink pattern.
  */
 CRGB RainbowColor::apply(CRGB color, LEDState* state) {
-  uint8_t hueFromIndex = (255.0 / length) * state->index;
+  uint8_t hueFromIndex = (255.0 / length) * state->virtual_index;
   uint8_t hueFromTick = (255.0 / duration) * state->tick;
 
   return CHSV(hueFromIndex + hueFromTick, 255, 255);

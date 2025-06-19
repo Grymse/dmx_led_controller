@@ -36,7 +36,7 @@ String WaveMask::toString() {
  */
 CRGB WaveMask::apply(CRGB color, LEDState* state) {
   float len = (float)state->length / duration;
-  double x = (double)state->tick * len + state->index;
+  double x = (double)state->tick * len + state->virtual_index;
   if (wavelength <= LayerUtils::mod(x, wavelength + wavegap)) {
     return CRGB::Black;
   }

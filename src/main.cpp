@@ -176,8 +176,8 @@ void setup() {
     /* new SawtoothMask(50, 300, 300), */
   //}
     // COLORS
-    // new SingleColor(CRGB::Blue),
-    new RainbowColor(500, 0),
+    new SingleColor(CRGB::Red),
+    // new RainbowColor(500, 0),
     // new FadeColor({CRGB(0,0,255),CRGB(0,255,0) ,CRGB(255,0,0)}, 50),
     // new SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
     // new SectionsColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
@@ -187,8 +187,8 @@ void setup() {
     // new BlinkMask({255, 0, 0, 0}, 50),
     // new InvertMask(),
     // new PulseSawtoothMask(10, 50),
-    new PulseMask(10, 50),
-    // new SawtoothMask(100, 0, 300),
+    // new PulseMask(10, 50),
+    new SawtoothMask(100, 200, 300),
     // new SectionsWaveMask({0}, 50),
     // new SectionsMask({255, 0, 0, 255, 0}, 50),
     // new StarsMask(200, 10, 3),
@@ -203,20 +203,22 @@ void setup() {
     new StarsMask(250, 5, 1), */
     /* new WaveMask(100, 100, 50), */
   }
-  , 2000);
+  , 120, Direction::BACKWARD);
 
 
   // SenderRadioProcess * sender = 
   scheduler.addProcess(sequenceScheduler, 1000 / frames_per_second); // Update every 20ms
   scheduler.addProcess(animator, 1000 / frames_per_second); // Update every 20ms */
-  scheduler.addProcess(new SayMyNameProcess(), 1000); // Update every 1000ms
+  // scheduler.addProcess(new SayMyNameProcess(), 1000); // Update every 1000ms
+
+  animator->setVirtualOffset(120);
   
   /* if (isReader) {
     reader = new ESPNetwork(ConnectivityMode::READER);
     reader->setOnReceive(onRecv);
   } else {
-    scheduler.addProcess(new ProgramController(), 30000); // Update every 1000ms
-  } */
+    } */
+ // scheduler.addProcess(new ProgramController(), 10000); // Update every 1000ms
 
  /* if (getESP32ChipID() != 989929244) { // TODO: Get ID of one of the ESP32
     scheduler.addProcess(new ReceiverRadioProcess(), 20); // Update every 20ms
