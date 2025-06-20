@@ -3,85 +3,70 @@
 
 // DMX Configuration
 #define DMX_CHANNELS 512
-#define DMX_BREAK_THRESHOLD 88  // microseconds (DMX break is min 88us)
-#define DMX_TIMEOUT 1000        // milliseconds to timeout if no data
+#define DMX_BREAK_THRESHOLD 100  // microseconds to detect break
 
 // Fixture Configuration - MODIFY THESE VALUES
 const int FIXTURE_START_CHANNEL = 1;    // Starting DMX channel (1-512)
-const int FIXTURE_CHANNEL_COUNT = 16;    // Number of channels for your fixture
+const int FIXTURE_CHANNEL_COUNT = 4;    // Number of channels for your fixture
 
 // DMX data storage
 uint8_t dmxData[DMX_CHANNELS + 1];  // +1 for start code
 bool dmxFrameComplete = false;
 unsigned long lastByteTime = 0;
-unsigned long frameStartTime = 0;
 int dmxChannelCount = 0;
+bool inFrame = false;
 
-enum DMXState {
-  DMX_IDLE,
-  DMX_BREAK,
-  DMX_STARTCODE,
-  DMX_DATA
-};
+int min(int a, int b) {
+  return (a < b) ? a : b;
+}
 
-DMXState dmxState = DMX_IDLE;
 
 void readDMX() {
   unsigned long currentTime = micros();
   
-  // State machine for DMX reception
-  switch (dmxState) {
-    case DMX_IDLE:
-      // Wait for a break (no data for break threshold)
-      if (Serial1.available() == 0) {
-        if ((currentTime - lastByteTime) > DMX_BREAK_THRESHOLD) {
-          dmxState = DMX_BREAK;
-          dmxChannelCount = 0;
-        }
-      } else {
-        // Clear any garbage data
-        while (Serial1.available()) {
-          Serial1.read();
-          lastByteTime = currentTime;
-        }
-      }
-      break;
-      
-    case DMX_BREAK:
-      // Break detected, wait for start code
-      if (Serial1.available()) {
-        uint8_t startCode = Serial1.read();
-        lastByteTime = micros();
-        dmxData[0] = startCode;
+  // Check for break condition (gap in data)
+  if (Serial1.available() == 0) {
+    if (inFrame && (currentTime - lastByteTime) > DMX_BREAK_THRESHOLD) {
+      // Break detected, prepare for new frame
+      inFrame = false;
+      dmxChannelCount = 0;
+    }
+    return;
+  } else {
+    printf(".");
+  }
+  // Process only a limited number of bytes per call to avoid blocking
+  int bytesToProcess = min(Serial1.available(), 32); // Process max 32 bytes per loop
+  
+  for (int i = 0; i < bytesToProcess; i++) {
+    printf("-");
+    if (!Serial1.available()) break; // Safety check
+    
+    uint8_t incomingByte = Serial1.read();
+    lastByteTime = micros();
+    
+    if (!inFrame) {
+      // First byte after break should be start code (usually 0x00)
+      if (dmxChannelCount == 0) {
+        dmxData[0] = incomingByte;  // Store start code
         dmxChannelCount = 1;
-        dmxState = DMX_DATA;
-        frameStartTime = millis();
+        inFrame = true;
       }
-      break;
-      
-    case DMX_DATA:
-      // Read data bytes
-      while (Serial1.available() && dmxChannelCount <= DMX_CHANNELS) {
-        uint8_t dataByte = Serial1.read();
-        lastByteTime = micros();
-        
-        dmxData[dmxChannelCount] = dataByte;
+    } else {
+      // Store channel data
+      if (dmxChannelCount <= DMX_CHANNELS) {
+        dmxData[dmxChannelCount] = incomingByte;
         dmxChannelCount++;
         
-        // Check if frame is complete
+        // Check if we have a complete frame
         if (dmxChannelCount > DMX_CHANNELS) {
           dmxFrameComplete = true;
-          dmxState = DMX_IDLE;
-          break;
+          inFrame = false;
+          dmxChannelCount = 0;
+          break; // Exit early when frame is complete
         }
       }
-      
-      // Check for incomplete frame timeout
-      if ((millis() - frameStartTime) > 50) { // 50ms timeout for frame
-        dmxState = DMX_IDLE;
-        dmxChannelCount = 0;
-      }
-      break;
+    }
   }
 }
 
@@ -110,9 +95,6 @@ uint8_t* readFixture(int startChannel, int channelCount) {
 
 
 void setup() {
-  // Initialize USB Serial for debugging
-  Serial.begin(115200);
-  
   // Initialize Serial1 for DMX communication
   Serial1.begin(250000, SERIAL_8N2, 4, -1);
   
@@ -122,12 +104,12 @@ void setup() {
   
   // Initialize DMX data array
   memset(dmxData, 0, sizeof(dmxData));
-  lastByteTime = micros();
 }
 
 void loop() {
   // Read DMX data
   readDMX();
+  printf("loop");
   
   // If we have a complete frame, read the fixture data
   if (dmxFrameComplete) {
@@ -145,11 +127,5 @@ void loop() {
     
     dmxFrameComplete = false;  // Reset flag
     delay(50);  // Don't spam the output
-  }
-  
-  // Timeout check - reset if no data received
-  if (millis() - (lastByteTime / 1000) > DMX_TIMEOUT) {
-    dmxState = DMX_IDLE;
-    dmxChannelCount = 0;
   }
 }
