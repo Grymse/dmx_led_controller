@@ -6,9 +6,9 @@
 #define DMX_BREAK_THRESHOLD 88  // microseconds (DMX break is min 88us)
 #define DMX_TIMEOUT 1000        // milliseconds to timeout if no data
 
-// Fixture Configuration - MODIFY THESE VALUES
+// Fixture Configuration - MODIFY THESE VALUESt
 const int FIXTURE_START_CHANNEL = 1;    // Starting DMX channel (1-512)
-const int FIXTURE_CHANNEL_COUNT = 16;    // Number of channels for your fixture
+const int FIXTURE_CHANNEL_COUNT = 4;    // Number of channels for your fixture
 
 // DMX data storage
 uint8_t dmxData[DMX_CHANNELS + 1];  // +1 for start code
@@ -126,25 +126,44 @@ void setup() {
 }
 
 void loop() {
-  // Read DMX data
+  // Read DMX data with timing measurement
+  unsigned long startTime = micros();
   readDMX();
+  unsigned long endTime = micros();
+  unsigned long executionTime = endTime - startTime;
   
+  // Print individual call times that are unusually long
+  if (executionTime > 100) {  // Print if longer than 100 microseconds
+    Serial.printf("readDMX took: %lu microseconds\n", executionTime);
+  }
+  
+  // Also track average timing
+  static int callCount = 0;
+  static unsigned long totalTime = 0;
+  callCount++;
+  totalTime += executionTime;
+  
+  if (callCount%20 == 0) {
+    Serial.printf("readDMX avg: %lu us over %d calls\n", 
+                  totalTime / callCount, callCount);
+    callCount = 0;
+    totalTime = 0;
+  }
+
   // If we have a complete frame, read the fixture data
   if (dmxFrameComplete) {
     uint8_t* fixtureData = readFixture(FIXTURE_START_CHANNEL, FIXTURE_CHANNEL_COUNT);
     
     // Print fixture data
-    printf("Fixture data: [");
     for (int i = 0; i < FIXTURE_CHANNEL_COUNT; i++) {
       printf("%d", fixtureData[i]);
       if (i < FIXTURE_CHANNEL_COUNT - 1) {
-        printf(", ");
+        printf(" ");
       }
     }
-    printf("]\n");
+    printf("\n");
     
     dmxFrameComplete = false;  // Reset flag
-    delay(50);  // Don't spam the output
   }
   
   // Timeout check - reset if no data received
