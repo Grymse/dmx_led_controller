@@ -23,6 +23,7 @@ class Animator : public Process {
   void setVirtualOffset(u16_t virtual_offset);
   void clear();
   void setBrightness(u8_t brightness);
+  void setTick(u16_t tick);
   u8_t getBrightness();
   void setDirection(Direction direction);
   void setLayers(std::vector<ILayer*> layers);

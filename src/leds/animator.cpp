@@ -56,6 +56,11 @@ void Animator::setBrightness(u8_t brightness) {
   this->brightness = brightness;
 }
 
+
+void Animator::setTick(u16_t tick) {
+    state->tick = tick;
+  }
+
 /**
  * @brief Set the direction of the animation
  *

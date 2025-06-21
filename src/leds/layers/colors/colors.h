@@ -64,6 +64,7 @@ class SingleColor : public ILayer {
   public:
   String getName();
   SingleColor(CRGB color);
+  void setColor(CRGB color);
   String toString() override;
   protocol_Layer toEncodable() override;
   CRGB apply(CRGB color, LEDState* state);
