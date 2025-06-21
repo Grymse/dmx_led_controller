@@ -20,15 +20,15 @@
 #define CE_PIN 0
 #define CSN_PIN 10
 #define LED_PIN 7
-#define NUM_LEDS 0
+#define NUM_LEDS 300
 #define BUILTIN_LED 8
 CRGB* leds = new CRGB[NUM_LEDS];
 RF24 radio = RF24(CE_PIN, CSN_PIN);
 u8_t frames_per_second = 40;
 
 
-u16_t LED_OFFSET = 0; // 300
-u16_t DMX_START = 18; // 18
+u16_t LED_OFFSET = 300; // 300$
+u16_t DMX_START = 3; // 3, 18
 
 ProcessScheduler scheduler;
 Animator* animator;
@@ -45,9 +45,9 @@ std::vector<u8_t> * to_sections(u8_t value) {
 }
 
 
-u8_t valueScaler(u16_t value) {
+u16_t valueScaler(u16_t value) {
     if (value < 32) {
-        return 32;
+        return value;
     } else if (value < 64) {
         return (value - 32) * 2 + 32;
     } else if (value < 128) {
@@ -106,18 +106,18 @@ void dmx_to_animation(Animator* animator, u8_t* channels) {
         if (mask1 != nullptr && mask2 != nullptr) {
             // Two masks, combine them
             animator->setLayers({color, mask1, mask2});
-            printf(color->toString().c_str());
+            /* printf(color->toString().c_str());
             printf(mask1->toString().c_str());
-            printf(mask2->toString().c_str());
+            printf(mask2->toString().c_str()); */
         } else if (mask1 != nullptr) {
             // One mask
             animator->setLayers({color, mask1});
-            printf(color->toString().c_str());
-            printf(mask1->toString().c_str());
+            /* printf(color->toString().c_str());
+            printf(mask1->toString().c_str()); */
         } else {
             // Only color layer
             animator->setLayers({color});
-            printf(color->toString().c_str());
+            /* printf(color->toString().c_str()); */
         }
         animator->setTick(channels[5] % 128);
     }
@@ -138,10 +138,10 @@ class ReadDMXProcess : public Process {
     }
 
     for (int i = 0; i < 15; ++i) {
-        printf("%d,", DMX::Read(i + DMX_START));
+        /* printf("%d,", DMX::Read(i + DMX_START)); */
         channels[i+1] = DMX::Read(i + DMX_START);
     }
-    printf("\n");
+    /* printf("\n"); */
     dmx_to_animation(animator, channels);
 
   }
