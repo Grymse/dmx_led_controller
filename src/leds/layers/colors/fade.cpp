@@ -44,7 +44,7 @@ String FadeColor::toString() {
  * @return The modified color after applying the blink pattern.
  */
 CRGB FadeColor::apply(CRGB color, LEDState* state) {
-  u16_t duration = duration / colors.size();
+  u16_t duration = this->duration / colors.size();
   float percentage = (state->tick % duration) / (float)duration;
   u8_t fromIndex = (state->tick / duration) % colors.size();
   u8_t toIndex = (fromIndex + 1) % colors.size();

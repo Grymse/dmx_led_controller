@@ -160,7 +160,7 @@ void setup() {
   Serial.begin(115200);
   pinMode(BUILTIN_LED, OUTPUT);
 
-  FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
+  FastLED.addLeds<WS2812B, LED_PIN, RGB>(leds, NUM_LEDS);
 
   animator = new Animator(leds, NUM_LEDS);
   sequenceScheduler = new SequenceScheduler(animator);
@@ -169,6 +169,7 @@ void setup() {
   //  new FadeColor({CRGB::Red, CRGB::Lime, CRGB::Blue, CRGB::Yellow, CRGB::Fuchsia, CRGB::Aqua}, 300),
     /* new WaveMask(1200, 100, 300),
     new SawtoothMask(300, 150, 500), */
+    /* WS2811*/
 
     //Layer: WaveMask: d: 500, l: 600, g: 50
     /* new WaveMask(500, 50, 600), */
@@ -176,9 +177,7 @@ void setup() {
     /* new SawtoothMask(50, 300, 300), */
   //}
     // COLORS
-    // new SingleColor(CRGB::Blue),
-    new RainbowColor(500, 0),
-    // new FadeColor({CRGB(0,0,255),CRGB(0,255,0) ,CRGB(255,0,0)}, 50),
+    /* new SingleColor(CRGB::Green), */
     // new SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
     // new SectionsColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
     // new SwitchColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
@@ -187,29 +186,27 @@ void setup() {
     // new BlinkMask({255, 0, 0, 0}, 50),
     // new InvertMask(),
     // new PulseSawtoothMask(10, 50),
-    new PulseMask(10, 50),
     // new SawtoothMask(100, 0, 300),
     // new SectionsWaveMask({0}, 50),
     // new SectionsMask({255, 0, 0, 255, 0}, 50),
     // new StarsMask(200, 10, 3),
-
-    // Gang
-    // new SingleColor(CRGB::Red),
-    // new StarsMask(200, 5, 1),
-
-    // Indgang
-    /* new RainbowColor(500, 0),
-    new SawtoothMask(100, 0, 300),
-    new StarsMask(250, 5, 1), */
-    /* new WaveMask(100, 100, 50), */
+    
+    new FadeColor({CRGB(255, 0, 0),CRGB(255, 255, 255)}, 1200),
+    new SawtoothMask(50, 0, 300),
+    new StarsMask(300, 50, 3),
   }
-  , 2000);
+  , 10000);
+
+  sequenceScheduler->add({
+    new FadeColor({CRGB(255, 0, 0),CRGB(255, 255, 255)}, 1200),
+    new StarsMask(300, 5, 1),
+  }
+  , 10000);
 
 
   // SenderRadioProcess * sender = 
   scheduler.addProcess(sequenceScheduler, 1000 / frames_per_second); // Update every 20ms
   scheduler.addProcess(animator, 1000 / frames_per_second); // Update every 20ms */
-  scheduler.addProcess(new SayMyNameProcess(), 1000); // Update every 1000ms
   
   /* if (isReader) {
     reader = new ESPNetwork(ConnectivityMode::READER);
