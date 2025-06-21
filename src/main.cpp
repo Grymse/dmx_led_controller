@@ -20,7 +20,7 @@
 #define CE_PIN 0
 #define CSN_PIN 10
 #define LED_PIN 7
-#define NUM_LEDS 300
+#define NUM_LEDS 0
 #define BUILTIN_LED 8
 CRGB* leds = new CRGB[NUM_LEDS];
 RF24 radio = RF24(CE_PIN, CSN_PIN);
@@ -28,7 +28,7 @@ u8_t frames_per_second = 40;
 
 
 u16_t LED_OFFSET = 0; // 300
-u16_t DMX_START = 3; // 18
+u16_t DMX_START = 18; // 18
 
 ProcessScheduler scheduler;
 Animator* animator;
