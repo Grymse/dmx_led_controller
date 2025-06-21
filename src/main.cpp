@@ -167,7 +167,7 @@ void setup() {
   Serial.begin(115200);
   pinMode(BUILTIN_LED, OUTPUT);
 
-  FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
+  FastLED.addLeds<WS2812B, LED_PIN, RGB>(leds, NUM_LEDS);
 
   animator = new Animator(leds, NUM_LEDS);
 
