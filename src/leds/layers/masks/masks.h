@@ -36,6 +36,20 @@ class PulseSawtoothMask : public ILayer {
   CRGB apply(CRGB color, LEDState* state) override;
 };
 
+class SectionsRandomMask : public ILayer {
+  u16_t duration;
+  std::vector<u8_t> sections;
+  u8_t current_section;
+  u32_t tick_of_next_update;
+
+  public:
+  String getName() override;
+  String toString() override;
+  protocol_Layer toEncodable() override;
+  SectionsRandomMask(std::vector<u8_t> sections, u16_t duration);
+  CRGB apply(CRGB color, LEDState* state) override;
+};
+
 class PulseMask : public ILayer {
   u16_t duration;
   u16_t pulse_gap;

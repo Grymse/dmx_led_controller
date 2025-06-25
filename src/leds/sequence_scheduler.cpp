@@ -48,7 +48,6 @@ void SequenceScheduler::add(Animation* animation) {
 
 /**
  * @brief Set sequence of animations in the scheduler
- *
  * @param animations The new sequence of animations
  * @param brightness The brightness of the sequence (Optional)
  */

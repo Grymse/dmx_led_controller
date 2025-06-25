@@ -39,8 +39,15 @@ u8_t prevChannels[16];
 
 std::vector<u8_t> * to_sections(u8_t value) {
     std::vector<u8_t> * sections = new std::vector<u8_t>();
-    sections->resize(value + 1);
     sections->push_back(255);
+    for (int i = 1; i < value; i++) sections->push_back(0);
+    return sections;
+}
+
+std::vector<u8_t> * to_full_sections(u8_t value) {
+    std::vector<u8_t> * sections = new std::vector<u8_t>();
+    
+    for (int i = 0; i < value; i++) sections->push_back(255);
     return sections;
 }
 
@@ -77,6 +84,8 @@ ILayer * dmx_to_animation(u8_t* channels) {
             return new SawtoothMask(valueScaler(channels[1]), valueScaler(channels[2]), valueScaler(channels[3]));
         case 8: // SectionsWaveMask
             return new SectionsWaveMask(*to_sections(channels[1]), valueScaler(channels[2]));
+        case 9: // SectionsRandomMask
+            return new SectionsRandomMask(*to_full_sections(channels[1]), valueScaler(channels[2]));
         default:
             return nullptr; // Unknown layer type
     }
