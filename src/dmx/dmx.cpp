@@ -5,6 +5,11 @@ u16_t DMX_START = 3; // 3, 18
 u8_t channels[16] = {0};
 u8_t prevChannels[16] = {0};
 
+// NOTE: The DMX protocol expects 123, 234 on channels 1 and 2, respectively.
+// This is a hack to ensure that the DMX controller is working correctly.
+// This hack is done as the MAX485 often reads faulty data, and this
+// ensures that we only update the animation if the DMX controller is working correctly.
+
 /**
  * DMX PROTOCOL
  * 1: Dimmer
