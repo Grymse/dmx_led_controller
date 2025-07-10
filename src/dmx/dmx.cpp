@@ -5,6 +5,32 @@ u16_t DMX_START = 3; // 3, 18
 u8_t channels[16] = {0};
 u8_t prevChannels[16] = {0};
 
+/**
+ * DMX PROTOCOL
+ * 1: Dimmer
+ * 2: Red
+ * 3: Green
+ * 4: Blue
+ * 5: Direction (0-127 = FORWARD, 128-255 = BACKWARD)
+ * 6: UNUSED (Intended for rainbow effect, but not implemented)
+ * 7: UNUSED (Intended for rainbow effect, but not implemented)
+ * 8: Mask 1 type (1-9)
+ * 9: Mask 1 parameter 1
+ * 10: Mask 1 parameter 2
+ * 11: Mask 1 parameter 3
+ * 12: Mask 2 type (1-9)
+ * 13: Mask 2 parameter 1
+ * 14: Mask 2 parameter 2
+ * 15: Mask 2 parameter 3
+ */
+
+/**
+ * @brief As sections are defined by an array of bytes, and I wanted a simple way to interact with it, I simply create an array of X size, and
+ * fill it with 255 for the first byte, and 0 for the rest.
+ * 
+ * @param value 
+ * @return std::vector<u8_t>* 
+ */
 std::vector<u8_t> * to_sections(u8_t value) {
     std::vector<u8_t> * sections = new std::vector<u8_t>();
     sections->push_back(255);
@@ -12,6 +38,11 @@ std::vector<u8_t> * to_sections(u8_t value) {
     return sections;
 }
 
+/**
+ * @brief Creates a vector of sections, where each section is filled with 255.
+ * @param value 
+ * @return std::vector<u8_t>* 
+ */
 std::vector<u8_t> * to_full_sections(u8_t value) {
     std::vector<u8_t> * sections = new std::vector<u8_t>();
     
@@ -19,7 +50,17 @@ std::vector<u8_t> * to_full_sections(u8_t value) {
     return sections;
 }
 
-
+/** 
+ * @brief Scales the value to a range of 0-255, where:
+ * - 0-31 is unchanged
+ * - 32-63 is scaled to 32-96
+ * - 64-127 is scaled to 96-352
+ * - 128-191 is scaled to 352-864
+ * - 192-255 is scaled to 864-2048
+ * 
+ * This scaling is used to create a more gradual transition between values,
+ * as DMX only supports up to 255, but we want to use a wider range for effects.
+ */
 u16_t valueScaler(u16_t value) {
     if (value < 32) {
         return value;
@@ -59,7 +100,15 @@ ILayer * dmx_to_mask(u8_t* channels) {
     }
 }
 
-
+/**
+ * @brief Checks whether the channels from `from` to `to` has changed compared to the previous channels.
+ * 
+ * @param channels channels to check
+ * @param from first channel to check
+ * @param to last channel to check
+ * @return true 
+ * @return false 
+ */
 bool hasChannelsChanged(u8_t* channels, u8_t from, u8_t to) {
     for (int i = from; i <= to; i++) {
         if (channels[i] != prevChannels[i]) {
@@ -69,6 +118,9 @@ bool hasChannelsChanged(u8_t* channels, u8_t from, u8_t to) {
     return false;
 }
 
+// Create a color that will be used as the base color for the animation.
+// We create an object, as we sometimes wish to use the existing color
+// without resetting the wave animation
 SingleColor* color = new SingleColor(CRGB::Black);
 
 /**
@@ -117,12 +169,6 @@ void dmx_to_animation(Animator* animator, u8_t* channels) {
         animator->setTick(channels[5] % 128);
     }
     memcpy(prevChannels, channels, sizeof(prevChannels));
-}
-
-// ReadDMXProcess implementation
-ReadDMXProcess::ReadDMXProcess() : Process() {
-    this->animator = nullptr;
-    DMX::Initialize(input);
 }
 
 ReadDMXProcess::ReadDMXProcess(Animator* animator) : Process() {

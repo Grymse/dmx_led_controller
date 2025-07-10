@@ -33,7 +33,6 @@ private:
     Animator* animator;
 
 public:
-    ReadDMXProcess(); // Default constructor
     ReadDMXProcess(Animator* animator); // Parameterized constructor
     String getName() override;
     void update() override;
