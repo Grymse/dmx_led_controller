@@ -15,6 +15,16 @@ PB_BIND(protocol_Animation, protocol_Animation, AUTO)
 PB_BIND(protocol_Sequence, protocol_Sequence, AUTO)
 
 
+PB_BIND(protocol_Settings, protocol_Settings, AUTO)
+
+
+PB_BIND(protocol_Message, protocol_Message, AUTO)
+
+
+
+
+
+
 
 
 

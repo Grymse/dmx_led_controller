@@ -32,8 +32,9 @@ String SequenceScheduler::getName() {
  * @param tickDuration The duration of the layers
  * @param direction The direction of the animation
  */
-void SequenceScheduler::add(std::vector<ILayer*> layers, u16_t tickDuration, Direction direction) {
-  this->add(new Animation{ layers, tickDuration, direction });
+
+void SequenceScheduler::add(std::vector<ILayer*> layers, u16_t tickDuration, Direction direction, u8_t brightness, u16_t firstTick) {
+  this->add(new Animation{ layers, tickDuration, direction, brightness, firstTick });
 }
 
 /**
@@ -49,10 +50,9 @@ void SequenceScheduler::add(Animation* animation) {
 /**
  * @brief Set sequence of animations in the scheduler
  * @param animations The new sequence of animations
- * @param brightness The brightness of the sequence (Optional)
  */
-void SequenceScheduler::set(std::vector<Animation*> animations, u8_t brightness) {
-  set(new Sequence({ animations, brightness }));
+void SequenceScheduler::set(std::vector<Animation*> animations) {
+  set(new Sequence({ animations }));
 }
 
 /**
@@ -66,17 +66,8 @@ void SequenceScheduler::set(Sequence* sequence) {
   for (Animation* animation : animations) {
     animation->tickDuration = animation->tickDuration == 0 ? ANIMATION_DURATION_MAX : animation->tickDuration; // Set duration to max if not set
   }
-  setBrightness(sequence->brightness);
 }
 
-/**
- * @brief Set the Brightness of the LED strip
- *
- * @param brightness new brightness 0-255
- */
-void SequenceScheduler::setBrightness(u8_t brightness) {
-  animator->setBrightness(brightness);
-}
 
 /**
  * @brief Clear the scheduler
@@ -84,7 +75,6 @@ void SequenceScheduler::setBrightness(u8_t brightness) {
  */
 void SequenceScheduler::clear() {
   animations = {};
-  setBrightness(255);
   animator->clear();
   reset();
 }
@@ -95,7 +85,7 @@ void SequenceScheduler::clear() {
  * @return Sequence* The current sequence
  */
 Sequence* SequenceScheduler::getSequence() {
-  return new Sequence({ animations, animator->getBrightness() });
+  return new Sequence({ animations });
 }
 
 /**
@@ -119,6 +109,8 @@ void SequenceScheduler::update() {
   if (tick == 0) {
     animator->setLayers(animations[currentAnimation]->layers);
     animator->setDirection(animations[currentAnimation]->direction);
+    animator->setBrightness(animations[currentAnimation]->brightness);
+    animator->setTick(animations[currentAnimation]->firstTick);
   }
 
   tick++; // Progress

@@ -5,10 +5,6 @@
  * git: https://github.com/thesayyn/protoc-gen-ts */
 import * as pb_1 from "google-protobuf";
 export namespace protocol {
-    export enum Direction {
-        FORWARD = 0,
-        BACKWARD = 1
-    }
     export enum LayerType {
         SingleColor = 0,
         RainbowColor = 1,
@@ -25,6 +21,22 @@ export namespace protocol {
         SectionsMask = 56,
         StarsMask = 57,
         WaveMask = 58
+    }
+    export enum Direction {
+        FORWARD = 0,
+        BACKWARD = 1
+    }
+    export enum MessageType {
+        SET_SEQUENCE = 0,
+        SAVE_SEQUENCE = 1,
+        SAVE_SETTINGS = 2,
+        REQUEST_STATE = 3,
+        RESPONSE_STATE = 4
+    }
+    export enum ForwardingType {
+        NOCAST = 0,
+        BROADCAST = 1,
+        MULTICAST = 2
     }
     export class Layer extends pb_1.Message {
         #one_of_decls: number[][] = [];
@@ -282,16 +294,24 @@ export namespace protocol {
         constructor(data?: any[] | {
             direction?: Direction;
             duration?: number;
+            first_tick?: number;
+            brightness?: number;
             layers?: Layer[];
         }) {
             super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [3], this.#one_of_decls);
+            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [5], this.#one_of_decls);
             if (!Array.isArray(data) && typeof data == "object") {
                 if ("direction" in data && data.direction != undefined) {
                     this.direction = data.direction;
                 }
                 if ("duration" in data && data.duration != undefined) {
                     this.duration = data.duration;
+                }
+                if ("first_tick" in data && data.first_tick != undefined) {
+                    this.first_tick = data.first_tick;
+                }
+                if ("brightness" in data && data.brightness != undefined) {
+                    this.brightness = data.brightness;
                 }
                 if ("layers" in data && data.layers != undefined) {
                     this.layers = data.layers;
@@ -310,15 +330,29 @@ export namespace protocol {
         set duration(value: number) {
             pb_1.Message.setField(this, 2, value);
         }
+        get first_tick() {
+            return pb_1.Message.getFieldWithDefault(this, 3, 0) as number;
+        }
+        set first_tick(value: number) {
+            pb_1.Message.setField(this, 3, value);
+        }
+        get brightness() {
+            return pb_1.Message.getFieldWithDefault(this, 4, 0) as number;
+        }
+        set brightness(value: number) {
+            pb_1.Message.setField(this, 4, value);
+        }
         get layers() {
-            return pb_1.Message.getRepeatedWrapperField(this, Layer, 3) as Layer[];
+            return pb_1.Message.getRepeatedWrapperField(this, Layer, 5) as Layer[];
         }
         set layers(value: Layer[]) {
-            pb_1.Message.setRepeatedWrapperField(this, 3, value);
+            pb_1.Message.setRepeatedWrapperField(this, 5, value);
         }
         static fromObject(data: {
             direction?: Direction;
             duration?: number;
+            first_tick?: number;
+            brightness?: number;
             layers?: ReturnType<typeof Layer.prototype.toObject>[];
         }): Animation {
             const message = new Animation({});
@@ -327,6 +361,12 @@ export namespace protocol {
             }
             if (data.duration != null) {
                 message.duration = data.duration;
+            }
+            if (data.first_tick != null) {
+                message.first_tick = data.first_tick;
+            }
+            if (data.brightness != null) {
+                message.brightness = data.brightness;
             }
             if (data.layers != null) {
                 message.layers = data.layers.map(item => Layer.fromObject(item));
@@ -337,6 +377,8 @@ export namespace protocol {
             const data: {
                 direction?: Direction;
                 duration?: number;
+                first_tick?: number;
+                brightness?: number;
                 layers?: ReturnType<typeof Layer.prototype.toObject>[];
             } = {};
             if (this.direction != null) {
@@ -344,6 +386,12 @@ export namespace protocol {
             }
             if (this.duration != null) {
                 data.duration = this.duration;
+            }
+            if (this.first_tick != null) {
+                data.first_tick = this.first_tick;
+            }
+            if (this.brightness != null) {
+                data.brightness = this.brightness;
             }
             if (this.layers != null) {
                 data.layers = this.layers.map((item: Layer) => item.toObject());
@@ -358,8 +406,12 @@ export namespace protocol {
                 writer.writeEnum(1, this.direction);
             if (this.duration != 0)
                 writer.writeUint32(2, this.duration);
+            if (this.first_tick != 0)
+                writer.writeUint32(3, this.first_tick);
+            if (this.brightness != 0)
+                writer.writeUint32(4, this.brightness);
             if (this.layers.length)
-                writer.writeRepeatedMessage(3, this.layers, (item: Layer) => item.serialize(writer));
+                writer.writeRepeatedMessage(5, this.layers, (item: Layer) => item.serialize(writer));
             if (!w)
                 return writer.getResultBuffer();
         }
@@ -376,7 +428,13 @@ export namespace protocol {
                         message.duration = reader.readUint32();
                         break;
                     case 3:
-                        reader.readMessage(message.layers, () => pb_1.Message.addToRepeatedWrapperField(message, 3, Layer.deserialize(reader), Layer));
+                        message.first_tick = reader.readUint32();
+                        break;
+                    case 4:
+                        message.brightness = reader.readUint32();
+                        break;
+                    case 5:
+                        reader.readMessage(message.layers, () => pb_1.Message.addToRepeatedWrapperField(message, 5, Layer.deserialize(reader), Layer));
                         break;
                     default: reader.skipField();
                 }
@@ -393,25 +451,15 @@ export namespace protocol {
     export class Sequence extends pb_1.Message {
         #one_of_decls: number[][] = [];
         constructor(data?: any[] | {
-            brightness?: number;
             animations?: Animation[];
         }) {
             super();
             pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [2], this.#one_of_decls);
             if (!Array.isArray(data) && typeof data == "object") {
-                if ("brightness" in data && data.brightness != undefined) {
-                    this.brightness = data.brightness;
-                }
                 if ("animations" in data && data.animations != undefined) {
                     this.animations = data.animations;
                 }
             }
-        }
-        get brightness() {
-            return pb_1.Message.getFieldWithDefault(this, 1, 0) as number;
-        }
-        set brightness(value: number) {
-            pb_1.Message.setField(this, 1, value);
         }
         get animations() {
             return pb_1.Message.getRepeatedWrapperField(this, Animation, 2) as Animation[];
@@ -420,13 +468,9 @@ export namespace protocol {
             pb_1.Message.setRepeatedWrapperField(this, 2, value);
         }
         static fromObject(data: {
-            brightness?: number;
             animations?: ReturnType<typeof Animation.prototype.toObject>[];
         }): Sequence {
             const message = new Sequence({});
-            if (data.brightness != null) {
-                message.brightness = data.brightness;
-            }
             if (data.animations != null) {
                 message.animations = data.animations.map(item => Animation.fromObject(item));
             }
@@ -434,12 +478,8 @@ export namespace protocol {
         }
         toObject() {
             const data: {
-                brightness?: number;
                 animations?: ReturnType<typeof Animation.prototype.toObject>[];
             } = {};
-            if (this.brightness != null) {
-                data.brightness = this.brightness;
-            }
             if (this.animations != null) {
                 data.animations = this.animations.map((item: Animation) => item.toObject());
             }
@@ -449,8 +489,6 @@ export namespace protocol {
         serialize(w: pb_1.BinaryWriter): void;
         serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
             const writer = w || new pb_1.BinaryWriter();
-            if (this.brightness != 0)
-                writer.writeUint32(1, this.brightness);
             if (this.animations.length)
                 writer.writeRepeatedMessage(2, this.animations, (item: Animation) => item.serialize(writer));
             if (!w)
@@ -462,9 +500,6 @@ export namespace protocol {
                 if (reader.isEndGroup())
                     break;
                 switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.brightness = reader.readUint32();
-                        break;
                     case 2:
                         reader.readMessage(message.animations, () => pb_1.Message.addToRepeatedWrapperField(message, 2, Animation.deserialize(reader), Animation));
                         break;
@@ -478,6 +513,261 @@ export namespace protocol {
         }
         static deserializeBinary(bytes: Uint8Array): Sequence {
             return Sequence.deserialize(bytes);
+        }
+    }
+    export class Settings extends pb_1.Message {
+        #one_of_decls: number[][] = [];
+        constructor(data?: any[] | {
+            group_id?: number;
+            virtual_offset?: number;
+        }) {
+            super();
+            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
+            if (!Array.isArray(data) && typeof data == "object") {
+                if ("group_id" in data && data.group_id != undefined) {
+                    this.group_id = data.group_id;
+                }
+                if ("virtual_offset" in data && data.virtual_offset != undefined) {
+                    this.virtual_offset = data.virtual_offset;
+                }
+            }
+        }
+        get group_id() {
+            return pb_1.Message.getFieldWithDefault(this, 1, 0) as number;
+        }
+        set group_id(value: number) {
+            pb_1.Message.setField(this, 1, value);
+        }
+        get virtual_offset() {
+            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
+        }
+        set virtual_offset(value: number) {
+            pb_1.Message.setField(this, 2, value);
+        }
+        static fromObject(data: {
+            group_id?: number;
+            virtual_offset?: number;
+        }): Settings {
+            const message = new Settings({});
+            if (data.group_id != null) {
+                message.group_id = data.group_id;
+            }
+            if (data.virtual_offset != null) {
+                message.virtual_offset = data.virtual_offset;
+            }
+            return message;
+        }
+        toObject() {
+            const data: {
+                group_id?: number;
+                virtual_offset?: number;
+            } = {};
+            if (this.group_id != null) {
+                data.group_id = this.group_id;
+            }
+            if (this.virtual_offset != null) {
+                data.virtual_offset = this.virtual_offset;
+            }
+            return data;
+        }
+        serialize(): Uint8Array;
+        serialize(w: pb_1.BinaryWriter): void;
+        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+            const writer = w || new pb_1.BinaryWriter();
+            if (this.group_id != 0)
+                writer.writeUint32(1, this.group_id);
+            if (this.virtual_offset != 0)
+                writer.writeUint32(2, this.virtual_offset);
+            if (!w)
+                return writer.getResultBuffer();
+        }
+        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Settings {
+            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new Settings();
+            while (reader.nextField()) {
+                if (reader.isEndGroup())
+                    break;
+                switch (reader.getFieldNumber()) {
+                    case 1:
+                        message.group_id = reader.readUint32();
+                        break;
+                    case 2:
+                        message.virtual_offset = reader.readUint32();
+                        break;
+                    default: reader.skipField();
+                }
+            }
+            return message;
+        }
+        serializeBinary(): Uint8Array {
+            return this.serialize();
+        }
+        static deserializeBinary(bytes: Uint8Array): Settings {
+            return Settings.deserialize(bytes);
+        }
+    }
+    export class Message extends pb_1.Message {
+        #one_of_decls: number[][] = [];
+        constructor(data?: any[] | {
+            type?: MessageType;
+            settings?: Settings;
+            sequence?: Sequence;
+            forwarding_type?: ForwardingType;
+            target_groups?: number[];
+        }) {
+            super();
+            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [5], this.#one_of_decls);
+            if (!Array.isArray(data) && typeof data == "object") {
+                if ("type" in data && data.type != undefined) {
+                    this.type = data.type;
+                }
+                if ("settings" in data && data.settings != undefined) {
+                    this.settings = data.settings;
+                }
+                if ("sequence" in data && data.sequence != undefined) {
+                    this.sequence = data.sequence;
+                }
+                if ("forwarding_type" in data && data.forwarding_type != undefined) {
+                    this.forwarding_type = data.forwarding_type;
+                }
+                if ("target_groups" in data && data.target_groups != undefined) {
+                    this.target_groups = data.target_groups;
+                }
+            }
+        }
+        get type() {
+            return pb_1.Message.getFieldWithDefault(this, 1, MessageType.SET_SEQUENCE) as MessageType;
+        }
+        set type(value: MessageType) {
+            pb_1.Message.setField(this, 1, value);
+        }
+        get settings() {
+            return pb_1.Message.getWrapperField(this, Settings, 2) as Settings;
+        }
+        set settings(value: Settings) {
+            pb_1.Message.setWrapperField(this, 2, value);
+        }
+        get has_settings() {
+            return pb_1.Message.getField(this, 2) != null;
+        }
+        get sequence() {
+            return pb_1.Message.getWrapperField(this, Sequence, 3) as Sequence;
+        }
+        set sequence(value: Sequence) {
+            pb_1.Message.setWrapperField(this, 3, value);
+        }
+        get has_sequence() {
+            return pb_1.Message.getField(this, 3) != null;
+        }
+        get forwarding_type() {
+            return pb_1.Message.getFieldWithDefault(this, 4, ForwardingType.NOCAST) as ForwardingType;
+        }
+        set forwarding_type(value: ForwardingType) {
+            pb_1.Message.setField(this, 4, value);
+        }
+        get target_groups() {
+            return pb_1.Message.getFieldWithDefault(this, 5, []) as number[];
+        }
+        set target_groups(value: number[]) {
+            pb_1.Message.setField(this, 5, value);
+        }
+        static fromObject(data: {
+            type?: MessageType;
+            settings?: ReturnType<typeof Settings.prototype.toObject>;
+            sequence?: ReturnType<typeof Sequence.prototype.toObject>;
+            forwarding_type?: ForwardingType;
+            target_groups?: number[];
+        }): Message {
+            const message = new Message({});
+            if (data.type != null) {
+                message.type = data.type;
+            }
+            if (data.settings != null) {
+                message.settings = Settings.fromObject(data.settings);
+            }
+            if (data.sequence != null) {
+                message.sequence = Sequence.fromObject(data.sequence);
+            }
+            if (data.forwarding_type != null) {
+                message.forwarding_type = data.forwarding_type;
+            }
+            if (data.target_groups != null) {
+                message.target_groups = data.target_groups;
+            }
+            return message;
+        }
+        toObject() {
+            const data: {
+                type?: MessageType;
+                settings?: ReturnType<typeof Settings.prototype.toObject>;
+                sequence?: ReturnType<typeof Sequence.prototype.toObject>;
+                forwarding_type?: ForwardingType;
+                target_groups?: number[];
+            } = {};
+            if (this.type != null) {
+                data.type = this.type;
+            }
+            if (this.settings != null) {
+                data.settings = this.settings.toObject();
+            }
+            if (this.sequence != null) {
+                data.sequence = this.sequence.toObject();
+            }
+            if (this.forwarding_type != null) {
+                data.forwarding_type = this.forwarding_type;
+            }
+            if (this.target_groups != null) {
+                data.target_groups = this.target_groups;
+            }
+            return data;
+        }
+        serialize(): Uint8Array;
+        serialize(w: pb_1.BinaryWriter): void;
+        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+            const writer = w || new pb_1.BinaryWriter();
+            if (this.type != MessageType.SET_SEQUENCE)
+                writer.writeEnum(1, this.type);
+            if (this.has_settings)
+                writer.writeMessage(2, this.settings, () => this.settings.serialize(writer));
+            if (this.has_sequence)
+                writer.writeMessage(3, this.sequence, () => this.sequence.serialize(writer));
+            if (this.forwarding_type != ForwardingType.NOCAST)
+                writer.writeEnum(4, this.forwarding_type);
+            if (this.target_groups.length)
+                writer.writePackedUint32(5, this.target_groups);
+            if (!w)
+                return writer.getResultBuffer();
+        }
+        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Message {
+            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new Message();
+            while (reader.nextField()) {
+                if (reader.isEndGroup())
+                    break;
+                switch (reader.getFieldNumber()) {
+                    case 1:
+                        message.type = reader.readEnum();
+                        break;
+                    case 2:
+                        reader.readMessage(message.settings, () => message.settings = Settings.deserialize(reader));
+                        break;
+                    case 3:
+                        reader.readMessage(message.sequence, () => message.sequence = Sequence.deserialize(reader));
+                        break;
+                    case 4:
+                        message.forwarding_type = reader.readEnum();
+                        break;
+                    case 5:
+                        message.target_groups = reader.readPackedUint32();
+                        break;
+                    default: reader.skipField();
+                }
+            }
+            return message;
+        }
+        serializeBinary(): Uint8Array {
+            return this.serialize();
+        }
+        static deserializeBinary(bytes: Uint8Array): Message {
+            return Message.deserialize(bytes);
         }
     }
 }

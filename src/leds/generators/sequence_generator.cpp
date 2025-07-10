@@ -40,9 +40,7 @@ bool SequenceGenerator::assertRules(std::vector<ILayer *>* layers) {
 
 Sequence * SequenceGenerator::getSequence() {
     u16_t count = random(maxCount - minCount) + minCount;
-    Sequence * sequence = new Sequence{
-        .brightness = 175
-    };
+    Sequence * sequence = new Sequence{};
 
     for (u16_t i = 0; i < count; i++) {
         sequence->animations.push_back(getAnimation());

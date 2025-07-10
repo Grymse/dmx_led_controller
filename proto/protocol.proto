@@ -1,10 +1,10 @@
 syntax = "proto3";
 package protocol;
-
-enum Direction {
-  FORWARD = 0;
-  BACKWARD = 1;
-}
+/**
+  * @file protocol.proto
+  * @brief Protocol for communication with the DMX LED controller.
+  * This file defines the messages and enums used in the protocol.
+  */
 
 enum LayerType {
   // Colors
@@ -40,14 +40,47 @@ message Layer {
   bytes sections = 9;
 }
 
+enum Direction {
+  FORWARD = 0;
+  BACKWARD = 1;
+}
+
 // The request message containing an array of effects.
 message Animation {
   Direction direction = 1;
-  uint32 duration = 2;
-  repeated Layer layers = 3;
+  uint32 duration = 2; // Duration of the animation in ticks.
+  uint32 first_tick = 3; // Which tick should the animation start on.
+  uint32 brightness = 4;
+  repeated Layer layers = 5;
 }
 
 message Sequence {
-  uint32 brightness = 1;
   repeated Animation animations = 2;
+}
+
+enum MessageType {
+  SET_SEQUENCE = 0; // For live setting the current animation sequence.
+  SAVE_SEQUENCE = 1; // Save new default sequence to the device.
+  SAVE_SETTINGS = 2; // Save new settings to the device.
+  REQUEST_STATE = 3; // Request the current sequence and settings from the device.
+  RESPONSE_STATE = 4; // Response with the current sequence and settings from the device.
+}
+
+enum ForwardingType {
+  NOCAST = 0; // Send to a specific device
+  BROADCAST = 1; // Send to all devices
+  MULTICAST = 2; // Send to a group of devices
+}
+
+message Settings {
+  uint32 group_id = 1; // Specify the group ID for the DMX controller
+  uint32 virtual_offset = 2; // Set virtual index of first led for the DMX controller.
+}
+
+message Message {
+  MessageType type = 1;
+  Settings settings = 2; // Is included if message has to do with settings.
+  Sequence sequence = 3; // Is included if message has to do with sequences.
+  ForwardingType forwarding_type = 4; // Which devices should the message be sent to.
+  repeated uint32 target_groups = 5; // If ForwardingType is Multicast, this is the list of groups to send to.
 }

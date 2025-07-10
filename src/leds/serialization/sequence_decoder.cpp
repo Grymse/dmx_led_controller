@@ -36,9 +36,10 @@ bool SequenceDecoder::decode_animation(pb_istream_t* stream, const pb_field_iter
     return false;  // Return false if decoding fails
   }
 
-
   animation->direction = incomingAnimation.direction == protocol_Direction_FORWARD ? Direction::FORWARD : Direction::BACKWARD;
   animation->tickDuration = incomingAnimation.duration;
+  animation->firstTick = incomingAnimation.first_tick;
+  animation->brightness = incomingAnimation.brightness;
 
   return true;  // Return true if decoding is successful
 }
@@ -66,7 +67,5 @@ bool SequenceDecoder::decode(pb_istream_t* stream, Sequence* sequence) {
     return false;  // Return empty sequence if decoding fails
   }
 
-
-  sequence->brightness = incomingSequence.brightness;
   return true;
 }

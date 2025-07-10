@@ -15,6 +15,8 @@ bool SequenceEncoder::animations_callback(pb_ostream_t *stream, const pb_field_i
         protocol_Animation encoded_animation = {
             .direction = direction,
             .duration = animation->tickDuration,
+            .first_tick = animation->firstTick,
+            .brightness = animation->brightness,
             .layers = {
                 .funcs = {
                     .encode = LayerEncoder::layer_callback,
@@ -40,7 +42,6 @@ bool SequenceEncoder::animations_callback(pb_ostream_t *stream, const pb_field_i
 bool SequenceEncoder::encode(pb_ostream_t *stream, Sequence * sequence)
 {
     protocol_Sequence encoded_sequence = {
-        .brightness = sequence->brightness,
         .animations = {
             .funcs = {
                 .encode = SequenceEncoder::animations_callback,
