@@ -41,13 +41,47 @@ void setup() {
 
   animator = new Animator(leds, NUM_LEDS);
 
-  scheduler.addProcess(animator, 1000 / frames_per_second); // Update every 20ms */
-  scheduler.addProcess(new ReadDMXProcess(animator), 25); // Update every 1000ms
+  scheduler.addProcess(animator, 1000 / frames_per_second);
+  scheduler.addProcess(new ReadDMXProcess(animator), 25); // Update every 25ms
 
   // Set virtual offset for the animator. This is used when multiple LED strips are
   // chained together, and second device needs to act as if it's leds are offset by
   // e.g. 300 leds. If set to 300, then the controller will display leds 300-599
   animator->setVirtualOffset(0);
+
+  
+  /**
+   * @brief Scheduler is commented out for DMX controller.
+   * As the DMX controller directly controls the current layers, there is no need for a sequence scheduler.
+   * The sequence scheduler is used for animations that are not directly controlled by DMX. Depending on
+   * how we set it up, we need to setup a mechanism that safely switches between these two modes.
+   */
+
+  // scheduler.addProcess(sequenceScheduler, 1000 / frames_per_second);
+
+  /* sequenceScheduler->add({
+    // COLORS
+    new SingleColor(CRGB::Green),
+    // new SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
+    // new SectionsColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
+    // new SwitchColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
+   
+    // MASKS
+    new BlinkMask({255, 0, 0, 0}, 50),
+    // new InvertMask(),
+    // new PulseSawtoothMask(10, 50),
+    // new SawtoothMask(100, 0, 300),
+    // new SectionsWaveMask({0}, 50),
+    // new SectionsMask({255, 0, 0, 255, 0}, 50),
+    // new StarsMask(200, 10, 3),
+  }, 10000);
+
+  sequenceScheduler->add({
+    new FadeColor({CRGB(255, 0, 0),CRGB(255, 255, 255)}, 1200),
+    new StarsMask(300, 5, 1),
+  }
+  , 10000); */
+
 }
 
 void loop() {
