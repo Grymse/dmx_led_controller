@@ -106,6 +106,13 @@ Create complex lighting effects by combining simple layers:
 ### Building the Firmware
 
 ```bash
+src/ Primarily code for lightcontroller
+lib/ Libraries for lightcontroller
+proto/ Protobuf protocol. Compiles into C and TypeScript
+web/ Web interface
+```
+
+```bash
 # Clone the repository
 git clone <repository-url>
 cd dmx_led_controller
