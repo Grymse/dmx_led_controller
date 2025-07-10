@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <dmx.h>
+#include "dmx_lib.h"
 #include <Arduino.h>
 
 #define DMX_SERIAL_INPUT_PIN    GPIO_NUM_4 // pin for dmx rx
