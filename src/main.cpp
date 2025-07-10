@@ -86,5 +86,5 @@ void setup() {
 
 void loop() {
   scheduler.update();
-  delay(1); // Stability
+  delay(1); // Stability //TODO: Check if this actually introduces stability, or whether we should remove it for more compute time.
 }
