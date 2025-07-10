@@ -42,7 +42,7 @@ void setup() {
   animator = new Animator(leds, NUM_LEDS);
 
   scheduler.addProcess(animator, 1000 / frames_per_second);
-  scheduler.addProcess(new ReadDMXProcess(animator), 25); // Update every 25ms
+  scheduler.addProcess(new ReadDMXProcess(animator), 1000 / frames_per_second); // Update every 25ms
 
   // Set virtual offset for the animator. This is used when multiple LED strips are
   // chained together, and second device needs to act as if it's leds are offset by
@@ -81,7 +81,6 @@ void setup() {
     new StarsMask(300, 5, 1),
   }
   , 10000); */
-
 }
 
 void loop() {

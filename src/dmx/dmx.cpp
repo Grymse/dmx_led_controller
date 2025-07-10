@@ -27,7 +27,7 @@ u8_t prevChannels[16] = {0};
  * 13: Mask 2 parameter 1
  * 14: Mask 2 parameter 2
  * 15: Mask 2 parameter 3
- */
+**/
 
 /**
  * @brief As sections are defined by an array of bytes, and I wanted a simple way to interact with it, I simply create an array of X size, and
@@ -159,7 +159,7 @@ void dmx_to_animation(Animator* animator, u8_t* channels) {
         if (mask1 != nullptr && mask2 != nullptr) {
             // if wwo masks, combine them
             animator->setLayers({color, mask1, mask2});
-
+            
         } else if (mask1 != nullptr) {
             // If one mask
             animator->setLayers({color, mask1});
@@ -195,6 +195,10 @@ void ReadDMXProcess::update() {
     }
 
     // Depending on addresses, we read the DMX data.
+    // TODO: Change to DMX::ReadAll(uint8_t * data, uint16_t start, size_t size).
+    // Do not that this will copy to the same indexes, so the channels array have to
+    // be larger. Otherwise, we can also use DMX_IGNORE_THREADSAFETY = 1, which makes
+    // Read quicker, as no semaphore is used.
     for (int i = 0; i < 15; ++i) {
         channels[i+1] = DMX::Read(i + DMX_START);
     }
