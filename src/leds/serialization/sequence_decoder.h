@@ -5,7 +5,7 @@
 #include <vector>
 
 class SequenceDecoder {
-  private:
+  public:
 
   /**
  * @brief Decodes an animation from the provided protobuf stream.
@@ -21,7 +21,6 @@ class SequenceDecoder {
  */
   static bool decode_animation(pb_istream_t* stream, const pb_field_iter_t* field, void** arg);
 
-  public:
   /**
    * @brief Decodes a sequence from the provided protobuf stream.
    *

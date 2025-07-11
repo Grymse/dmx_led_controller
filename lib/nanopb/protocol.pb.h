@@ -12,22 +12,22 @@
 /* Enum definitions */
 typedef enum _protocol_LayerType {
     /* Colors */
-    protocol_LayerType_SingleColor = 0,
-    protocol_LayerType_RainbowColor = 1,
-    protocol_LayerType_SectionsWaveColor = 2,
-    protocol_LayerType_SectionsColor = 3,
-    protocol_LayerType_FadeColor = 4,
-    protocol_LayerType_SwitchColor = 5,
+    protocol_LayerType_SingleColor = 0, /* Required: color - represented as uint32 => (0xRRGGBB) */
+    protocol_LayerType_RainbowColor = 1, /* Required: duration, length */
+    protocol_LayerType_SectionsWaveColor = 2, /* Required: colors, duration */
+    protocol_LayerType_SectionsColor = 3, /* Required: colors, duration */
+    protocol_LayerType_FadeColor = 4, /* Required: colors, duration */
+    protocol_LayerType_SwitchColor = 5, /* Required: colors, duration */
     /* Masks - 50 offset */
-    protocol_LayerType_BlinkMask = 50,
-    protocol_LayerType_InvertMask = 51,
-    protocol_LayerType_PulseSawtoothMask = 52,
-    protocol_LayerType_PulseMask = 53,
-    protocol_LayerType_SawtoothMask = 54,
-    protocol_LayerType_SectionsWaveMask = 55,
-    protocol_LayerType_SectionsMask = 56,
-    protocol_LayerType_StarsMask = 57,
-    protocol_LayerType_WaveMask = 58
+    protocol_LayerType_BlinkMask = 50, /* Required: sections, duration */
+    protocol_LayerType_InvertMask = 51, /* Required: none */
+    protocol_LayerType_PulseSawtoothMask = 52, /* Required: gap, duration */
+    protocol_LayerType_PulseMask = 53, /* Required: gap, duration */
+    protocol_LayerType_SawtoothMask = 54, /* Required: length, gap, duration */
+    protocol_LayerType_SectionsWaveMask = 55, /* Required: sections, duration */
+    protocol_LayerType_SectionsMask = 56, /* Required: sections, duration */
+    protocol_LayerType_StarsMask = 57, /* Required: frequency, speed, length */
+    protocol_LayerType_WaveMask = 58 /* Required: length, gap, duration */
 } protocol_LayerType;
 
 typedef enum _protocol_Direction {
@@ -35,38 +35,24 @@ typedef enum _protocol_Direction {
     protocol_Direction_BACKWARD = 1
 } protocol_Direction;
 
-typedef enum _protocol_MessageType {
-    protocol_MessageType_SET_SEQUENCE = 0, /* For live setting the current animation sequence. */
-    protocol_MessageType_SAVE_SEQUENCE = 1, /* Save new default sequence to the device. */
-    protocol_MessageType_SAVE_SETTINGS = 2, /* Save new settings to the device. */
-    protocol_MessageType_REQUEST_STATE = 3, /* Request the current sequence and settings from the device. */
-    protocol_MessageType_RESPONSE_STATE = 4 /* Response with the current sequence and settings from the device. */
-} protocol_MessageType;
-
-typedef enum _protocol_ForwardingType {
-    protocol_ForwardingType_NOCAST = 0, /* Send to a specific device */
-    protocol_ForwardingType_BROADCAST = 1, /* Send to all devices */
-    protocol_ForwardingType_MULTICAST = 2 /* Send to a group of devices */
-} protocol_ForwardingType;
-
 /* Struct definitions */
 /* The request message containing the desired effect and brightness. */
 typedef struct _protocol_Layer {
     protocol_LayerType type;
-    uint32_t duration;
-    uint32_t length;
-    uint32_t color;
-    uint32_t gap;
-    uint32_t frequency;
-    uint32_t speed;
-    pb_callback_t colors;
-    pb_callback_t sections;
+    uint32_t duration; /* Time-based parameter for most layer types */
+    uint32_t length; /* Length parameter for Rainbow, Sawtooth, Stars, Wave */
+    uint32_t color; /* Single color value for SingleColor */
+    uint32_t gap; /* Gap parameter for Pulse, Sawtooth, Wave masks */
+    uint32_t frequency; /* Frequency parameter for StarsMask */
+    uint32_t speed; /* Speed parameter for StarsMask */
+    pb_callback_t colors; /* Multiple colors for Fade, SectionsWave, Sections, Switch */
+    pb_callback_t sections; /* Section data for Blink, SectionsWave, Sections masks */
 } protocol_Layer;
 
 /* The request message containing an array of effects. */
 typedef struct _protocol_Animation {
     protocol_Direction direction;
-    uint32_t duration;
+    uint32_t duration; /* Duration of the animation in ticks. */
     uint32_t first_tick; /* Which tick should the animation start on. */
     uint32_t brightness;
     pb_callback_t layers;
@@ -77,19 +63,61 @@ typedef struct _protocol_Sequence {
 } protocol_Sequence;
 
 typedef struct _protocol_Settings {
-    uint32_t group_id; /* Specify the group ID for the DMX controller */
-    uint32_t virtual_offset; /* Set virtual index of first led for the DMX controller. */
+    uint32_t group_id; /* Group ID for this controller (used for selective message handling) */
+    uint32_t virtual_offset; /* Virtual index of first LED for this controller */
 } protocol_Settings;
 
-typedef struct _protocol_Message {
-    protocol_MessageType type;
-    bool has_settings;
-    protocol_Settings settings; /* Is included if message has to do with settings. */
+typedef struct _protocol_BroadcastSequence {
     bool has_sequence;
-    protocol_Sequence sequence; /* Is included if message has to do with sequences. */
-    protocol_ForwardingType forwarding_type; /* Which devices should the message be sent to. */
-    pb_callback_t target_groups; /* If ForwardingType is Multicast, this is the list of groups to send to. */
+    protocol_Sequence sequence; /* The sequence to set */
+    pb_callback_t target_groups; /* Groups to execute this sequence on */
+} protocol_BroadcastSequence;
+
+typedef struct _protocol_State {
+    bool has_sequence;
+    protocol_Sequence sequence; /* The current sequence set on the device */
+    bool has_settings;
+    protocol_Settings settings; /* The current settings of the device */
+} protocol_State;
+
+typedef struct _protocol_Animation2 {
+    protocol_Direction direction;
+    pb_callback_t layers;
+} protocol_Animation2;
+
+typedef struct _protocol_Message {
+    pb_callback_t cb_payload;
+    pb_size_t which_payload;
+    union _protocol_Message_payload {
+        protocol_Sequence sequence;
+        protocol_BroadcastSequence broadcast_sequence;
+        protocol_State save_state;
+        bool request_state; /* Request the current sequence and settings from the device */
+        protocol_State response_state; /* Response with the current sequence and settings from the device */
+    } payload;
+    pb_callback_t cb_test_animation;
+    bool has_test_animation;
+    protocol_Animation2 test_animation; /* For testing purposes, contains a sample animation */
 } protocol_Message;
+
+typedef struct _protocol_FadeColor2 {
+    pb_callback_t colors;
+    uint32_t duration;
+} protocol_FadeColor2;
+
+typedef struct _protocol_RainbowColor2 {
+    uint32_t duration;
+    uint32_t length;
+} protocol_RainbowColor2;
+
+typedef struct _protocol_Layer2 {
+    pb_callback_t cb_payload;
+    pb_size_t which_payload;
+    union _protocol_Layer2_payload {
+        protocol_FadeColor2 fadeColor;
+        protocol_RainbowColor2 rainbowColor;
+    } payload;
+} protocol_Layer2;
 
 
 #ifdef __cplusplus
@@ -105,22 +133,19 @@ extern "C" {
 #define _protocol_Direction_MAX protocol_Direction_BACKWARD
 #define _protocol_Direction_ARRAYSIZE ((protocol_Direction)(protocol_Direction_BACKWARD+1))
 
-#define _protocol_MessageType_MIN protocol_MessageType_SET_SEQUENCE
-#define _protocol_MessageType_MAX protocol_MessageType_RESPONSE_STATE
-#define _protocol_MessageType_ARRAYSIZE ((protocol_MessageType)(protocol_MessageType_RESPONSE_STATE+1))
-
-#define _protocol_ForwardingType_MIN protocol_ForwardingType_NOCAST
-#define _protocol_ForwardingType_MAX protocol_ForwardingType_MULTICAST
-#define _protocol_ForwardingType_ARRAYSIZE ((protocol_ForwardingType)(protocol_ForwardingType_MULTICAST+1))
-
 #define protocol_Layer_type_ENUMTYPE protocol_LayerType
 
 #define protocol_Animation_direction_ENUMTYPE protocol_Direction
 
 
 
-#define protocol_Message_type_ENUMTYPE protocol_MessageType
-#define protocol_Message_forwarding_type_ENUMTYPE protocol_ForwardingType
+
+
+
+#define protocol_Animation2_direction_ENUMTYPE protocol_Direction
+
+
+
 
 
 /* Initializer values for message structs */
@@ -128,12 +153,24 @@ extern "C" {
 #define protocol_Animation_init_default          {_protocol_Direction_MIN, 0, 0, 0, {{NULL}, NULL}}
 #define protocol_Sequence_init_default           {{{NULL}, NULL}}
 #define protocol_Settings_init_default           {0, 0}
-#define protocol_Message_init_default            {_protocol_MessageType_MIN, false, protocol_Settings_init_default, false, protocol_Sequence_init_default, _protocol_ForwardingType_MIN, {{NULL}, NULL}}
+#define protocol_BroadcastSequence_init_default  {false, protocol_Sequence_init_default, {{NULL}, NULL}}
+#define protocol_State_init_default              {false, protocol_Sequence_init_default, false, protocol_Settings_init_default}
+#define protocol_Message_init_default            {{{NULL}, NULL}, 0, {protocol_Sequence_init_default}, {{NULL}, NULL}, false, protocol_Animation2_init_default}
+#define protocol_Animation2_init_default         {_protocol_Direction_MIN, {{NULL}, NULL}}
+#define protocol_Layer2_init_default             {{{NULL}, NULL}, 0, {protocol_FadeColor2_init_default}}
+#define protocol_FadeColor2_init_default         {{{NULL}, NULL}, 0}
+#define protocol_RainbowColor2_init_default      {0, 0}
 #define protocol_Layer_init_zero                 {_protocol_LayerType_MIN, 0, 0, 0, 0, 0, 0, {{NULL}, NULL}, {{NULL}, NULL}}
 #define protocol_Animation_init_zero             {_protocol_Direction_MIN, 0, 0, 0, {{NULL}, NULL}}
 #define protocol_Sequence_init_zero              {{{NULL}, NULL}}
 #define protocol_Settings_init_zero              {0, 0}
-#define protocol_Message_init_zero               {_protocol_MessageType_MIN, false, protocol_Settings_init_zero, false, protocol_Sequence_init_zero, _protocol_ForwardingType_MIN, {{NULL}, NULL}}
+#define protocol_BroadcastSequence_init_zero     {false, protocol_Sequence_init_zero, {{NULL}, NULL}}
+#define protocol_State_init_zero                 {false, protocol_Sequence_init_zero, false, protocol_Settings_init_zero}
+#define protocol_Message_init_zero               {{{NULL}, NULL}, 0, {protocol_Sequence_init_zero}, {{NULL}, NULL}, false, protocol_Animation2_init_zero}
+#define protocol_Animation2_init_zero            {_protocol_Direction_MIN, {{NULL}, NULL}}
+#define protocol_Layer2_init_zero                {{{NULL}, NULL}, 0, {protocol_FadeColor2_init_zero}}
+#define protocol_FadeColor2_init_zero            {{{NULL}, NULL}, 0}
+#define protocol_RainbowColor2_init_zero         {0, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define protocol_Layer_type_tag                  1
@@ -153,11 +190,24 @@ extern "C" {
 #define protocol_Sequence_animations_tag         2
 #define protocol_Settings_group_id_tag           1
 #define protocol_Settings_virtual_offset_tag     2
-#define protocol_Message_type_tag                1
-#define protocol_Message_settings_tag            2
-#define protocol_Message_sequence_tag            3
-#define protocol_Message_forwarding_type_tag     4
-#define protocol_Message_target_groups_tag       5
+#define protocol_BroadcastSequence_sequence_tag  1
+#define protocol_BroadcastSequence_target_groups_tag 2
+#define protocol_State_sequence_tag              1
+#define protocol_State_settings_tag              2
+#define protocol_Animation2_direction_tag        1
+#define protocol_Animation2_layers_tag           2
+#define protocol_Message_sequence_tag            1
+#define protocol_Message_broadcast_sequence_tag  2
+#define protocol_Message_save_state_tag          3
+#define protocol_Message_request_state_tag       4
+#define protocol_Message_response_state_tag      5
+#define protocol_Message_test_animation_tag      6
+#define protocol_FadeColor2_colors_tag           1
+#define protocol_FadeColor2_duration_tag         2
+#define protocol_RainbowColor2_duration_tag      1
+#define protocol_RainbowColor2_length_tag        2
+#define protocol_Layer2_fadeColor_tag            1
+#define protocol_Layer2_rainbowColor_tag         2
 
 /* Struct field encoding specification for nanopb */
 #define protocol_Layer_FIELDLIST(X, a) \
@@ -195,36 +245,100 @@ X(a, STATIC,   SINGULAR, UINT32,   virtual_offset,    2)
 #define protocol_Settings_CALLBACK NULL
 #define protocol_Settings_DEFAULT NULL
 
+#define protocol_BroadcastSequence_FIELDLIST(X, a) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  sequence,          1) \
+X(a, CALLBACK, REPEATED, UINT32,   target_groups,     2)
+#define protocol_BroadcastSequence_CALLBACK pb_default_field_callback
+#define protocol_BroadcastSequence_DEFAULT NULL
+#define protocol_BroadcastSequence_sequence_MSGTYPE protocol_Sequence
+
+#define protocol_State_FIELDLIST(X, a) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  sequence,          1) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  settings,          2)
+#define protocol_State_CALLBACK NULL
+#define protocol_State_DEFAULT NULL
+#define protocol_State_sequence_MSGTYPE protocol_Sequence
+#define protocol_State_settings_MSGTYPE protocol_Settings
+
 #define protocol_Message_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UENUM,    type,              1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  settings,          2) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  sequence,          3) \
-X(a, STATIC,   SINGULAR, UENUM,    forwarding_type,   4) \
-X(a, CALLBACK, REPEATED, UINT32,   target_groups,     5)
-#define protocol_Message_CALLBACK pb_default_field_callback
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,sequence,payload.sequence),   1) \
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,broadcast_sequence,payload.broadcast_sequence),   2) \
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,save_state,payload.save_state),   3) \
+X(a, STATIC,   ONEOF,    BOOL,     (payload,request_state,payload.request_state),   4) \
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,response_state,payload.response_state),   5) \
+X(a, STATIC,   OPTIONAL, MSG_W_CB, test_animation,    6)
+#define protocol_Message_CALLBACK NULL
 #define protocol_Message_DEFAULT NULL
-#define protocol_Message_settings_MSGTYPE protocol_Settings
-#define protocol_Message_sequence_MSGTYPE protocol_Sequence
+#define protocol_Message_payload_sequence_MSGTYPE protocol_Sequence
+#define protocol_Message_payload_broadcast_sequence_MSGTYPE protocol_BroadcastSequence
+#define protocol_Message_payload_save_state_MSGTYPE protocol_State
+#define protocol_Message_payload_response_state_MSGTYPE protocol_State
+#define protocol_Message_test_animation_MSGTYPE protocol_Animation2
+
+#define protocol_Animation2_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UENUM,    direction,         1) \
+X(a, CALLBACK, REPEATED, MESSAGE,  layers,            2)
+#define protocol_Animation2_CALLBACK pb_default_field_callback
+#define protocol_Animation2_DEFAULT NULL
+#define protocol_Animation2_layers_MSGTYPE protocol_Layer2
+
+#define protocol_Layer2_FIELDLIST(X, a) \
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,fadeColor,payload.fadeColor),   1) \
+X(a, STATIC,   ONEOF,    MSG_W_CB, (payload,rainbowColor,payload.rainbowColor),   2)
+#define protocol_Layer2_CALLBACK NULL
+#define protocol_Layer2_DEFAULT NULL
+#define protocol_Layer2_payload_fadeColor_MSGTYPE protocol_FadeColor2
+#define protocol_Layer2_payload_rainbowColor_MSGTYPE protocol_RainbowColor2
+
+#define protocol_FadeColor2_FIELDLIST(X, a) \
+X(a, CALLBACK, REPEATED, UINT32,   colors,            1) \
+X(a, STATIC,   SINGULAR, UINT32,   duration,          2)
+#define protocol_FadeColor2_CALLBACK pb_default_field_callback
+#define protocol_FadeColor2_DEFAULT NULL
+
+#define protocol_RainbowColor2_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, UINT32,   duration,          1) \
+X(a, STATIC,   SINGULAR, UINT32,   length,            2)
+#define protocol_RainbowColor2_CALLBACK NULL
+#define protocol_RainbowColor2_DEFAULT NULL
 
 extern const pb_msgdesc_t protocol_Layer_msg;
 extern const pb_msgdesc_t protocol_Animation_msg;
 extern const pb_msgdesc_t protocol_Sequence_msg;
 extern const pb_msgdesc_t protocol_Settings_msg;
+extern const pb_msgdesc_t protocol_BroadcastSequence_msg;
+extern const pb_msgdesc_t protocol_State_msg;
 extern const pb_msgdesc_t protocol_Message_msg;
+extern const pb_msgdesc_t protocol_Animation2_msg;
+extern const pb_msgdesc_t protocol_Layer2_msg;
+extern const pb_msgdesc_t protocol_FadeColor2_msg;
+extern const pb_msgdesc_t protocol_RainbowColor2_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define protocol_Layer_fields &protocol_Layer_msg
 #define protocol_Animation_fields &protocol_Animation_msg
 #define protocol_Sequence_fields &protocol_Sequence_msg
 #define protocol_Settings_fields &protocol_Settings_msg
+#define protocol_BroadcastSequence_fields &protocol_BroadcastSequence_msg
+#define protocol_State_fields &protocol_State_msg
 #define protocol_Message_fields &protocol_Message_msg
+#define protocol_Animation2_fields &protocol_Animation2_msg
+#define protocol_Layer2_fields &protocol_Layer2_msg
+#define protocol_FadeColor2_fields &protocol_FadeColor2_msg
+#define protocol_RainbowColor2_fields &protocol_RainbowColor2_msg
 
 /* Maximum encoded size of messages (where known) */
 /* protocol_Layer_size depends on runtime parameters */
 /* protocol_Animation_size depends on runtime parameters */
 /* protocol_Sequence_size depends on runtime parameters */
+/* protocol_BroadcastSequence_size depends on runtime parameters */
+/* protocol_State_size depends on runtime parameters */
 /* protocol_Message_size depends on runtime parameters */
+/* protocol_Animation2_size depends on runtime parameters */
+/* protocol_Layer2_size depends on runtime parameters */
+/* protocol_FadeColor2_size depends on runtime parameters */
 #define PROTOCOL_PROTOCOL_PB_H_MAX_SIZE          protocol_Settings_size
+#define protocol_RainbowColor2_size              12
 #define protocol_Settings_size                   12
 
 #ifdef __cplusplus

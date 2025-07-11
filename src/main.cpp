@@ -16,6 +16,7 @@
 #include "connectivity/espnow.h"
 #include "leds/generators/generators.h"
 #include "dmx/dmx.h"
+#include "connectivity/serialization/message_decoder.h"
 
 #define CE_PIN 0
 #define CSN_PIN 10
@@ -25,6 +26,25 @@
 CRGB* leds = new CRGB[NUM_LEDS];
 RF24 radio = RF24(CE_PIN, CSN_PIN);
 u8_t frames_per_second = 40;
+
+
+class ExampleProcess : public Process {
+  u8_t exampleData[2] = {32, 1};
+public:
+  ExampleProcess() {
+    // Constructor code here
+  }
+
+  void update() override {
+    // create stream to read the data
+    pb_istream_t stream = pb_istream_from_buffer(exampleData, sizeof(exampleData));
+    MessageDecoder::decode(&stream);
+  }
+
+  String getName() override {
+    return "Example Process";
+  }
+};
 
 
 ProcessScheduler scheduler;
@@ -41,8 +61,9 @@ void setup() {
 
   animator = new Animator(leds, NUM_LEDS);
 
-  scheduler.addProcess(animator, 1000 / frames_per_second);
-  scheduler.addProcess(new ReadDMXProcess(animator), 1000 / frames_per_second); // Update every 25ms
+  //scheduler.addProcess(animator, 1000 / frames_per_second);
+  //scheduler.addProcess(new ReadDMXProcess(animator), 1000 / frames_per_second); // Update every 25ms
+  scheduler.addProcess(new ExampleProcess(), 1000); // Example process to test the message decoder
 
   // Set virtual offset for the animator. This is used when multiple LED strips are
   // chained together, and second device needs to act as if it's leds are offset by

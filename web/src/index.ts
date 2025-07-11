@@ -2,10 +2,14 @@ import { protocol } from "./lib/protobuf/protocol.ts";
 
 const {
   Direction,
+  BroadcastSequence,
+  Settings,
+  State,
   Sequence,
   Animation,
   Layer,
-  LayerType
+  LayerType,
+  Message
 } = protocol;
 
 class Requester {
@@ -60,18 +64,26 @@ const animation = new Animation({
   duration: 2000,
 });
 
-const layerRequest = Sequence.fromObject({
-  brightness: 255,
-  animations: [animation, animation, animation, animation],
+const sequence = Sequence.fromObject({
+  animations: [animation],
 });
 
-const binary = layerRequest.serializeBinary();
-console.log(binary);
+const settings = new Settings({
+  group_id: 10,
+  virtual_offset: 200,
+});
+
+const message = new Message({
+  request_state: true,
+});
+
+const newBinary = message.serializeBinary();
+console.log(newBinary);
+console.log("Serialized message length:", newBinary.length);
+// Example binary data for testing
 
 // 8, 255, 1, 18, 37, 16, 208, 15, 26, 3, 32, 255, 1, 26, 15, 8, 4, 16, 50, 66, 9, 255, 1, 128, 254, 3, 128, 128, 252, 7, 26, 10, 8, 55, 16, 50, 74, 4, 255, 255, 125, 0, 18, 37, 16, 208, 15, 26, 3, 32, 255, 1, 26, 15, 8, 4, 16, 50, 66, 9, 255, 1, 128, 254, 3, 128, 128, 252, 7, 26, 10, 8, 55, 16, 50, 74, 4, 255, 255, 125, 0, 18, 37, 16, 208, 15, 26, 3, 32, 255, 1, 26, 15, 8, 4, 16, 50, 66, 9, 255, 1, 128, 254, 3, 128, 128, 252, 7, 26, 10, 8, 55, 16, 50, 74, 4, 255, 255, 125, 0, 18, 37, 16, 208, 15, 26, 3, 32, 255, 1, 26, 15, 8, 4, 16, 50, 66, 9, 255, 1, 128, 254, 3, 128, 128, 252, 7, 26, 10, 8, 55, 16, 50, 74, 4, 255, 255, 125, 0
 // 8, 255, 1, 18, 37, 16, 208, 15, 26, 3, 32, 255, 1, 26, 15, 8, 4, 16, 50, 66, 9, 255, 1, 128, 254, 3, 128, 128, 252, 7, 26, 10, 8, 55, 16, 50, 74, 4, 255, 255, 125, 0, 18, 37, 16, 208, 15, 26, 3, 32, 255, 1, 26, 15, 8, 4, 16, 50, 66, 9, 255, 1, 128, 254, 3, 128, 128, 252, 7, 26, 10, 8, 55, 16, 50, 74, 4, 255, 255, 125, 0, 18, 37, 16, 208, 15, 26, 3, 32, 255, 1, 26, 15, 8, 4, 16, 50, 66, 9, 255, 1, 128, 254, 3, 128, 128, 252, 7, 26, 10, 8, 55, 16, 50, 74, 4, 255, 255, 125, 0, 18, 37, 16, 208, 15, 26, 3, 32, 255, 1, 26, 15, 8, 4, 16, 50, 66, 9, 255, 1, 128, 254, 3, 128, 128, 252, 7, 26, 10, 8, 55, 16, 50, 74, 4, 255, 255, 125, 0,
-
-const newBinary = new Uint8Array([8, 255, 1, 18, 35, 16, 208, 15, 26, 30, 8, 4, 16, 42, 66, 24, 255, 1, 128, 254, 3, 128, 128, 252, 7, 255, 129, 252, 7, 255, 255, 3, 128, 254, 255, 7, 255, 255, 255, 7]);
 
 /* const sequence = Sequence.deserializeBinary(newBinary);
 const obj = sequence.toObject();
