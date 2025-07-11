@@ -1,43 +1,49 @@
 syntax = "proto3";
 package protocol;
+import 'nanopb.proto';
 /**
-  * @file protocol.proto
-  * @brief Protocol for communication with the DMX LED controller.
-  * This file defines the messages and enums used in the protocol.
-  */
+ * @file protocol.proto
+ * @brief Protocol for LED controller communication via Bluetooth gateway
+ * 
+ * Communication Model:
+ * - Phone/Computer connects to single ESP32 controller via Bluetooth
+ * - Messages received via Bluetooth may be propagated to other controllers via antenna
+ * - Antenna broadcasts reach all controllers simultaneously (no mesh routing)
+ * - Only the Bluetooth-connected controller decides whether to propagate messages
+ */
 
 enum LayerType {
   // Colors
-  SingleColor = 0;
-  RainbowColor = 1;
-  SectionsWaveColor = 2;
-  SectionsColor = 3;
-  FadeColor = 4;
-  SwitchColor = 5;
+  SingleColor = 0;              // Required: color - represented as uint32 => (0xRRGGBB)
+  RainbowColor = 1;             // Required: duration, length
+  SectionsWaveColor = 2;        // Required: colors, duration
+  SectionsColor = 3;            // Required: colors, duration
+  FadeColor = 4;                // Required: colors, duration
+  SwitchColor = 5;              // Required: colors, duration
 
   // Masks - 50 offset
-  BlinkMask = 50;
-  InvertMask = 51;
-  PulseSawtoothMask = 52;
-  PulseMask = 53;
-  SawtoothMask = 54;
-  SectionsWaveMask = 55;
-  SectionsMask = 56;
-  StarsMask = 57;
-  WaveMask = 58;
+  BlinkMask = 50;               // Required: sections, duration
+  InvertMask = 51;              // Required: none
+  PulseSawtoothMask = 52;       // Required: gap, duration
+  PulseMask = 53;               // Required: gap, duration
+  SawtoothMask = 54;            // Required: length, gap, duration
+  SectionsWaveMask = 55;        // Required: sections, duration
+  SectionsMask = 56;            // Required: sections, duration
+  StarsMask = 57;               // Required: frequency, speed, length
+  WaveMask = 58;                // Required: length, gap, duration
 }
 
 // The request message containing the desired effect and brightness.
 message Layer {
   LayerType type = 1;
-  uint32 duration = 2;
-  uint32 length = 3;
-  uint32 color = 4;
-  uint32 gap = 5;
-  uint32 frequency = 6;
-  uint32 speed = 7;
-  repeated uint32 colors = 8;
-  bytes sections = 9;
+  uint32 duration = 2;          // Time-based parameter for most layer types
+  uint32 length = 3;            // Length parameter for Rainbow, Sawtooth, Stars, Wave
+  uint32 color = 4;             // Single color value for SingleColor
+  uint32 gap = 5;               // Gap parameter for Pulse, Sawtooth, Wave masks
+  uint32 frequency = 6;         // Frequency parameter for StarsMask
+  uint32 speed = 7;             // Speed parameter for StarsMask
+  repeated uint32 colors = 8;   // Multiple colors for Fade, SectionsWave, Sections, Switch
+  bytes sections = 9;           // Section data for Blink, SectionsWave, Sections masks
 }
 
 enum Direction {
@@ -58,29 +64,29 @@ message Sequence {
   repeated Animation animations = 2;
 }
 
-enum MessageType {
-  SET_SEQUENCE = 0; // For live setting the current animation sequence.
-  SAVE_SEQUENCE = 1; // Save new default sequence to the device.
-  SAVE_SETTINGS = 2; // Save new settings to the device.
-  REQUEST_STATE = 3; // Request the current sequence and settings from the device.
-  RESPONSE_STATE = 4; // Response with the current sequence and settings from the device.
-}
-
-enum ForwardingType {
-  NOCAST = 0; // Send to a specific device
-  BROADCAST = 1; // Send to all devices
-  MULTICAST = 2; // Send to a group of devices
-}
-
 message Settings {
-  uint32 group_id = 1; // Specify the group ID for the DMX controller
-  uint32 virtual_offset = 2; // Set virtual index of first led for the DMX controller.
+  uint32 group_id = 1; // Group ID for this controller (used for selective message handling)
+  uint32 virtual_offset = 2; // Virtual index of first LED for this controller
+}
+
+message BroadcastSequence {
+  Sequence sequence = 1; // The sequence to set
+  repeated uint32 target_groups = 2; // Groups to execute this sequence on
+                                     // If empty, all groups will execute the sequence
+}
+
+message State {
+  Sequence sequence = 1; // The current sequence set on the device
+  Settings settings = 2; // The current settings of the device  
 }
 
 message Message {
-  MessageType type = 1;
-  Settings settings = 2; // Is included if message has to do with settings.
-  Sequence sequence = 3; // Is included if message has to do with sequences.
-  ForwardingType forwarding_type = 4; // Which devices should the message be sent to.
-  repeated uint32 target_groups = 5; // If ForwardingType is Multicast, this is the list of groups to send to.
+  option (nanopb_msgopt).submsg_callback = true;
+  oneof payload {
+    Sequence sequence = 1;
+    BroadcastSequence broadcast_sequence = 2;
+    State save_state = 3;
+    bool request_state = 4; // Request the current sequence and settings from the device
+    State response_state = 5; // Response with the current sequence and settings from the device
+  }
 }
