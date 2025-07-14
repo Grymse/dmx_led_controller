@@ -21,7 +21,7 @@ RainbowColor::RainbowColor(u16_t duration, u16_t length) {
 }
 
 String RainbowColor::toString() {
-  String str = "RainbowColor: d: " + String(duration) + ", l: " + String(length);
+  String str = "RainbowColor: d: " + String(this->duration) + ", l: " + String(this->length);
   return str;
 }
 
@@ -32,8 +32,8 @@ String RainbowColor::toString() {
  * @return The modified color after applying the blink pattern.
  */
 CRGB RainbowColor::apply(CRGB color, LEDState* state) {
-  uint8_t hueFromIndex = (255.0 / length) * state->virtual_index;
-  uint8_t hueFromTick = (255.0 / duration) * state->tick;
+  uint8_t hueFromIndex = (255.0 / this->length) * state->virtual_index;
+  uint8_t hueFromTick = (255.0 / this->duration) * state->tick;
 
   return CHSV(hueFromIndex + hueFromTick, 255, 255);
 }
@@ -41,7 +41,7 @@ CRGB RainbowColor::apply(CRGB color, LEDState* state) {
 protocol_Layer RainbowColor::toEncodable() {
   return protocol_Layer {
     .type = protocol_LayerType_RainbowColor,
-    .duration = static_cast<uint32_t>(duration),
-    .length = static_cast<uint32_t>(length)
+    .duration = static_cast<uint32_t>(this->duration),
+    .length = static_cast<uint32_t>(this->length)
   };
 }

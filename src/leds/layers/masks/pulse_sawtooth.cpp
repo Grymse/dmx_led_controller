@@ -38,7 +38,7 @@ PulseSawtoothMask::PulseSawtoothMask(u16_t pulse_gap, u16_t duration) {
  * @return The modified color after applying the blink pattern.
  */
 CRGB PulseSawtoothMask::apply(CRGB color, LEDState* state) {
-  float intensity = (float)(state->tick % (duration + pulse_gap)) / duration;
+  float intensity = (float)(state->tick % (this->duration + this->pulse_gap)) / this->duration;
   if (1.f < intensity) {
     return CRGB::Black;
   }
@@ -47,13 +47,13 @@ CRGB PulseSawtoothMask::apply(CRGB color, LEDState* state) {
 }
 
 String PulseSawtoothMask::toString() {
-  return "PulseSawtoothMask: d: " + String(duration) + ", p: " + String(pulse_gap);
+  return "PulseSawtoothMask: d: " + String(this->duration) + ", p: " + String(this->pulse_gap);
 }
 
 protocol_Layer PulseSawtoothMask::toEncodable() {
   return protocol_Layer {
     .type = protocol_LayerType_PulseSawtoothMask,
-    .duration = duration,
-    .gap = pulse_gap
+    .duration = this->duration,
+    .gap = this->pulse_gap
   };
 }

@@ -22,8 +22,8 @@ SectionsWaveMask::SectionsWaveMask(std::vector<u8_t> sections, u16_t duration) {
 }
 
 String SectionsWaveMask::toString() {
-  String str = "SectionsWaveMask: d: " + String(duration) + ", c: ";
-  str += LayerUtils::bytes_to_string(sections);
+  String str = "SectionsWaveMask: d: " + String(this->duration) + ", c: ";
+  str += LayerUtils::bytes_to_string(this->sections);
   
   return str;
 }
@@ -36,19 +36,19 @@ String SectionsWaveMask::toString() {
  * @return The modified color after applying the blink pattern.
  */
 CRGB SectionsWaveMask::apply(CRGB color, LEDState* state) {
-  float sectionLength = (float)state->length / sections.size();
-  u16_t tick = (state->tick % duration) * state->length / duration;
+  float sectionLength = (float)state->length / this->sections.size();
+  u16_t tick = (state->tick % this->duration) * state->length / this->duration;
   u16_t t = (tick + state->virtual_index) / sectionLength;
 
-  return color.scale8(sections[t % sections.size()]);
+  return color.scale8(this->sections[t % this->sections.size()]);
 }
 
 protocol_Layer SectionsWaveMask::toEncodable() {
   return protocol_Layer {
     .type = protocol_LayerType_SectionsWaveMask,
-    .duration = duration,
+    .duration = this->duration,
     .sections = {
-      .arg = &sections
+      .arg = &this->sections
     }
   };
 }

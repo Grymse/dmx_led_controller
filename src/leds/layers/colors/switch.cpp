@@ -21,8 +21,8 @@ SwitchColor::SwitchColor(std::vector<CRGB> colors, u16_t duration) {
 }
 
 String SwitchColor::toString() {
-  String str = "SwitchColor: d: " + String(duration) + ", c: ";
-  str += LayerUtils::colors_to_string(colors);
+  String str = "SwitchColor: d: " + String(this->duration) + ", c: ";
+  str += LayerUtils::colors_to_string(this->colors);
   
   return str;
 }
@@ -35,8 +35,8 @@ String SwitchColor::toString() {
  * @return The modified color after applying the blink pattern.
  */
 CRGB SwitchColor::apply(CRGB color, LEDState* state) {
-  u16_t duration = duration / colors.size();
-  return colors[state->tick / duration % colors.size()];
+  u16_t segmentDuration = this->duration / this->colors.size();
+  return this->colors[state->tick / segmentDuration % this->colors.size()];
 }
 
 protocol_Layer SwitchColor::toEncodable() {
@@ -44,7 +44,7 @@ protocol_Layer SwitchColor::toEncodable() {
     .type = protocol_LayerType_SwitchColor,
     .duration = duration,
     .colors = {
-      .arg = &colors
+      .arg = &this->colors
     }
   };
 }

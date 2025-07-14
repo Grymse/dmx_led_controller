@@ -32,7 +32,6 @@ String SequenceScheduler::getName() {
  * @param tickDuration The duration of the layers
  * @param direction The direction of the animation
  */
-
 void SequenceScheduler::add(std::vector<ILayer*> layers, u16_t tickDuration, Direction direction, u8_t brightness, u16_t firstTick) {
   this->add(new Animation{ layers, tickDuration, direction, brightness, firstTick });
 }

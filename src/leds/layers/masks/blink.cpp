@@ -20,8 +20,8 @@ String BlinkMask::getName() {
 }
 
 String BlinkMask::toString() {
-  String str = "BlinkMask: d: " + String(duration) + ", c: ";
-  str += LayerUtils::bytes_to_string(pattern);
+  String str = "BlinkMask: d: " + String(this->duration) + ", c: ";
+  str += LayerUtils::bytes_to_string(this->pattern);
   
   return str;
 }
@@ -33,16 +33,16 @@ String BlinkMask::toString() {
  * @return The modified color after applying the blink pattern.
  */
 CRGB BlinkMask::apply(CRGB color, LEDState* state) {
-  u16_t patternIndex = (state->tick % duration) / ((float)duration / pattern.size());
-  return color.scale8(pattern[patternIndex % pattern.size()]);
+  u16_t patternIndex = (state->tick % this->duration) / ((float)this->duration / this->pattern.size());
+  return color.scale8(this->pattern[patternIndex % this->pattern.size()]);
 }
 
 protocol_Layer BlinkMask::toEncodable() {
   return protocol_Layer {
     .type = protocol_LayerType_BlinkMask,
-    .duration = duration,
+    .duration = this->duration,
     .sections = {
-      .arg = &pattern
+      .arg = &this->pattern
     }
   };
 }

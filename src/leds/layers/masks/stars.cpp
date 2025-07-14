@@ -15,15 +15,15 @@
  * @param length The desired length of the multipliers vector.
  */
 void StarsMask::adjustVector(size_t length) {
-  if (multipliers.size() != length) {
-    if (multipliers.size() < length) {
-      for (u16_t i = 0; i < length - multipliers.size(); i++) {
-        multipliers.push_back(0);
+  if (this->multipliers.size() != length) {
+    if (this->multipliers.size() < length) {
+      for (u16_t i = 0; i < length - this->multipliers.size(); i++) {
+        this->multipliers.push_back(0);
       }
     }
     else {
-      for (u16_t i = 0; i < multipliers.size() - length; i++) {
-        multipliers.pop_back();
+      for (u16_t i = 0; i < this->multipliers.size() - length; i++) {
+        this->multipliers.pop_back();
       }
     }
   }
@@ -39,12 +39,12 @@ void StarsMask::adjustVector(size_t length) {
  * @param state The current state of the LED, including the index and length of the LED strip.
  */
 void StarsMask::brightenNeighbourLEDs(LEDState* state) {
-  for (u8_t i = 1; i <= starLength / 2; i++) {
+  for (u8_t i = 1; i <= this->starLength / 2; i++) {
     u16_t left = (state->index - i) % state->length;
     u16_t right = (state->index + i) % state->length;
     u8_t scale = 255 / ((float)i + .5f);
-    multipliers[left] = max(scale, multipliers[left]);
-    multipliers[right] = max(scale, multipliers[right]);
+    this->multipliers[left] = max(scale, this->multipliers[left]);
+    this->multipliers[right] = max(scale, this->multipliers[right]);
   }
 }
 
@@ -58,8 +58,8 @@ void StarsMask::brightenNeighbourLEDs(LEDState* state) {
  * @return The new brightness multiplier after applying the decay.
  */
 u8_t StarsMask::decay(u8_t multiplier) {
-  if (multiplier == 0 || multiplier < decaySpeed) return 0;
-  return multiplier - decaySpeed;
+  if (multiplier == 0 || multiplier < this->decaySpeed) return 0;
+  return multiplier - this->decaySpeed;
 }
 
 String StarsMask::getName() {
@@ -80,7 +80,7 @@ StarsMask::StarsMask(u16_t frequency, u8_t decaySpeed, u8_t starLength) {
 }
 
 String StarsMask::toString() {
-  return "StarsMask: f: " + String(frequency) + ", s: " + String(decaySpeed) + ", l: " + String(starLength);
+  return "StarsMask: f: " + String(this->frequency) + ", s: " + String(this->decaySpeed) + ", l: " + String(this->starLength);
 }
 
 /**
@@ -92,23 +92,23 @@ String StarsMask::toString() {
 CRGB StarsMask::apply(CRGB color, LEDState* state) {
   u8_t starLength = this->starLength / 2;
   adjustVector(state->length);
-  u8_t multiplier = decay(multipliers[state->index]);
+  u8_t multiplier = decay(this->multipliers[state->index]);
 
-  bool drawNewStar = random(0, state->length * 50) < frequency;
+  bool drawNewStar = random(0, state->length * 50) < this->frequency;
   if (drawNewStar) {
     multiplier = 255;
     brightenNeighbourLEDs(state);
   }
 
-  multipliers[state->index] = multiplier;
+  this->multipliers[state->index] = multiplier;
   return color.scale8(multiplier);
 }
 
 protocol_Layer StarsMask::toEncodable() {
   return protocol_Layer {
     .type = protocol_LayerType_StarsMask,
-    .length = starLength,
-    .frequency = frequency,
-    .speed = decaySpeed,
+    .length = this->starLength,
+    .frequency = this->frequency,
+    .speed = this->decaySpeed,
   };
 }

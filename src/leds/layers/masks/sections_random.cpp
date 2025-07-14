@@ -18,8 +18,8 @@ String SectionsRandomMask::getName() {
 
 // Returns a string representation of the layer
 String SectionsRandomMask::toString() {
-  String str = "SectionsRandomMask: d: " + String(duration) + ", c: ";
-  str += LayerUtils::bytes_to_string(sections);
+  String str = "SectionsRandomMask: d: " + String(this->duration) + ", c: ";
+  str += LayerUtils::bytes_to_string(this->sections);
   
   return str;
 }
@@ -28,29 +28,28 @@ String SectionsRandomMask::toString() {
 protocol_Layer SectionsRandomMask::toEncodable() {
   return protocol_Layer {
     .type = protocol_LayerType_SectionsWaveMask,
-    .duration = duration,
+    .duration = this->duration,
     .sections = {
-      .arg = &sections
+      .arg = &this->sections
     }
   };
 }
 
 // Applies the random section mask to the color based on the LED state
 CRGB SectionsRandomMask::apply(CRGB color, LEDState* state) {
-
     // Update new section if required
     if (state->tick == this->tick_of_next_update) {
-        current_section = random(0, sections.size());
+        this->current_section = random(0, this->sections.size());
         this->tick_of_next_update = state->tick + this->duration;
     }
 
-    u16_t duration = duration / sections.size();
-    float sectionLength = (float)state->length / sections.size();
-    u16_t sectionIndex = state->tick / duration + (state->index / sectionLength);
+    u16_t segmentDuration = this->duration / this->sections.size();
+    float sectionLength = (float)state->length / this->sections.size();
+    u16_t sectionIndex = state->tick / segmentDuration + (state->index / sectionLength);
 
     if (this->current_section != sectionIndex) {
         return CRGB::Black; // If the current section does not match, return black
     }
 
-    return color.scale8(sections[current_section]);
+    return color.scale8(this->sections[this->current_section]);
 }

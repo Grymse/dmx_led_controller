@@ -22,8 +22,8 @@ SectionsMask::SectionsMask(std::vector<u8_t> sections, u16_t duration) {
 }
 
 String SectionsMask::toString() {
-  String str = "SectionsMask: d: " + String(duration) + ", c: ";
-  str += LayerUtils::bytes_to_string(sections);
+  String str = "SectionsMask: d: " + String(this->duration) + ", c: ";
+  str += LayerUtils::bytes_to_string(this->sections);
   
   return str;
 }
@@ -36,18 +36,18 @@ String SectionsMask::toString() {
  * @return The modified color after applying the blink pattern.
  */
 CRGB SectionsMask::apply(CRGB color, LEDState* state) {
-  u16_t duration = duration / sections.size();
-  float sectionLength = (float)state->length / sections.size();
-  u16_t sectionIndex = state->tick / duration + (state->virtual_index / sectionLength);
-  return color.scale8(sections[sectionIndex % sections.size()]);
+  u16_t segmentDuration = this->duration / this->sections.size();
+  float sectionLength = (float)state->length / this->sections.size();
+  u16_t sectionIndex = state->tick / segmentDuration + (state->virtual_index / sectionLength);
+  return color.scale8(this->sections[sectionIndex % this->sections.size()]);
 }
 
 protocol_Layer SectionsMask::toEncodable() {
   return protocol_Layer {
     .type = protocol_LayerType_SectionsMask,
-    .duration = duration,
+    .duration = this->duration,
     .sections = {
-      .arg = &sections
+      .arg = &this->sections
     }
   };
 }

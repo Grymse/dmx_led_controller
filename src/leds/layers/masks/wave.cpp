@@ -25,7 +25,7 @@ WaveMask::WaveMask(u16_t wavelength, u16_t wavegap, u16_t duration) {
 }
 
 String WaveMask::toString() {
-  return "WaveMask: d: " + String(duration) + ", l: " + String(wavelength) + ", g: " + String(wavegap);
+  return "WaveMask: d: " + String(this->duration) + ", l: " + String(this->wavelength) + ", g: " + String(this->wavegap);
 }
 
 /**
@@ -35,13 +35,13 @@ String WaveMask::toString() {
  * @return The modified color after applying the blink pattern.
  */
 CRGB WaveMask::apply(CRGB color, LEDState* state) {
-  float len = (float)state->length / duration;
+  float len = (float)state->length / this->duration;
   double x = (double)state->tick * len + state->virtual_index;
-  if (wavelength <= LayerUtils::mod(x, wavelength + wavegap)) {
+  if (this->wavelength <= LayerUtils::mod(x, this->wavelength + this->wavegap)) {
     return CRGB::Black;
   }
 
-  float intensity = (LayerUtils::mod(x, wavelength + wavegap) / wavelength) * 512;
+  float intensity = (LayerUtils::mod(x, this->wavelength + this->wavegap) / this->wavelength) * 512;
 
   if (255 < intensity) {
     intensity = 511 - intensity;
@@ -57,8 +57,8 @@ CRGB WaveMask::apply(CRGB color, LEDState* state) {
 protocol_Layer WaveMask::toEncodable() {
   return protocol_Layer {
     .type = protocol_LayerType_WaveMask,
-    .duration = duration,
-    .length = wavelength,
-    .gap = wavegap,
+    .duration = this->duration,
+    .length = this->wavelength,
+    .gap = this->wavegap,
   };
 }

@@ -19,7 +19,7 @@ SingleColor::SingleColor(CRGB color) {
 }
 
 String SingleColor::toString() {
-  String str = "SingleColor: c: " + LayerUtils::color_to_string(localColor);
+  String str = "SingleColor: c: " + LayerUtils::color_to_string(this->localColor);
   
   return str;
 }
@@ -31,7 +31,7 @@ String SingleColor::toString() {
  * @return The modified color after applying the blink pattern.
  */
 CRGB SingleColor::apply(CRGB color, LEDState* state) {
-  return localColor;
+  return this->localColor;
 }
 
 void SingleColor::setColor(CRGB color) {
@@ -41,6 +41,6 @@ void SingleColor::setColor(CRGB color) {
 protocol_Layer SingleColor::toEncodable() {
   return protocol_Layer {
     .type = protocol_LayerType_SingleColor,
-    .color = (uint32_t)0 | localColor.r << 16 | localColor.g << 8 | localColor.b
+    .color = (uint32_t)0 | this->localColor.r << 16 | this->localColor.g << 8 | this->localColor.b
   };
 }

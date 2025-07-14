@@ -31,8 +31,8 @@ CRGB fadeBetween(CRGB from, CRGB to, float percentage) {
 }
 
 String FadeColor::toString() {
-  String str = "FadeColor: d: " + String(duration) + ", c: ";
-  str += LayerUtils::colors_to_string(colors);
+  String str = "FadeColor: d: " + String(this->duration) + ", c: ";
+  str += LayerUtils::colors_to_string(this->colors);
   
   return str;
 }
@@ -44,20 +44,20 @@ String FadeColor::toString() {
  * @return The modified color after applying the blink pattern.
  */
 CRGB FadeColor::apply(CRGB color, LEDState* state) {
-  u16_t duration = duration / colors.size();
-  float percentage = (state->virtual_index % duration) / (float)duration;
-  u8_t fromIndex = (state->virtual_index / duration) % colors.size();
-  u8_t toIndex = (fromIndex + 1) % colors.size();
+  u16_t segmentDuration = this->duration / this->colors.size();
+  float percentage = (state->virtual_index % segmentDuration) / (float)segmentDuration;
+  u8_t fromIndex = (state->virtual_index / segmentDuration) % this->colors.size();
+  u8_t toIndex = (fromIndex + 1) % this->colors.size();
 
-  return fadeBetween(colors[fromIndex], colors[toIndex], percentage);
+  return fadeBetween(this->colors[fromIndex], this->colors[toIndex], percentage);
 }
 
 protocol_Layer FadeColor::toEncodable() {
   return protocol_Layer {
     .type = protocol_LayerType_FadeColor,
-    .duration = duration,
+    .duration = this->duration,
     .colors = {
-      .arg = &colors
+      .arg = &this->colors
     }
   };
 }

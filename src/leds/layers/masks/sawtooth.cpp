@@ -24,7 +24,7 @@ SawtoothMask::SawtoothMask(u16_t wavelength, u16_t wavegap, u16_t duration) {
 }
 
 String SawtoothMask::toString() {
-  return "SawtoothMask: d: " + String(duration) + ", l: " + String(wavelength) + ", g: " + String(wavegap);
+  return "SawtoothMask: d: " + String(this->duration) + ", l: " + String(this->wavelength) + ", g: " + String(this->wavegap);
 }
 
 
@@ -35,15 +35,15 @@ String SawtoothMask::toString() {
  * @return The modified color after applying the blink pattern.
  */
 CRGB SawtoothMask::apply(CRGB color, LEDState* state) {
-  float totalLength = wavegap + wavelength;
-  float len = (float)state->length / duration;
+  float totalLength = this->wavegap + this->wavelength;
+  float len = (float)state->length / this->duration;
   double x = ((double)state->tick * len + state->virtual_index) * state->direction;
 
-  if (wavelength <= LayerUtils::mod(x, totalLength)) {
+  if (this->wavelength <= LayerUtils::mod(x, totalLength)) {
     return CRGB::Black;
   }
 
-  float intensity = 255 - (LayerUtils::mod(x, totalLength) / wavelength) * 255;
+  float intensity = 255 - (LayerUtils::mod(x, totalLength) / this->wavelength) * 255;
 
   // turn 0 - 255 into a curve,
   intensity = intensity / 255.0;
@@ -55,8 +55,8 @@ CRGB SawtoothMask::apply(CRGB color, LEDState* state) {
 protocol_Layer SawtoothMask::toEncodable() {
   return protocol_Layer {
     .type = protocol_LayerType_SawtoothMask,
-    .duration = duration,
-    .length = wavelength,
-    .gap = wavegap
+    .duration = this->duration,
+    .length = this->wavelength,
+    .gap = this->wavegap
   };
 }

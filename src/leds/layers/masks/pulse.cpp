@@ -31,7 +31,7 @@ String PulseMask::toString() {
  * @return The modified color after applying the blink pattern.
  */
 CRGB PulseMask::apply(CRGB color, LEDState* state) {
-  float intensity = (float)(state->tick % (duration + pulse_gap)) / duration;
+  float intensity = (float)(state->tick % (this->duration + this->pulse_gap)) / this->duration;
   if (1.f < intensity) {
     return CRGB::Black;
   }
@@ -48,7 +48,7 @@ CRGB PulseMask::apply(CRGB color, LEDState* state) {
 protocol_Layer PulseMask::toEncodable() {
   return protocol_Layer {
     .type = protocol_LayerType_PulseMask,
-    .duration = duration,
-    .gap = pulse_gap
+    .duration = this->duration,
+    .gap = this->pulse_gap
   };
 }

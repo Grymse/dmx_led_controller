@@ -22,8 +22,8 @@ SectionsWaveColor::SectionsWaveColor(std::vector<CRGB> colors, u16_t duration) {
 }
 
 String SectionsWaveColor::toString() {
-  String str = "SectionsWaveColor: d: " + String(duration) + ", c: ";
-  str += LayerUtils::colors_to_string(colors);
+  String str = "SectionsWaveColor: d: " + String(this->duration) + ", c: ";
+  str += LayerUtils::colors_to_string(this->colors);
   
   return str;
 }
@@ -35,20 +35,20 @@ String SectionsWaveColor::toString() {
  * @return The modified color after applying the blink pattern.
  */
 CRGB SectionsWaveColor::apply(CRGB color, LEDState* state) {
-  float sectionLength = (float)state->length / colors.size();
-  u16_t tick = (state->virtual_index % duration) * state->length / duration;
+  float sectionLength = (float)state->length / this->colors.size();
+  u16_t tick = (state->virtual_index % duration) * state->length / this->duration;
   u16_t t = (tick + state->virtual_index) / sectionLength;
 
-  return colors[t % colors.size()];
+  return this->colors[t % this->colors.size()];
 }
 
 
 protocol_Layer SectionsWaveColor::toEncodable() {
   return protocol_Layer {
     .type = protocol_LayerType_SectionsWaveColor,
-    .duration = duration,
+    .duration = this->duration,
     .colors = {
-      .arg = &colors
+      .arg = &this->colors
     }
   };
 }

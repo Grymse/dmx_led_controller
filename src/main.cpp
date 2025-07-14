@@ -40,9 +40,10 @@ void setup() {
   FastLED.addLeds<WS2812B, LED_PIN, RGB>(leds, NUM_LEDS);
 
   animator = new Animator(leds, NUM_LEDS);
+  sequenceScheduler = new SequenceScheduler(animator);
 
   scheduler.addProcess(animator, 1000 / frames_per_second);
-  scheduler.addProcess(new ReadDMXProcess(animator), 1000 / frames_per_second); // Update every 25ms
+  //scheduler.addProcess(new ReadDMXProcess(animator), 1000 / frames_per_second); // Update every 25ms
 
   // Set virtual offset for the animator. This is used when multiple LED strips are
   // chained together, and second device needs to act as if it's leds are offset by
@@ -57,9 +58,9 @@ void setup() {
    * how we set it up, we need to setup a mechanism that safely switches between these two modes.
    */
 
-  // scheduler.addProcess(sequenceScheduler, 1000 / frames_per_second);
-
-  /* sequenceScheduler->add({
+  scheduler.addProcess(sequenceScheduler, 1000 / frames_per_second);
+/* 
+  sequenceScheduler->add({
     // COLORS
     new SingleColor(CRGB::Green),
     // new SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
@@ -67,20 +68,19 @@ void setup() {
     // new SwitchColor({CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White}, 100),
    
     // MASKS
-    new BlinkMask({255, 0, 0, 0}, 50),
+    //new BlinkMask({255, 0, 0, 0}, 50),
     // new InvertMask(),
     // new PulseSawtoothMask(10, 50),
-    // new SawtoothMask(100, 0, 300),
+    new SawtoothMask(100, 0, 300),
     // new SectionsWaveMask({0}, 50),
     // new SectionsMask({255, 0, 0, 255, 0}, 50),
     // new StarsMask(200, 10, 3),
-  }, 10000);
+  }, 10000); */
 
   sequenceScheduler->add({
     new FadeColor({CRGB(255, 0, 0),CRGB(255, 255, 255)}, 1200),
     new StarsMask(300, 5, 1),
-  }
-  , 10000); */
+  }, 10000);
 }
 
 void loop() {
