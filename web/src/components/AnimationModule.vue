@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, defineProps, defineEmits, watch } from 'vue';
+import { ref, defineProps, defineEmits, watch, computed } from 'vue';
 
 const props = defineProps<{
   id: number;
   name: string;
   isActive: boolean;
   duration: number;
+  colorEffect?: { type: string; [key: string]: any };
 }>();
 
 const emit = defineEmits(['click', 'remove', 'update:duration']);
@@ -31,6 +32,45 @@ const updateDuration = (e: Event) => {
   const value = parseInt((e.target as HTMLSelectElement).value);
   emit('update:duration', props.id, value);
 };
+
+// Helper function to ensure color is in valid format
+const formatColorIfNeeded = (color: string) => {
+  if (typeof color !== 'string') return '#FF0000';
+
+  if (color.startsWith('#')) {
+    return color;
+  }
+
+  // If it's a hex without #, add it
+  if (/^[0-9A-Fa-f]{6}$/.test(color)) {
+    return `#${color}`;
+  }
+
+  return `#${color}`;
+};
+
+// Use computed property to get colors to display to ensure reactivity
+const colorsToDisplay = computed(() => {
+  if (!props.colorEffect) return [];
+
+  // For single color effect
+  if (props.colorEffect.type === 'single' && props.colorEffect.color) {
+    return [formatColorIfNeeded(props.colorEffect.color)];
+  }
+
+  // For rainbow effect, create a simulated rainbow gradient (5 colors)
+  if (props.colorEffect.type === 'rainbow') {
+    return ['#FF0000', '#FFFF00', '#00FF00', '#00FFFF', '#FF00FF'];
+  }
+
+  // For multiple color effects
+  if (['fade', 'sections', 'sectionsWave', 'switch'].includes(props.colorEffect.type) &&
+      Array.isArray(props.colorEffect.colors)) {
+    return props.colorEffect.colors.map(color => formatColorIfNeeded(color));
+  }
+
+  return [];
+});
 </script>
 
 <template>
@@ -39,10 +79,22 @@ const updateDuration = (e: Event) => {
     :class="isActive ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'"
     @click="handleClick"
   >
+    <!-- Module name -->
     <span>{{ name }}</span>
 
+    <!-- Color indicators -->
+    <div class="flex -space-x-1" v-if="colorEffect">
+      <div
+        v-for="(color, index) in colorsToDisplay"
+        :key="index"
+        class="w-4 h-4 rounded-full border border-white"
+        :style="{ backgroundColor: color }"
+        :title="color"
+      ></div>
+    </div>
+
     <!-- Duration dropdown -->
-    <div class="flex items-center" @click.stop>
+    <div class="flex items-center ml-auto" @click.stop>
       <select
         :value="duration"
         @change="updateDuration"
@@ -60,8 +112,9 @@ const updateDuration = (e: Event) => {
       </select>
     </div>
 
+    <!-- Remove button -->
     <button
-      class="ml-auto w-5 h-5 rounded-full flex items-center justify-center text-xs hover:bg-red-600 hover:text-white transition-colors"
+      class="w-5 h-5 rounded-full flex items-center justify-center text-xs hover:bg-red-600 hover:text-white transition-colors"
       :class="isActive ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'"
       @click="handleRemove"
     >

@@ -98,7 +98,11 @@ const updateColorEffect = (effect: any) => {
 
   const moduleIndex = modules.value.findIndex(m => m.id === activeModule.value?.id);
   if (moduleIndex !== -1) {
-    modules.value[moduleIndex].colorEffect = effect;
+    // Create a new object to ensure reactivity
+    modules.value[moduleIndex] = {
+      ...modules.value[moduleIndex],
+      colorEffect: { ...effect }
+    };
   }
 };
 
@@ -107,7 +111,10 @@ const updateMask1 = (mask: any) => {
 
   const moduleIndex = modules.value.findIndex(m => m.id === activeModule.value?.id);
   if (moduleIndex !== -1) {
-    modules.value[moduleIndex].mask1 = mask;
+    modules.value[moduleIndex] = {
+      ...modules.value[moduleIndex],
+      mask1: { ...mask }
+    };
   }
 };
 
@@ -116,7 +123,10 @@ const updateMask2 = (mask: any) => {
 
   const moduleIndex = modules.value.findIndex(m => m.id === activeModule.value?.id);
   if (moduleIndex !== -1) {
-    modules.value[moduleIndex].mask2 = mask;
+    modules.value[moduleIndex] = {
+      ...modules.value[moduleIndex],
+      mask2: { ...mask }
+    };
   }
 };
 
@@ -140,6 +150,7 @@ const totalDuration = computed(() => {
         <div class="w-full py-4 bg-gray-100 border-b border-gray-200">
           <div class="px-6">
             <div class="flex items-center justify-between mb-3">
+              <div class="text-2xl">DMX LED Controller</div>
               <div class="text-sm text-gray-600">
                 Total Duration: {{ (totalDuration / 1000).toFixed(1) }}s
               </div>
@@ -149,11 +160,12 @@ const totalDuration = computed(() => {
             <div class="flex flex-wrap gap-2 items-center">
               <AnimationModule
                 v-for="module in modules"
-                :key="module.id"
+                :key="`module-${module.id}-${JSON.stringify(module.colorEffect)}`"
                 :id="module.id"
                 :name="module.name"
                 :duration="module.duration"
                 :is-active="module.id === activeModuleId"
+                :color-effect="module.colorEffect"
                 @click="selectModule"
                 @remove="removeModule"
                 @update:duration="updateModuleDuration"

@@ -9,18 +9,34 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:effect']);
 
-// Initialize colors array if it doesn't exist
-if (props.effect.type === 'fade' || props.effect.type === 'sections' || props.effect.type === 'sectionsWave' || props.effect.type === 'switch') {
-  if (!props.effect.colors || !Array.isArray(props.effect.colors)) {
-    props.effect.colors = ['#FF0000']; // Default red color
+// Ensure colors are properly initialized
+const initializeEffect = () => {
+  if (props.effect.type === 'fade' || props.effect.type === 'sections' || props.effect.type === 'sectionsWave' || props.effect.type === 'switch') {
+    if (!props.effect.colors || !Array.isArray(props.effect.colors)) {
+      props.effect.colors = ['#FF0000']; // Default red color
+    } else {
+      // Ensure all colors have # prefix
+      props.effect.colors = props.effect.colors.map((color: string) => {
+        return color.startsWith('#') ? color : `#${color}`;
+      });
+    }
+  } else if (props.effect.type === 'single' && !props.effect.color) {
+    props.effect.color = '#FF0000'; // Default color for single color effect
+  } else if (props.effect.type === 'single' && typeof props.effect.color === 'string') {
+    // Ensure single color has # prefix
+    props.effect.color = props.effect.color.startsWith('#')
+      ? props.effect.color
+      : `#${props.effect.color}`;
   }
-} else if (props.effect.type === 'single' && !props.effect.color) {
-  props.effect.color = '#FF0000'; // Default color for single color effect
-}
+};
+
+// Initialize on component creation
+initializeEffect();
 
 // Handle updates to the effect
 const updateEffect = (updates: any) => {
-  emit('update:effect', { ...props.effect, ...updates });
+  const updatedEffect = { ...props.effect, ...updates };
+  emit('update:effect', updatedEffect);
 };
 
 // Handle color updates from ColorPickerGroup
