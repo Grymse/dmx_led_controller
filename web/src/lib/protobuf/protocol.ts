@@ -785,9 +785,7 @@ export namespace protocol {
     }
     export class Message extends pb_1.Message {
         #one_of_decls: number[][] = [[1, 2, 3, 4, 5]];
-        constructor(data?: any[] | ({
-            test_animation?: Animation2;
-        } & (({
+        constructor(data?: any[] | ({} & (({
             sequence?: Sequence;
             broadcast_sequence?: never;
             save_state?: never;
@@ -836,9 +834,6 @@ export namespace protocol {
                 if ("response_state" in data && data.response_state != undefined) {
                     this.response_state = data.response_state;
                 }
-                if ("test_animation" in data && data.test_animation != undefined) {
-                    this.test_animation = data.test_animation;
-                }
             }
         }
         get sequence() {
@@ -886,15 +881,6 @@ export namespace protocol {
         get has_response_state() {
             return pb_1.Message.getField(this, 5) != null;
         }
-        get test_animation() {
-            return pb_1.Message.getWrapperField(this, Animation2, 6) as Animation2;
-        }
-        set test_animation(value: Animation2) {
-            pb_1.Message.setWrapperField(this, 6, value);
-        }
-        get has_test_animation() {
-            return pb_1.Message.getField(this, 6) != null;
-        }
         get payload() {
             const cases: {
                 [index: number]: "none" | "sequence" | "broadcast_sequence" | "save_state" | "request_state" | "response_state";
@@ -914,7 +900,6 @@ export namespace protocol {
             save_state?: ReturnType<typeof State.prototype.toObject>;
             request_state?: boolean;
             response_state?: ReturnType<typeof State.prototype.toObject>;
-            test_animation?: ReturnType<typeof Animation2.prototype.toObject>;
         }): Message {
             const message = new Message({});
             if (data.sequence != null) {
@@ -932,9 +917,6 @@ export namespace protocol {
             if (data.response_state != null) {
                 message.response_state = State.fromObject(data.response_state);
             }
-            if (data.test_animation != null) {
-                message.test_animation = Animation2.fromObject(data.test_animation);
-            }
             return message;
         }
         toObject() {
@@ -944,7 +926,6 @@ export namespace protocol {
                 save_state?: ReturnType<typeof State.prototype.toObject>;
                 request_state?: boolean;
                 response_state?: ReturnType<typeof State.prototype.toObject>;
-                test_animation?: ReturnType<typeof Animation2.prototype.toObject>;
             } = {};
             if (this.sequence != null) {
                 data.sequence = this.sequence.toObject();
@@ -960,9 +941,6 @@ export namespace protocol {
             }
             if (this.response_state != null) {
                 data.response_state = this.response_state.toObject();
-            }
-            if (this.test_animation != null) {
-                data.test_animation = this.test_animation.toObject();
             }
             return data;
         }
@@ -980,8 +958,6 @@ export namespace protocol {
                 writer.writeBool(4, this.request_state);
             if (this.has_response_state)
                 writer.writeMessage(5, this.response_state, () => this.response_state.serialize(writer));
-            if (this.has_test_animation)
-                writer.writeMessage(6, this.test_animation, () => this.test_animation.serialize(writer));
             if (!w)
                 return writer.getResultBuffer();
         }
@@ -1006,9 +982,6 @@ export namespace protocol {
                     case 5:
                         reader.readMessage(message.response_state, () => message.response_state = State.deserialize(reader));
                         break;
-                    case 6:
-                        reader.readMessage(message.test_animation, () => message.test_animation = Animation2.deserialize(reader));
-                        break;
                     default: reader.skipField();
                 }
             }
@@ -1019,385 +992,6 @@ export namespace protocol {
         }
         static deserializeBinary(bytes: Uint8Array): Message {
             return Message.deserialize(bytes);
-        }
-    }
-    export class Animation2 extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
-            direction?: Direction;
-            layers?: Layer2[];
-        }) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [2], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("direction" in data && data.direction != undefined) {
-                    this.direction = data.direction;
-                }
-                if ("layers" in data && data.layers != undefined) {
-                    this.layers = data.layers;
-                }
-            }
-        }
-        get direction() {
-            return pb_1.Message.getFieldWithDefault(this, 1, Direction.FORWARD) as Direction;
-        }
-        set direction(value: Direction) {
-            pb_1.Message.setField(this, 1, value);
-        }
-        get layers() {
-            return pb_1.Message.getRepeatedWrapperField(this, Layer2, 2) as Layer2[];
-        }
-        set layers(value: Layer2[]) {
-            pb_1.Message.setRepeatedWrapperField(this, 2, value);
-        }
-        static fromObject(data: {
-            direction?: Direction;
-            layers?: ReturnType<typeof Layer2.prototype.toObject>[];
-        }): Animation2 {
-            const message = new Animation2({});
-            if (data.direction != null) {
-                message.direction = data.direction;
-            }
-            if (data.layers != null) {
-                message.layers = data.layers.map(item => Layer2.fromObject(item));
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                direction?: Direction;
-                layers?: ReturnType<typeof Layer2.prototype.toObject>[];
-            } = {};
-            if (this.direction != null) {
-                data.direction = this.direction;
-            }
-            if (this.layers != null) {
-                data.layers = this.layers.map((item: Layer2) => item.toObject());
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.direction != Direction.FORWARD)
-                writer.writeEnum(1, this.direction);
-            if (this.layers.length)
-                writer.writeRepeatedMessage(2, this.layers, (item: Layer2) => item.serialize(writer));
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Animation2 {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new Animation2();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.direction = reader.readEnum();
-                        break;
-                    case 2:
-                        reader.readMessage(message.layers, () => pb_1.Message.addToRepeatedWrapperField(message, 2, Layer2.deserialize(reader), Layer2));
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): Animation2 {
-            return Animation2.deserialize(bytes);
-        }
-    }
-    export class Layer2 extends pb_1.Message {
-        #one_of_decls: number[][] = [[1, 2]];
-        constructor(data?: any[] | ({} & (({
-            fadeColor?: FadeColor2;
-            rainbowColor?: never;
-        } | {
-            fadeColor?: never;
-            rainbowColor?: RainbowColor2;
-        })))) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("fadeColor" in data && data.fadeColor != undefined) {
-                    this.fadeColor = data.fadeColor;
-                }
-                if ("rainbowColor" in data && data.rainbowColor != undefined) {
-                    this.rainbowColor = data.rainbowColor;
-                }
-            }
-        }
-        get fadeColor() {
-            return pb_1.Message.getWrapperField(this, FadeColor2, 1) as FadeColor2;
-        }
-        set fadeColor(value: FadeColor2) {
-            pb_1.Message.setOneofWrapperField(this, 1, this.#one_of_decls[0], value);
-        }
-        get has_fadeColor() {
-            return pb_1.Message.getField(this, 1) != null;
-        }
-        get rainbowColor() {
-            return pb_1.Message.getWrapperField(this, RainbowColor2, 2) as RainbowColor2;
-        }
-        set rainbowColor(value: RainbowColor2) {
-            pb_1.Message.setOneofWrapperField(this, 2, this.#one_of_decls[0], value);
-        }
-        get has_rainbowColor() {
-            return pb_1.Message.getField(this, 2) != null;
-        }
-        get payload() {
-            const cases: {
-                [index: number]: "none" | "fadeColor" | "rainbowColor";
-            } = {
-                0: "none",
-                1: "fadeColor",
-                2: "rainbowColor"
-            };
-            return cases[pb_1.Message.computeOneofCase(this, [1, 2])];
-        }
-        static fromObject(data: {
-            fadeColor?: ReturnType<typeof FadeColor2.prototype.toObject>;
-            rainbowColor?: ReturnType<typeof RainbowColor2.prototype.toObject>;
-        }): Layer2 {
-            const message = new Layer2({});
-            if (data.fadeColor != null) {
-                message.fadeColor = FadeColor2.fromObject(data.fadeColor);
-            }
-            if (data.rainbowColor != null) {
-                message.rainbowColor = RainbowColor2.fromObject(data.rainbowColor);
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                fadeColor?: ReturnType<typeof FadeColor2.prototype.toObject>;
-                rainbowColor?: ReturnType<typeof RainbowColor2.prototype.toObject>;
-            } = {};
-            if (this.fadeColor != null) {
-                data.fadeColor = this.fadeColor.toObject();
-            }
-            if (this.rainbowColor != null) {
-                data.rainbowColor = this.rainbowColor.toObject();
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.has_fadeColor)
-                writer.writeMessage(1, this.fadeColor, () => this.fadeColor.serialize(writer));
-            if (this.has_rainbowColor)
-                writer.writeMessage(2, this.rainbowColor, () => this.rainbowColor.serialize(writer));
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Layer2 {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new Layer2();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        reader.readMessage(message.fadeColor, () => message.fadeColor = FadeColor2.deserialize(reader));
-                        break;
-                    case 2:
-                        reader.readMessage(message.rainbowColor, () => message.rainbowColor = RainbowColor2.deserialize(reader));
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): Layer2 {
-            return Layer2.deserialize(bytes);
-        }
-    }
-    export class FadeColor2 extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
-            colors?: number[];
-            duration?: number;
-        }) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [1], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("colors" in data && data.colors != undefined) {
-                    this.colors = data.colors;
-                }
-                if ("duration" in data && data.duration != undefined) {
-                    this.duration = data.duration;
-                }
-            }
-        }
-        get colors() {
-            return pb_1.Message.getFieldWithDefault(this, 1, []) as number[];
-        }
-        set colors(value: number[]) {
-            pb_1.Message.setField(this, 1, value);
-        }
-        get duration() {
-            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
-        }
-        set duration(value: number) {
-            pb_1.Message.setField(this, 2, value);
-        }
-        static fromObject(data: {
-            colors?: number[];
-            duration?: number;
-        }): FadeColor2 {
-            const message = new FadeColor2({});
-            if (data.colors != null) {
-                message.colors = data.colors;
-            }
-            if (data.duration != null) {
-                message.duration = data.duration;
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                colors?: number[];
-                duration?: number;
-            } = {};
-            if (this.colors != null) {
-                data.colors = this.colors;
-            }
-            if (this.duration != null) {
-                data.duration = this.duration;
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.colors.length)
-                writer.writePackedUint32(1, this.colors);
-            if (this.duration != 0)
-                writer.writeUint32(2, this.duration);
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): FadeColor2 {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new FadeColor2();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.colors = reader.readPackedUint32();
-                        break;
-                    case 2:
-                        message.duration = reader.readUint32();
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): FadeColor2 {
-            return FadeColor2.deserialize(bytes);
-        }
-    }
-    export class RainbowColor2 extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
-            duration?: number;
-            length?: number;
-        }) {
-            super();
-            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") {
-                if ("duration" in data && data.duration != undefined) {
-                    this.duration = data.duration;
-                }
-                if ("length" in data && data.length != undefined) {
-                    this.length = data.length;
-                }
-            }
-        }
-        get duration() {
-            return pb_1.Message.getFieldWithDefault(this, 1, 0) as number;
-        }
-        set duration(value: number) {
-            pb_1.Message.setField(this, 1, value);
-        }
-        get length() {
-            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
-        }
-        set length(value: number) {
-            pb_1.Message.setField(this, 2, value);
-        }
-        static fromObject(data: {
-            duration?: number;
-            length?: number;
-        }): RainbowColor2 {
-            const message = new RainbowColor2({});
-            if (data.duration != null) {
-                message.duration = data.duration;
-            }
-            if (data.length != null) {
-                message.length = data.length;
-            }
-            return message;
-        }
-        toObject() {
-            const data: {
-                duration?: number;
-                length?: number;
-            } = {};
-            if (this.duration != null) {
-                data.duration = this.duration;
-            }
-            if (this.length != null) {
-                data.length = this.length;
-            }
-            return data;
-        }
-        serialize(): Uint8Array;
-        serialize(w: pb_1.BinaryWriter): void;
-        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-            const writer = w || new pb_1.BinaryWriter();
-            if (this.duration != 0)
-                writer.writeUint32(1, this.duration);
-            if (this.length != 0)
-                writer.writeUint32(2, this.length);
-            if (!w)
-                return writer.getResultBuffer();
-        }
-        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): RainbowColor2 {
-            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new RainbowColor2();
-            while (reader.nextField()) {
-                if (reader.isEndGroup())
-                    break;
-                switch (reader.getFieldNumber()) {
-                    case 1:
-                        message.duration = reader.readUint32();
-                        break;
-                    case 2:
-                        message.length = reader.readUint32();
-                        break;
-                    default: reader.skipField();
-                }
-            }
-            return message;
-        }
-        serializeBinary(): Uint8Array {
-            return this.serialize();
-        }
-        static deserializeBinary(bytes: Uint8Array): RainbowColor2 {
-            return RainbowColor2.deserialize(bytes);
         }
     }
 }

@@ -1,21 +1,39 @@
-# proto
+# .
 
-To install dependencies:
+This template should help get you started developing with Vue 3 in Vite.
 
-[Bun](https://bun.sh)
-[Protobuf](https://grpc.io/docs/protoc-installation/) might not need to be installed
-Add libraries to python `pip3 install --upgrade protobuf grpcio-tools`.
+## Recommended IDE Setup
 
-- Script executes using Python3, so you need to install using pip3.
+[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
 
-```bash
-bun install
+## Type Support for `.vue` Imports in TS
+
+TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+
+## Customize configuration
+
+See [Vite Configuration Reference](https://vite.dev/config/).
+
+## Project Setup
+
+```sh
+npm install
 ```
 
-To run:
+### Compile and Hot-Reload for Development
 
-```bash
-bun run index.ts
+```sh
+npm run dev
 ```
 
-This project was created using `bun init` in bun v1.1.31. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+### Type-Check, Compile and Minify for Production
+
+```sh
+npm run build
+```
+
+### Lint with [ESLint](https://eslint.org/)
+
+```sh
+npm run lint
+```

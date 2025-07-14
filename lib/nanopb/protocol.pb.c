@@ -27,18 +27,6 @@ PB_BIND(protocol_State, protocol_State, AUTO)
 PB_BIND(protocol_Message, protocol_Message, AUTO)
 
 
-PB_BIND(protocol_Animation2, protocol_Animation2, AUTO)
-
-
-PB_BIND(protocol_Layer2, protocol_Layer2, AUTO)
-
-
-PB_BIND(protocol_FadeColor2, protocol_FadeColor2, AUTO)
-
-
-PB_BIND(protocol_RainbowColor2, protocol_RainbowColor2, AUTO)
-
-
 
 
 
