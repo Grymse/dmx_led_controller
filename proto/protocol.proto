@@ -44,8 +44,7 @@ message Layer {
   uint32 gap = 5;       // Gap parameter for Pulse, Sawtooth, Wave masks
   uint32 frequency = 6; // Frequency parameter for StarsMask
   uint32 speed = 7;     // Speed parameter for StarsMask
-  repeated uint32 colors =
-      8; // Multiple colors for Fade, SectionsWave, Sections, Switch
+  repeated uint32 colors = 8; // Multiple colors for Fade, SectionsWave, Sections, Switch
   bytes sections = 9; // Section data for Blink, SectionsWave, Sections masks
 }
 
@@ -66,15 +65,13 @@ message Animation {
 message Sequence { repeated Animation animations = 2; }
 
 message Settings {
-  uint32 group_id =
-      1; // Group ID for this controller (used for selective message handling)
+  uint32 group_id = 1; // Group ID for this controller (used for selective message handling)
   uint32 virtual_offset = 2; // Virtual index of first LED for this controller
 }
 
 message BroadcastSequence {
   Sequence sequence = 1; // The sequence to set
-  repeated uint32 target_groups =
-      2; // Groups to execute this sequence on
+  repeated uint32 target_groups = 2; // Groups to execute this sequence on
          // If empty, all groups will execute the sequence
 }
 
@@ -89,9 +86,7 @@ message Message {
     Sequence sequence = 1;
     BroadcastSequence broadcast_sequence = 2;
     State save_state = 3;
-    bool request_state =
-        4; // Request the current sequence and settings from the device
-    State response_state =
-        5; // Response with the current sequence and settings from the device
+    bool request_state = 4; // Request the current sequence and settings from the device
+    State response_state = 5; // Response with the current sequence and settings from the device
   }
 }

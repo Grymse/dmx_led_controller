@@ -9,7 +9,5 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Bluetooth: typeof import('./src/components/Bluetooth.vue')['default']
-    HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
-    Slider: typeof import('primevue/slider')['default']
   }
 }
