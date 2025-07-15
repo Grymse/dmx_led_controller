@@ -8,6 +8,7 @@ interface Module {
   id: number;
   name: string;
   duration: number;
+  direction: number;
   colorEffect: { type: string; [key: string]: any };
   mask1: { type: string; [key: string]: any } | null;
   mask2: { type: string; [key: string]: any } | null;
@@ -22,10 +23,12 @@ const emit = defineEmits([
   'update:modules',
   'update:duration',
   'update:name',
+  'update:direction', // Add this line
   'select',
   'add',
   'remove'
 ]);
+
 
 // State for drag and drop
 const isDragging = ref(false);
@@ -51,6 +54,10 @@ const handleRemoveModule = (id: number) => {
 // Handle updating a module's duration
 const handleUpdateDuration = (id: number, duration: number) => {
   emit('update:duration', id, duration);
+};
+
+const handleUpdateDirection = (id: number, direction: number) => {
+  emit('update:direction', id, direction);
 };
 
 // Handle updating a module's name
@@ -262,6 +269,7 @@ const totalDuration = computed(() => {
           :name="module.name"
           :is-active="module.id === activeModuleId"
           :duration="module.duration"
+          :direction="module.direction"
           :color-effect="module.colorEffect"
           :mask1="module.mask1"
           :mask2="module.mask2"
@@ -275,6 +283,7 @@ const totalDuration = computed(() => {
           @remove="handleRemoveModule"
           @update:duration="handleUpdateDuration"
           @update:name="handleUpdateName"
+          @update:direction="handleUpdateDirection"
           @dragstart="handleDragStart"
           @dragover="handleDragOver"
           @drop="handleDrop"

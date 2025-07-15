@@ -63,6 +63,7 @@ interface Module {
   id: number;
   name: string;
   duration: number;
+  direction: Direction;
   colorEffect: { type: string; [key: string]: any };
   mask1: { type: string; [key: string]: any } | null;
   mask2: { type: string; [key: string]: any } | null;
@@ -74,6 +75,7 @@ const modules = ref<Module[]>([
     id: 1,
     name: 'Rainbow + Wave',
     duration: 2000,
+    direction: Direction.FORWARD, // Add direction
     colorEffect: { type: 'rainbow', duration: 50, length: 150 },
     mask1: { type: 'wave', duration: 200, length: 300, gap: 100 },
     mask2: null
@@ -82,6 +84,7 @@ const modules = ref<Module[]>([
     id: 2,
     name: 'Fade + Pulse',
     duration: 5000,
+    direction: Direction.FORWARD, // Add direction
     colorEffect: {
       type: 'fade',
       duration: 300,
@@ -154,7 +157,7 @@ function convertUILayerToProtocol(uiLayer: { type: string; [key: string]: any })
   return layer;
 }
 
-// Add this function to the App.vue component
+// Update the convertUIModulesToProtocol function to use the module's direction
 function convertUIModulesToProtocol(uiModules: Module[]): Animation[] {
   return uiModules.map(module => {
     // Create layers array from color effect and masks
@@ -178,11 +181,11 @@ function convertUIModulesToProtocol(uiModules: Module[]): Animation[] {
       if (maskLayer) layers.push(maskLayer);
     }
 
-    // Create animation with layers
+    // Create animation with layers and use the module's direction
     return {
-      direction: Direction.FORWARD, // Default to forward
-      duration: msToTicks(module.duration), // Convert ms to ticks
-      brightness: 255, // Default to full brightness
+      direction: module.direction, // Use module direction instead of hardcoded value
+      duration: msToTicks(module.duration),
+      brightness: 255,
       layers
     };
   });
@@ -195,9 +198,33 @@ const currentSequence = computed<Sequence>(() => {
 });
 
 // Handlers for module sequence events
+// Handler for updating module duration
+const handleUpdateModuleDuration = (id: number, duration: number) => {
+  const moduleIndex = modules.value.findIndex(m => m.id === id);
+  if (moduleIndex !== -1) {
+    modules.value[moduleIndex] = {
+      ...modules.value[moduleIndex],
+      duration
+    };
+  }
+};
+
 const handleUpdateModules = (newModules: Module[]) => {
   modules.value = newModules;
 };
+
+
+// Handler for updating module name
+const handleUpdateModuleName = (id: number, name: string) => {
+  const moduleIndex = modules.value.findIndex(m => m.id === id);
+  if (moduleIndex !== -1) {
+    modules.value[moduleIndex] = {
+      ...modules.value[moduleIndex],
+      name
+    };
+  }
+};
+
 
 const handleSelectModule = (id: number) => {
   // Store previous active module for animation comparison
@@ -218,6 +245,17 @@ const handleSelectModule = (id: number) => {
   }
 };
 
+// Add a handler for direction updates
+const handleUpdateDirection = (id: number, direction: Direction) => {
+  const moduleIndex = modules.value.findIndex(m => m.id === id);
+  if (moduleIndex !== -1) {
+    modules.value[moduleIndex] = {
+      ...modules.value[moduleIndex],
+      direction
+    };
+  }
+};
+
 // Update the handleAddModule function
 const handleAddModule = () => {
   const newId = modules.value.length > 0
@@ -233,7 +271,8 @@ const handleAddModule = () => {
   const newModule = {
     id: newId,
     name,
-    duration: 2000, // This is already in ms for the UI
+    duration: 2000,
+    direction: Direction.FORWARD, // Set default direction
     colorEffect,
     mask1: null,
     mask2: null
@@ -538,19 +577,22 @@ const handleRemoveModule = (id: number) => {
         <!-- Module Sequence Component -->
         <ModuleSequence
           :modules="modules"
-          :active-module-id="activeModuleId"
-          @update:modules="handleUpdateModules"
-          @update:duration="handleUpdateDuration"
+          :activeModuleId="activeModuleId"
           @select="handleSelectModule"
-          @add="handleAddModule"
           @remove="handleRemoveModule"
+          @update:modules="handleUpdateModules"
+          @update:duration="handleUpdateModuleDuration"
+          @update:name="handleUpdateModuleName"
+          @update:direction="handleUpdateDirection"
+          @add="handleAddModule"
         />
 
+
         <!-- Three Columns Layout (fills remaining height) -->
-        <div class="bg-gray-50 border border-indigo-400 bg-indigo-50 grid grid-cols-3 gap-6 p-6 flex-grow overflow-hidden">
+        <div class="bg-gray-50 border border-indigo-400 bg-indigo-50 grid grid-cols-3 gap-0 p-6 flex-grow overflow-hidden rounded-lg">
           <!-- Color Effect Column -->
           <div
-            class="col-span-1 bg-white rounded-lg shadow-md p-4 flex flex-col h-full transition-all duration-300 ease-in-out"
+            class="col-span-1 bg-white shadow-md p-4 flex flex-col h-full transition-all duration-300 ease-in-out"
             :class="{ 'animate-editor': animateEditors }"
           >
             <h2 class="text-xl font-semibold mb-4">Color Effect</h2>
@@ -569,7 +611,7 @@ const handleRemoveModule = (id: number) => {
 
           <!-- Mask 1 Column -->
           <div
-            class="col-span-1 bg-white rounded-lg shadow-md p-4 flex flex-col h-full relative transition-all duration-300 ease-in-out"
+            class="col-span-1 bg-white shadow-md p-4 flex flex-col h-full relative transition-all duration-300 ease-in-out"
             :class="{ 'animate-editor': animateEditors, 'animate-editor-delay-1': animateEditors }"
           >
             <div class="flex justify-between items-center mb-4">
@@ -617,7 +659,7 @@ const handleRemoveModule = (id: number) => {
 
           <!-- Mask 2 Column -->
           <div
-            class="col-span-1 bg-white rounded-lg shadow-md p-4 flex flex-col h-full relative transition-all duration-300 ease-in-out"
+            class="col-span-1 bg-white shadow-md p-4 flex flex-col h-full relative transition-all duration-300 ease-in-out"
             :class="{ 'animate-editor': animateEditors, 'animate-editor-delay-2': animateEditors }"
           >
             <div class="flex justify-between items-center mb-4">

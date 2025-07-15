@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { ref, defineProps, defineEmits, watch, computed } from 'vue';
+import Button from 'primevue/button';
+import Tooltip from 'primevue/tooltip';
+
 
 const props = defineProps<{
   id: number;
   name: string;
   isActive: boolean;
   duration: number;
+  direction: number;
   colorEffect?: { type: string; [key: string]: any };
   mask1?: { type: string; [key: string]: any } | null;
   mask2?: { type: string; [key: string]: any } | null;
@@ -16,15 +20,28 @@ const props = defineProps<{
   draggedIndex: number | null; // Index of the module being dragged
 }>();
 
+
 const emit = defineEmits([
   'click',
   'remove',
   'update:duration',
+  'update:direction',
   'dragstart',
   'dragover',
   'drop',
   'update:name'
 ]);
+
+
+// Add method to toggle direction
+const toggleDirection = (e: Event) => {
+  e.stopPropagation(); // Prevent module selection when clicking direction button
+  const newDirection = props.direction === 0 ? 1 : 0;
+  emit('update:direction', props.id, newDirection);
+};
+
+
+
 
 const localDuration = ref(props.duration);
 const isMoving = ref(false);
@@ -205,6 +222,9 @@ const colorsToDisplay = computed(() => {
 });
 </script>
 
+
+
+
 <template>
   <div class="module-container" :class="{ 'is-moving': isMoving }">
     <!-- Left drop indicator - only show if dropping BEFORE this module -->
@@ -242,6 +262,19 @@ const colorsToDisplay = computed(() => {
 
       <!-- Module name -->
       <span class="font-medium">{{ name }}</span>
+      <!-- Add direction toggle after the module name -->
+      <div class="flex items-center gap-2" @click.stop>
+        <Button
+          class="p-button-rounded p-button-icon-only"
+          :class="isActive ? 'p-button-outlined p-button-primary' : 'p-button-text p-button-secondary'"
+          @click.stop="toggleDirection"
+          severity="secondary"
+          :icon="direction === 0 ? 'pi pi-arrow-right' : 'pi pi-arrow-left'"
+          v-tooltip.top="direction === 0 ? 'Forward' : 'Backward'"
+          style="width: 2rem; height: 2rem; min-width: 2rem; padding: 0; display: flex; align-items: center; justify-content: center;"
+        />
+
+      </div>
 
       <!-- Color indicators -->
       <div class="flex -space-x-1" v-if="colorEffect">
