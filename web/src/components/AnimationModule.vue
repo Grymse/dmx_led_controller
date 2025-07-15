@@ -7,9 +7,17 @@ const props = defineProps<{
   isActive: boolean;
   duration: number;
   colorEffect?: { type: string; [key: string]: any };
+  index: number; // Add index prop to know position
 }>();
 
-const emit = defineEmits(['click', 'remove', 'update:duration']);
+const emit = defineEmits([
+  'click',
+  'remove',
+  'update:duration',
+  'dragstart',
+  'dragover',
+  'drop'
+]);
 
 const localDuration = ref(props.duration);
 
@@ -31,6 +39,39 @@ const updateDuration = (e: Event) => {
   e.stopPropagation(); // Prevent module selection when interacting with duration
   const value = parseInt((e.target as HTMLSelectElement).value);
   emit('update:duration', props.id, value);
+};
+
+// Drag and drop handlers
+const handleDragStart = (e: DragEvent) => {
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move';
+    // Store the dragged module's index
+    e.dataTransfer.setData('text/plain', props.index.toString());
+    // Add a class to style the dragging element
+    if (e.target instanceof HTMLElement) {
+      e.target.classList.add('dragging');
+    }
+  }
+  emit('dragstart', props.index);
+};
+
+const handleDragEnd = (e: DragEvent) => {
+  if (e.target instanceof HTMLElement) {
+    e.target.classList.remove('dragging');
+  }
+};
+
+const handleDragOver = (e: DragEvent) => {
+  e.preventDefault(); // Necessary to allow dropping
+  emit('dragover', props.index);
+};
+
+const handleDrop = (e: DragEvent) => {
+  e.preventDefault();
+  if (e.dataTransfer) {
+    const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+    emit('drop', { fromIndex, toIndex: props.index });
+  }
 };
 
 // Helper function to ensure color is in valid format
@@ -80,7 +121,24 @@ const colorsToDisplay = computed(() => {
       ? 'border-indigo-400 bg-indigo-50 text-indigo-900 shadow-sm'
       : 'border-gray-300 bg-gray-100 hover:bg-gray-200'"
     @click="handleClick"
+    draggable="true"
+    @dragstart="handleDragStart"
+    @dragend="handleDragEnd"
+    @dragover="handleDragOver"
+    @drop="handleDrop"
   >
+    <!-- Drag handle -->
+    <div class="cursor-move text-gray-400 hover:text-gray-600">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="8" cy="6" r="1" />
+        <circle cx="8" cy="12" r="1" />
+        <circle cx="8" cy="18" r="1" />
+        <circle cx="16" cy="6" r="1" />
+        <circle cx="16" cy="12" r="1" />
+        <circle cx="16" cy="18" r="1" />
+      </svg>
+    </div>
+
     <!-- Module name -->
     <span>{{ name }}</span>
 
@@ -128,3 +186,10 @@ const colorsToDisplay = computed(() => {
     </button>
   </div>
 </template>
+
+<style scoped>
+.dragging {
+  opacity: 0.5;
+  border: 2px dashed #6366F1 !important;
+}
+</style>

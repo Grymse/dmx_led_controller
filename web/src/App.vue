@@ -44,6 +44,10 @@ const modules = ref<Module[]>([
 // Track active module
 const activeModuleId = ref<number | null>(modules.value.length > 0 ? modules.value[0].id : null);
 
+// Track drag and drop operations
+const draggedIndex = ref<number | null>(null);
+const dragOverIndex = ref<number | null>(null);
+
 // Module management functions
 const selectModule = (id: number) => {
   activeModuleId.value = id;
@@ -85,6 +89,29 @@ const updateModuleDuration = (id: number, duration: number) => {
   if (moduleIndex !== -1) {
     modules.value[moduleIndex].duration = duration;
   }
+};
+
+// Drag and drop handlers
+const handleDragStart = (index: number) => {
+  draggedIndex.value = index;
+};
+
+const handleDragOver = (index: number) => {
+  dragOverIndex.value = index;
+};
+
+const handleDrop = ({ fromIndex, toIndex }: { fromIndex: number, toIndex: number }) => {
+  if (fromIndex === toIndex) return;
+
+  // Remove the dragged item
+  const moduleToMove = modules.value.splice(fromIndex, 1)[0];
+
+  // Insert it at the new position
+  modules.value.splice(toIndex, 0, moduleToMove);
+
+  // Reset tracking variables
+  draggedIndex.value = null;
+  dragOverIndex.value = null;
 };
 
 // Get active module data
@@ -161,16 +188,20 @@ const totalDuration = computed(() => {
             <!-- Animation Modules -->
             <div class="flex flex-wrap gap-2 items-center">
               <AnimationModule
-                v-for="module in modules"
+                v-for="(module, index) in modules"
                 :key="`module-${module.id}-${JSON.stringify(module.colorEffect)}`"
                 :id="module.id"
                 :name="module.name"
                 :duration="module.duration"
                 :is-active="module.id === activeModuleId"
                 :color-effect="module.colorEffect"
+                :index="index"
                 @click="selectModule"
                 @remove="removeModule"
                 @update:duration="updateModuleDuration"
+                @dragstart="handleDragStart"
+                @dragover="handleDragOver"
+                @drop="handleDrop"
               />
 
               <!-- Add Module Button -->
