@@ -32,6 +32,8 @@ ProcessScheduler scheduler;
 Animator* animator;
 SequenceScheduler* sequenceScheduler;
 
+BinaryStore store("config", "program"); // Used to store the program on the flash memory
+
 void setup() {
   // put your setup code here, to run once:
   scheduler = ProcessScheduler();
@@ -82,6 +84,11 @@ void setup() {
     new FadeColor({CRGB(255, 0, 0),CRGB(255, 255, 255)}, 1200),
     new StarsMask(300, 5, 1),
   }, 10000);
+
+    const uint8_t defaultProgram[] = { 0xAA, 0xBB, 0xCC, 0xDD };
+    if (store.saveDefaultIfEmpty(defaultProgram, sizeof(defaultProgram))) {
+        printf("Default saved or already exists.\n");
+    }
 }
 
 void loop() {

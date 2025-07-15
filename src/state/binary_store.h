@@ -50,6 +50,16 @@ public:
      * @return true if the key was removed successfully, false otherwise
      */
     bool clearData();
+
+    /**
+     * @brief Save default data only if no data is already stored
+     * 
+     * @param defaultData Pointer to default binary data
+     * @param defaultLength Length of the default data
+     * @return true if default was saved (or already present), false if save failed
+     */
+    bool saveDefaultIfEmpty(const uint8_t* defaultData, uint32_t defaultLength);
+
 };
 
 

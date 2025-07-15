@@ -44,3 +44,20 @@ bool BinaryStore::clearData()
     }
     return false;
 }
+
+bool BinaryStore::saveDefaultIfEmpty(const uint8_t* defaultData, uint32_t defaultLength) {
+    if (!defaultData || defaultLength == 0) return false;
+
+    if (preferences.begin(namespaceName.c_str(), true)) {
+        size_t existingSize = preferences.getBytesLength(key.c_str());
+        preferences.end();
+
+        if (existingSize > 0) {
+            // Data already exists, no need to save default
+            return true;
+        }
+    }
+
+    // Data not found or empty; save the default
+    return saveData(defaultData, defaultLength);
+}
