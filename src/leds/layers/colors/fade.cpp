@@ -44,11 +44,26 @@ String FadeColor::toString() {
  * @return The modified color after applying the blink pattern.
  */
 CRGB FadeColor::apply(CRGB color, LEDState* state) {
+  // Calculate the duration for each individual color segment within the total fade duration.
+  // This ensures that the total fade cycle (e.g., Red -> Green -> Blue -> Red)
+  // completes within 'this->duration' ticks.
   u16_t segmentDuration = this->duration / this->colors.size();
-  float percentage = (state->virtual_index % segmentDuration) / (float)segmentDuration;
-  u8_t fromIndex = (state->virtual_index / segmentDuration) % this->colors.size();
+
+  // Calculate the percentage of the fade within the current segment.
+  // This should be based on the global animation tick, not the LED's index.
+  // (state->tick % segmentDuration) gives the current tick within the current segment.
+  // Dividing by (float)segmentDuration normalizes it to a 0.0 to <1.0 value.
+  float percentage = (float)(state->tick % segmentDuration) / segmentDuration;
+
+  // Determine the 'from' color index.
+  // This is based on which segment of the overall fade cycle the current tick falls into.
+  u8_t fromIndex = (state->tick / segmentDuration) % this->colors.size();
+
+  // Determine the 'to' color index (the next color in the sequence).
   u8_t toIndex = (fromIndex + 1) % this->colors.size();
 
+  // Perform the linear interpolation between the 'from' and 'to' colors
+  // using the calculated percentage.
   return fadeBetween(this->colors[fromIndex], this->colors[toIndex], percentage);
 }
 

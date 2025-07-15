@@ -14,7 +14,7 @@ String SectionsColor::getName() {
  * @param sections define the sections and their color
  * @param duration The duration in ticks, it takes to go through all colors
  *
- * @example SectionsWaveColor({CRGB::Red, CRGB::Green, CRGB::Blue}, 50)
+ * @example SectionsColor({CRGB::Red, CRGB::Green, CRGB::Blue}, 50)
  */
 SectionsColor::SectionsColor(std::vector<CRGB> colors, u16_t duration) {
   this->duration = duration;
