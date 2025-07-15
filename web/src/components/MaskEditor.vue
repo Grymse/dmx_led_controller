@@ -17,11 +17,7 @@ const updateMask = (updates: any) => {
 
 // Define the configuration for each mask type
 const maskConfigs = {
-  'none': {
-    label: 'None',
-    id: null,
-    params: []
-  },
+  // 'none' option removed
   'blink': {
     label: 'Blink',
     id: 50, // BlinkMask = 50
@@ -92,6 +88,13 @@ const maskConfigs = {
   }
 };
 
+// Default fallback configuration for unknown types
+const defaultConfig = {
+  label: 'Unknown',
+  id: -1,
+  params: []
+};
+
 // Generate maskTypes array for select dropdown
 const maskTypes = Object.entries(maskConfigs).map(([value, config]) => ({
   value,
@@ -100,7 +103,7 @@ const maskTypes = Object.entries(maskConfigs).map(([value, config]) => ({
 
 // Get current mask configuration
 const currentMaskConfig = computed(() => {
-  return maskConfigs[props.mask.type] || maskConfigs.none;
+  return maskConfigs[props.mask.type] || defaultConfig;
 });
 
 // Ensure mask has required parameters when type changes
@@ -151,7 +154,7 @@ initializeMask();
     </div>
 
     <!-- Dynamic parameters based on mask type -->
-    <div v-if="mask.type !== 'none'" class="mb-4">
+    <div class="mb-4">
       <!-- Render each parameter based on its type -->
       <div v-for="param in currentMaskConfig.params" :key="param.key" class="mb-3">
         <label class="block text-sm font-medium text-gray-700 mb-1">

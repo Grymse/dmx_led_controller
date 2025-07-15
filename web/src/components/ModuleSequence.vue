@@ -230,7 +230,7 @@ const totalDuration = computed(() => {
 </script>
 
 <template>
-  <div class="w-full py-4 bg-gray-300 border-b border-gray-200">
+  <div class="w-full py-4 bg-gray-50 border-b border-gray-200">
     <div class="px-6">
 
       <!-- Animation Modules Container with Drag Event Handling -->

@@ -217,7 +217,9 @@ const colorsToDisplay = computed(() => {
             ? 'bg-indigo-100 text-indigo-900 border-indigo-300'
             : 'bg-white text-gray-800 border-gray-300'"
         >
+          <option value="500">0.25s</option>
           <option value="500">0.5s</option>
+          <option value="500">0.75s</option>
           <option value="1000">1s</option>
           <option value="2000">2s</option>
           <option value="3000">3s</option>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import { ref, computed, watch } from 'vue';
 import ColorEffectEditor from "@/components/ColorEffectEditor.vue";
 import MaskEditor from "@/components/MaskEditor.vue";
@@ -92,6 +93,10 @@ const modules = ref<Module[]>([
 
 // Track active module
 const activeModuleId = ref<number | null>(modules.value.length > 0 ? modules.value[0].id : null);
+const previousActiveModuleId = ref<number | null>(null);
+
+// Animation state
+const animateEditors = ref(false);
 
 // Get active module data
 const activeModule = computed(() => {
@@ -129,13 +134,13 @@ const currentSequence = computed<Sequence>(() => {
     }
 
     // Add mask1 layer if present
-    if (module.mask1 && module.mask1.type !== 'none') {
+    if (module.mask1) {
       const maskLayer = convertUILayerToProtocol(module.mask1);
       if (maskLayer) layers.push(maskLayer);
     }
 
     // Add mask2 layer if present
-    if (module.mask2 && module.mask2.type !== 'none') {
+    if (module.mask2) {
       const maskLayer = convertUILayerToProtocol(module.mask2);
       if (maskLayer) layers.push(maskLayer);
     }
@@ -205,7 +210,22 @@ const handleUpdateModules = (newModules: Module[]) => {
 };
 
 const handleSelectModule = (id: number) => {
-  activeModuleId.value = id;
+  // Store previous active module for animation comparison
+  previousActiveModuleId.value = activeModuleId.value;
+
+  // Only trigger animation if we're selecting a different module
+  if (id !== activeModuleId.value) {
+    // Set the new active module ID
+    activeModuleId.value = id;
+
+    // Trigger animation
+    animateEditors.value = true;
+
+    // Reset animation flag after animation completes
+    setTimeout(() => {
+      animateEditors.value = false;
+    }, 600); // Match this with the CSS animation duration
+  }
 };
 
 const handleAddModule = () => {
@@ -218,12 +238,22 @@ const handleAddModule = () => {
     name: `New Module ${newId}`,
     duration: 2000,
     colorEffect: { type: 'single', color: '#FF0000' },
-    mask1: { type: 'none' }, // Default mask in first slot
+    mask1: null, // Start with no mask instead of "none" type
     mask2: null  // No mask in second slot by default
   };
 
+  // Store previous active module
+  previousActiveModuleId.value = activeModuleId.value;
+
+  // Add new module and select it
   modules.value.push(newModule);
   activeModuleId.value = newId;
+
+  // Trigger animation for new module selection
+  animateEditors.value = true;
+  setTimeout(() => {
+    animateEditors.value = false;
+  }, 600);
 };
 
 const handleRemoveModule = (id: number) => {
@@ -233,7 +263,19 @@ const handleRemoveModule = (id: number) => {
 
     // Update active module if we removed the active one
     if (activeModuleId.value === id) {
+      // Store previous before changing
+      previousActiveModuleId.value = activeModuleId.value;
+
+      // Set new active module
       activeModuleId.value = modules.value.length > 0 ? modules.value[0].id : null;
+
+      // Trigger animation if we're switching to a different module
+      if (activeModuleId.value !== null && activeModuleId.value !== previousActiveModuleId.value) {
+        animateEditors.value = true;
+        setTimeout(() => {
+          animateEditors.value = false;
+        }, 600);
+      }
     }
   }
 };
@@ -290,7 +332,7 @@ const handleAddMask1 = () => {
   if (moduleIndex !== -1) {
     modules.value[moduleIndex] = {
       ...modules.value[moduleIndex],
-      mask1: { type: 'none' } // Initialize with a default mask
+      mask1: { type: 'blink', duration: 500 } // Initialize with a real mask type (blink) instead of 'none'
     };
   }
 };
@@ -314,7 +356,7 @@ const handleAddMask2 = () => {
   if (moduleIndex !== -1) {
     modules.value[moduleIndex] = {
       ...modules.value[moduleIndex],
-      mask2: { type: 'none' } // Initialize with a default mask
+      mask2: { type: 'blink', duration: 500 } // Initialize with a real mask type (blink) instead of 'none'
     };
   }
 };
@@ -356,9 +398,9 @@ watch(currentSequence, (newSequence) => {
 </script>
 
 <template>
-  <main class="w-screen h-screen flex flex-col">
+  <main class="w-screen h-screen flex flex-col bg-gray-100">
     <!-- Main centered container with 80% width -->
-    <div class="w-4/5 mx-auto flex flex-col flex-grow mt-12">
+    <div class="w-4/5 mx-auto flex flex-col flex-grow mt-4">
       <div class="flex flex-col bg-white rounded-lg shadow-md flex-grow overflow-hidden">
         <!-- Module Sequence Header -->
         <div class="p-4 flex justify-between items-center">
@@ -367,6 +409,14 @@ watch(currentSequence, (newSequence) => {
             <span class="ml-4 px-3 py-1 bg-gray-100 rounded-full text-gray-700">
               Total Duration: {{ formatDuration(totalDuration) }}
             </span>
+            <Button
+              class="ml-4"
+              label="Save Locally"
+              icon="pi pi-download"
+              severity="secondary"
+              outlined
+            />
+
           </div>
 
           <!-- Control buttons (moved from BluetoothMenu) -->
@@ -380,7 +430,7 @@ watch(currentSequence, (newSequence) => {
             <!-- Button Group for Controls -->
             <div class="flex">
               <Button class="mr-2" label="Play" icon="pi pi-play" @click="play" />
-              <Button label="Play and Save" icon="pi pi-save" @click="playAndSave" />
+              <Button label="Save to lamp" icon="pi pi-save" @click="playAndSave" />
             </div>
           </div>
         </div>
@@ -397,9 +447,12 @@ watch(currentSequence, (newSequence) => {
         />
 
         <!-- Three Columns Layout (fills remaining height) -->
-        <div class="bg-gray-100 grid grid-cols-3 gap-6 p-6 flex-grow overflow-hidden">
+        <div class="bg-gray-50 border border-indigo-400 bg-indigo-50 grid grid-cols-3 gap-6 p-6 flex-grow overflow-hidden">
           <!-- Color Effect Column -->
-          <div class="col-span-1 bg-white rounded-lg shadow-md p-4 flex flex-col h-full">
+          <div
+            class="col-span-1 bg-white rounded-lg shadow-md p-4 flex flex-col h-full transition-all duration-300 ease-in-out"
+            :class="{ 'animate-editor': animateEditors }"
+          >
             <h2 class="text-xl font-semibold mb-4">Color Effect</h2>
             <div class="flex-grow overflow-auto">
               <div v-if="activeModule">
@@ -415,7 +468,10 @@ watch(currentSequence, (newSequence) => {
           </div>
 
           <!-- Mask 1 Column -->
-          <div class="col-span-1 bg-white rounded-lg shadow-md p-4 flex flex-col h-full relative">
+          <div
+            class="col-span-1 bg-white rounded-lg shadow-md p-4 flex flex-col h-full relative transition-all duration-300 ease-in-out"
+            :class="{ 'animate-editor': animateEditors, 'animate-editor-delay-1': animateEditors }"
+          >
             <div class="flex justify-between items-center mb-4">
               <h2 class="text-xl font-semibold">Mask</h2>
               <!-- Remove mask button (only show if mask exists) -->
@@ -456,7 +512,10 @@ watch(currentSequence, (newSequence) => {
           </div>
 
           <!-- Mask 2 Column -->
-          <div class="col-span-1 bg-white rounded-lg shadow-md p-4 flex flex-col h-full relative">
+          <div
+            class="col-span-1 bg-white rounded-lg shadow-md p-4 flex flex-col h-full relative transition-all duration-300 ease-in-out"
+            :class="{ 'animate-editor': animateEditors, 'animate-editor-delay-2': animateEditors }"
+          >
             <div class="flex justify-between items-center mb-4">
               <h2 class="text-xl font-semibold">Mask 2</h2>
               <!-- Remove mask button (only show if mask exists) -->
@@ -500,3 +559,41 @@ watch(currentSequence, (newSequence) => {
     </div>
   </main>
 </template>
+
+<style scoped>
+/* Animation for editors when switching modules */
+@keyframes fadeInSlideUp {
+  0% {
+    opacity: 0.5;
+    transform: translateY(10px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes highlight {
+  0% {
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0);
+  }
+  30% {
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0);
+  }
+}
+
+.animate-editor {
+  animation: fadeInSlideUp 0.2s ease-out, highlight 0.5s ease;
+}
+
+.animate-editor-delay-1 {
+  animation-delay: 0.1s;
+}
+
+.animate-editor-delay-2 {
+  animation-delay: 0.2s;
+}
+</style>
