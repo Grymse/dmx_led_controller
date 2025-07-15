@@ -6,8 +6,6 @@ import MaskEditor from "@/components/MaskEditor.vue";
 import ModuleSequence from "@/components/ModuleSequence.vue";
 import Button from 'primevue/button';
 import Chip from 'primevue/chip';
-
-// To this:
 import { ticksToMs, msToTicks, hexColorToUint32} from './lib/timeUtils';
 
 // Define the types based on the Protocol structure
@@ -220,17 +218,23 @@ const handleSelectModule = (id: number) => {
   }
 };
 
-// When adding a new module, ensure the duration is in ms
+// Update the handleAddModule function
 const handleAddModule = () => {
   const newId = modules.value.length > 0
     ? Math.max(...modules.value.map(m => m.id)) + 1
     : 1;
 
+  // Start with a basic color effect
+  const colorEffect = { type: 'single', color: '#FF0000' };
+
+  // Create a meaningful name based on the effect
+  const name = 'Single Color';
+
   const newModule = {
     id: newId,
-    name: `New Module ${newId}`,
+    name,
     duration: 2000, // This is already in ms for the UI
-    colorEffect: { type: 'single', color: '#FF0000' },
+    colorEffect,
     mask1: null,
     mask2: null
   };
@@ -249,39 +253,70 @@ const handleAddModule = () => {
   }, 600);
 };
 
-const handleRemoveModule = (id: number) => {
-  const index = modules.value.findIndex(m => m.id === id);
-  if (index !== -1) {
-    modules.value.splice(index, 1);
+// Update handlers for color effect and masks to update the module name
+const updateModuleName = (moduleId: number) => {
+  const moduleIndex = modules.value.findIndex(m => m.id === moduleId);
+  if (moduleIndex === -1) return;
 
-    // Update active module if we removed the active one
-    if (activeModuleId.value === id) {
-      // Store previous before changing
-      previousActiveModuleId.value = activeModuleId.value;
+  const module = modules.value[moduleIndex];
+  let name = '';
 
-      // Set new active module
-      activeModuleId.value = modules.value.length > 0 ? modules.value[0].id : null;
+  // Add color effect name
+  if (module.colorEffect) {
+    const effectName = {
+      'single': 'Single Color',
+      'rainbow': 'Rainbow',
+      'sectionsWave': 'Wave Sections',
+      'sections': 'Sections',
+      'fade': 'Fade',
+      'switch': 'Switch'
+    }[module.colorEffect.type] || module.colorEffect.type;
 
-      // Trigger animation if we're switching to a different module
-      if (activeModuleId.value !== null && activeModuleId.value !== previousActiveModuleId.value) {
-        animateEditors.value = true;
-        setTimeout(() => {
-          animateEditors.value = false;
-        }, 600);
-      }
-    }
+    name += effectName;
   }
+
+  // Add mask1 name if present
+  if (module.mask1) {
+    const maskName = {
+      'blink': 'Blink',
+      'invert': 'Invert',
+      'pulseSawtooth': 'Pulse Sawtooth',
+      'pulse': 'Pulse',
+      'sawtooth': 'Sawtooth',
+      'sectionsWave': 'Sections Wave',
+      'sections': 'Sections',
+      'stars': 'Stars',
+      'wave': 'Wave'
+    }[module.mask1.type] || module.mask1.type;
+
+    name += ' + ' + maskName;
+  }
+
+  // Add mask2 name if present
+  if (module.mask2) {
+    const maskName = {
+      'blink': 'Blink',
+      'invert': 'Invert',
+      'pulseSawtooth': 'Pulse Sawtooth',
+      'pulse': 'Pulse',
+      'sawtooth': 'Sawtooth',
+      'sectionsWave': 'Sections Wave',
+      'sections': 'Sections',
+      'stars': 'Stars',
+      'wave': 'Wave'
+    }[module.mask2.type] || module.mask2.type;
+
+    name += ' + ' + maskName;
+  }
+
+  // Update the module name
+  modules.value[moduleIndex] = {
+    ...modules.value[moduleIndex],
+    name
+  };
 };
 
-// Update the handleUpdateDuration function
-const handleUpdateDuration = (id: number, durationMs: number) => {
-  const moduleIndex = modules.value.findIndex(m => m.id === id);
-  if (moduleIndex !== -1) {
-    modules.value[moduleIndex].duration = durationMs; // Store as ms in UI
-  }
-};
-
-// Handlers for editor updates
+// Update the handleUpdateColorEffect function
 const handleUpdateColorEffect = (effect: any) => {
   if (!activeModule.value) return;
 
@@ -291,9 +326,12 @@ const handleUpdateColorEffect = (effect: any) => {
       ...modules.value[moduleIndex],
       colorEffect: { ...effect }
     };
+    // Update name after changing the effect
+    updateModuleName(activeModuleId.value);
   }
 };
 
+// Update the handleUpdateMask1 function
 const handleUpdateMask1 = (mask: any) => {
   if (!activeModule.value) return;
 
@@ -303,9 +341,12 @@ const handleUpdateMask1 = (mask: any) => {
       ...modules.value[moduleIndex],
       mask1: { ...mask }
     };
+    // Update name after changing the mask
+    updateModuleName(activeModuleId.value);
   }
 };
 
+// Update the handleUpdateMask2 function
 const handleUpdateMask2 = (mask: any) => {
   if (!activeModule.value) return;
 
@@ -315,10 +356,12 @@ const handleUpdateMask2 = (mask: any) => {
       ...modules.value[moduleIndex],
       mask2: { ...mask }
     };
+    // Update name after changing the mask
+    updateModuleName(activeModuleId.value);
   }
 };
 
-// Add new handlers for adding/removing masks
+// Update the handleAddMask1 function
 const handleAddMask1 = () => {
   if (!activeModule.value) return;
 
@@ -326,11 +369,14 @@ const handleAddMask1 = () => {
   if (moduleIndex !== -1) {
     modules.value[moduleIndex] = {
       ...modules.value[moduleIndex],
-      mask1: { type: 'blink', duration: 500 } // Initialize with a real mask type (blink) instead of 'none'
+      mask1: { type: 'blink', duration: 500 }
     };
+    // Update name after adding the mask
+    updateModuleName(activeModuleId.value);
   }
 };
 
+// Update the handleRemoveMask1 function
 const handleRemoveMask1 = () => {
   if (!activeModule.value) return;
 
@@ -340,9 +386,12 @@ const handleRemoveMask1 = () => {
       ...modules.value[moduleIndex],
       mask1: null
     };
+    // Update name after removing the mask
+    updateModuleName(activeModuleId.value);
   }
 };
 
+// Update the handleAddMask2 function
 const handleAddMask2 = () => {
   if (!activeModule.value) return;
 
@@ -350,11 +399,14 @@ const handleAddMask2 = () => {
   if (moduleIndex !== -1) {
     modules.value[moduleIndex] = {
       ...modules.value[moduleIndex],
-      mask2: { type: 'blink', duration: 500 } // Initialize with a real mask type (blink) instead of 'none'
+      mask2: { type: 'blink', duration: 500 }
     };
+    // Update name after adding the mask
+    updateModuleName(activeModuleId.value);
   }
 };
 
+// Update the handleRemoveMask2 function
 const handleRemoveMask2 = () => {
   if (!activeModule.value) return;
 
@@ -364,6 +416,16 @@ const handleRemoveMask2 = () => {
       ...modules.value[moduleIndex],
       mask2: null
     };
+    // Update name after removing the mask
+    updateModuleName(activeModuleId.value);
+  }
+};
+
+// Update the handleUpdateDuration function
+const handleUpdateDuration = (id: number, durationMs: number) => {
+  const moduleIndex = modules.value.findIndex(m => m.id === id);
+  if (moduleIndex !== -1) {
+    modules.value[moduleIndex].duration = durationMs; // Store as ms in UI
   }
 };
 
@@ -389,6 +451,50 @@ const playAndSave = () => {
 watch(currentSequence, (newSequence) => {
   console.log('Current sequence updated:', newSequence);
 }, { deep: true });
+
+// Handle removing a module
+const handleRemoveModule = (id: number) => {
+  const moduleIndex = modules.value.findIndex(m => m.id === id);
+  if (moduleIndex !== -1) {
+    // Store the current active module
+    const wasActive = activeModuleId.value === id;
+
+    // Remove the module
+    modules.value.splice(moduleIndex, 1);
+
+    // If we removed the last module, create a new default module
+    if (modules.value.length === 0) {
+      const newModule = {
+        id: 1,
+        name: 'Single Color',
+        duration: 2000,
+        colorEffect: { type: 'single', color: '#FF0000' },
+        mask1: null,
+        mask2: null
+      };
+      modules.value.push(newModule);
+      activeModuleId.value = 1;
+
+      // Trigger animation for the new module
+      animateEditors.value = true;
+      setTimeout(() => {
+        animateEditors.value = false;
+      }, 600);
+    }
+    // If we removed the active module, select another one
+    else if (wasActive) {
+      // Select previous module if possible, otherwise the first one
+      const newIndex = Math.max(0, moduleIndex - 1);
+      activeModuleId.value = modules.value[newIndex].id;
+
+      // Trigger animation for the newly selected module
+      animateEditors.value = true;
+      setTimeout(() => {
+        animateEditors.value = false;
+      }, 600);
+    }
+  }
+};
 </script>
 
 <template>

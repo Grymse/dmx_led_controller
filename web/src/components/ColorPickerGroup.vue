@@ -116,6 +116,7 @@ const handleColorPickerChange = (index: number) => {
         icon="pi pi-plus"
         class="p-button-sm"
         severity="info"
+        rounded
         @click="addColor"
         style="width: 2.5rem; height: 2.5rem"
       />

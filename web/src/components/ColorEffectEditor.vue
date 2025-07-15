@@ -57,7 +57,7 @@ const effectConfigs = {
   },
   'sections': {
     label: 'Sections',
-    icon: 'pi pi-table',
+    icon: 'pi pi-bars',
     id: 3, // SectionsColor = 3
     params: [
       { key: 'colors', type: 'colors', default: ['#FF0000'], required: true },
@@ -66,7 +66,7 @@ const effectConfigs = {
   },
   'fade': {
     label: 'Fade',
-    icon: 'pi pi-moon',
+    icon: 'pi pi-sort-amount-down-alt',
     id: 4, // FadeColor = 4
     params: [
       { key: 'colors', type: 'colors', default: ['#FF0000'], required: true },

@@ -7,6 +7,8 @@ const props = defineProps<{
   isActive: boolean;
   duration: number;
   colorEffect?: { type: string; [key: string]: any };
+  mask1?: { type: string; [key: string]: any } | null;
+  mask2?: { type: string; [key: string]: any } | null;
   index: number; // Add index prop to know position
   isDragging: boolean; // Whether any module is being dragged
   dragOverIndex: number | null; // Index being dragged over
@@ -20,11 +22,56 @@ const emit = defineEmits([
   'update:duration',
   'dragstart',
   'dragover',
-  'drop'
+  'drop',
+  'update:name'
 ]);
 
 const localDuration = ref(props.duration);
 const isMoving = ref(false);
+
+// Mapping for effect type to readable names
+const effectTypeNames: Record<string, string> = {
+  'single': 'Single',
+  'rainbow': 'Rainbow',
+  'sectionsWave': 'Wave Sections',
+  'sections': 'Sections',
+  'fade': 'Fade',
+  'switch': 'Switch',
+  'blink': 'Blink',
+  'invert': 'Invert',
+  'pulseSawtooth': 'Pulse Sawtooth',
+  'pulse': 'Pulse',
+  'sawtooth': 'Sawtooth',
+  'stars': 'Stars',
+  'wave': 'Wave'
+};
+
+// Generate a name based on the current effects and masks
+const generatedName = computed(() => {
+  let name = '';
+
+  // Add color effect name
+  if (props.colorEffect) {
+    name += effectTypeNames[props.colorEffect.type] || props.colorEffect.type;
+  }
+
+  // Add mask1 name if present
+  if (props.mask1) {
+    name += ' + ' + (effectTypeNames[props.mask1.type] || props.mask1.type);
+  }
+
+  // Add mask2 name if present
+  if (props.mask2) {
+    name += ' + ' + (effectTypeNames[props.mask2.type] || props.mask2.type);
+  }
+
+  return name;
+});
+
+// Watch for changes to generate a new name
+watch([() => props.colorEffect, () => props.mask1, () => props.mask2], () => {
+  emit('update:name', props.id, generatedName.value);
+}, { deep: true });
 
 // Update local duration when prop changes
 watch(() => props.duration, (newDuration) => {
@@ -194,7 +241,7 @@ const colorsToDisplay = computed(() => {
       </div>
 
       <!-- Module name -->
-      <span>{{ name }}</span>
+      <span class="font-medium">{{ name }}</span>
 
       <!-- Color indicators -->
       <div class="flex -space-x-1" v-if="colorEffect">

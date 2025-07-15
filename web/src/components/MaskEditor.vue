@@ -49,7 +49,7 @@ const maskConfigs = {
   },
   'invert': {
     label: 'Invert',
-    icon: 'pi pi-sync-alt',
+    icon: 'pi pi-arrows-h',
     id: 51, // InvertMask = 51
     params: [] // No parameters needed for invert
   },
@@ -108,7 +108,7 @@ const maskConfigs = {
   },
   'wave': {
     label: 'Wave',
-    icon: 'pi pi-arrow-right-arrow-left',
+    icon: 'pi pi-wave-pulse',
     id: 58, // WaveMask = 58
     params: [
       { key: 'length', type: 'slider', default: 100, min: 1, max: 500, step: 5, label: 'Length', required: true },

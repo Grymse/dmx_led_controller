@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, defineProps, defineEmits } from 'vue';
-import AnimationModule from "@/components/AnimationModule.vue";
+import { ref, computed } from 'vue';
+import AnimationModule from './AnimationModule.vue';
+import Button from 'primevue/button';
 
 // Define the Module interface
 interface Module {
@@ -8,8 +9,8 @@ interface Module {
   name: string;
   duration: number;
   colorEffect: { type: string; [key: string]: any };
-  mask1: { type: string; [key: string]: any };
-  mask2: { type: string; [key: string]: any };
+  mask1: { type: string; [key: string]: any } | null;
+  mask2: { type: string; [key: string]: any } | null;
 }
 
 const props = defineProps<{
@@ -19,14 +20,14 @@ const props = defineProps<{
 
 const emit = defineEmits([
   'update:modules',
-  'update:activeModuleId',
   'update:duration',
+  'update:name',
+  'select',
   'add',
-  'remove',
-  'select'
+  'remove'
 ]);
 
-// Track drag and drop operations
+// State for drag and drop
 const isDragging = ref(false);
 const draggedIndex = ref<number | null>(null);
 const dragOverIndex = ref<number | null>(null);
@@ -37,22 +38,29 @@ const animateSwap = ref(false); // Flag to trigger animation
 // Reference to the modules container
 const modulesContainer = ref<HTMLElement | null>(null);
 
-// Module management functions
-const selectModule = (id: number) => {
+// Handle selecting a module
+const handleSelectModule = (id: number) => {
   emit('select', id);
 };
 
-const addModule = () => {
-  emit('add');
-};
-
-const removeModule = (id: number) => {
+// Handle removing a module
+const handleRemoveModule = (id: number) => {
   emit('remove', id);
 };
 
-// Update module duration
-const updateModuleDuration = (id: number, duration: number) => {
+// Handle updating a module's duration
+const handleUpdateDuration = (id: number, duration: number) => {
   emit('update:duration', id, duration);
+};
+
+// Handle updating a module's name
+const handleUpdateName = (id: number, name: string) => {
+  emit('update:name', id, name);
+};
+
+// Handle adding a new module
+const handleAddModule = () => {
+  emit('add');
 };
 
 // Handle container dragover to detect end-of-list drops and start-of-list drops
@@ -230,66 +238,64 @@ const totalDuration = computed(() => {
 </script>
 
 <template>
-  <div class="w-full py-4 bg-gray-50 border-b border-gray-200">
-    <div class="px-6">
-
-      <!-- Animation Modules Container with Drag Event Handling -->
+  <div class="p-4 bg-gray-50 border-t border-b border-gray-200">
+    <!-- Animation Modules Container with Drag Event Handling -->
+    <div
+      ref="modulesContainer"
+      class="modules-container flex flex-wrap items-center"
+      @dragend="handleDragEnd"
+      @dragover="handleContainerDragOver"
+      @drop="handleContainerDrop"
+      :class="{ 'animating-modules': animateSwap }"
+    >
+      <!-- Start drop indicator -->
       <div
-        ref="modulesContainer"
-        class="modules-container flex flex-wrap items-center"
-        @dragend="handleDragEnd"
-        @dragover="handleContainerDragOver"
-        @drop="handleContainerDrop"
-        :class="{ 'animating-modules': animateSwap }"
-      >
-        <!-- Start drop indicator -->
-        <div
-          v-if="isDragging && dragOverIndex === 0 && dropPosition === 'before'"
-          class="start-drop-indicator"
-        ></div>
+        v-if="isDragging && dragOverIndex === 0 && dropPosition === 'before'"
+        class="start-drop-indicator"
+      ></div>
 
-        <transition-group name="module-swap">
-          <AnimationModule
-            v-for="(module, index) in modules"
-            :key="`module-${module.id}`"
-            :id="module.id"
-            :name="module.name"
-            :duration="module.duration"
-            :is-active="module.id === activeModuleId"
-            :color-effect="module.colorEffect"
-            :index="index"
-            :is-dragging="isDragging"
-            :drag-over-index="dragOverIndex"
-            :drop-position="dropPosition"
-            :dragged-index="draggedIndex"
-            class="module-item"
-            @click="selectModule"
-            @remove="removeModule"
-            @update:duration="updateModuleDuration"
-            @dragstart="handleDragStart"
-            @dragover="handleDragOver"
-            @drop="handleDrop"
-          />
-        </transition-group>
-
-        <!-- Add Module Button -->
-        <Button
-          @click="addModule"
-          icon="pi pi-plus"
-          rounded
-          severity="info"
-          class="ml-2 !w-8 !h-8 !text-xl !flex !items-center !justify-center"
-          aria-label="Add Module"
+      <transition-group name="module-swap">
+        <AnimationModule
+          v-for="(module, index) in modules"
+          :key="`module-${module.id}`"
+          :id="module.id"
+          :name="module.name"
+          :is-active="module.id === activeModuleId"
+          :duration="module.duration"
+          :color-effect="module.colorEffect"
+          :mask1="module.mask1"
+          :mask2="module.mask2"
+          :index="index"
+          :is-dragging="isDragging"
+          :dragged-index="draggedIndex"
+          :drag-over-index="dragOverIndex"
+          :drop-position="dropPosition"
+          class="module-item"
+          @click="handleSelectModule"
+          @remove="handleRemoveModule"
+          @update:duration="handleUpdateDuration"
+          @update:name="handleUpdateName"
+          @dragstart="handleDragStart"
+          @dragover="handleDragOver"
+          @drop="handleDrop"
         />
+      </transition-group>
 
+      <!-- Add Module Button -->
+      <Button
+        @click="handleAddModule"
+        icon="pi pi-plus"
+        class="ml-2 !w-8 !h-8 !text-xl !flex !items-center !justify-center"
+        rounded
+        severity="info"
+        aria-label="Add Module"
+      />
 
-
-        <!-- End drop indicator -->
-        <div
-          v-if="showEndDropIndicator"
-          class="end-drop-indicator"
-        ></div>
-      </div>
+      <!-- End drop indicator -->
+      <div
+        v-if="showEndDropIndicator"
+        class="end-drop-indicator"
+      ></div>
     </div>
   </div>
 </template>
