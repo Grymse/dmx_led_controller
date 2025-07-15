@@ -1,11 +1,62 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import BluetoothMenu from "@/components/BluetoothMenu.vue";
+import { ref, computed, watch } from 'vue';
 import ColorEffectEditor from "@/components/ColorEffectEditor.vue";
 import MaskEditor from "@/components/MaskEditor.vue";
 import ModuleSequence from "@/components/ModuleSequence.vue";
+import Button from 'primevue/button';
+import Chip from 'primevue/chip';
 
-// Define the Module interface (could be moved to a types file)
+// Define the types based on the Protocol structure
+enum Direction {
+  FORWARD = 0,
+  BACKWARD = 1
+}
+
+// Maps UI types to LayerType enum values from protocol
+const effectTypeToLayerType: Record<string, number> = {
+  'single': 0,     // SingleColor
+  'rainbow': 1,    // RainbowColor
+  'sectionsWave': 2, // SectionsWaveColor
+  'sections': 3,   // SectionsColor
+  'fade': 4,       // FadeColor
+  'switch': 5,     // SwitchColor
+  'blink': 50,     // BlinkMask
+  'invert': 51,    // InvertMask
+  'pulseSawtooth': 52, // PulseSawtoothMask
+  'pulse': 53,     // PulseMask
+  'sawtooth': 54,  // SawtoothMask
+  'sectionsWave': 55, // SectionsWaveMask
+  'sections': 56,  // SectionsMask
+  'stars': 57,     // StarsMask
+  'wave': 58,      // WaveMask
+};
+
+// Interfaces to model the protocol structure
+interface Layer {
+  type: number;
+  duration?: number;
+  length?: number;
+  color?: number;
+  gap?: number;
+  frequency?: number;
+  speed?: number;
+  colors?: number[];
+  sections?: Uint8Array;
+}
+
+interface Animation {
+  direction: Direction;
+  duration: number;
+  first_tick?: number;
+  brightness?: number;
+  layers: Layer[];
+}
+
+interface Sequence {
+  animations: Animation[];
+}
+
+// UI Module interface
 interface Module {
   id: number;
   name: string;
@@ -46,6 +97,107 @@ const activeModuleId = ref<number | null>(modules.value.length > 0 ? modules.val
 const activeModule = computed(() => {
   return modules.value.find(m => m.id === activeModuleId.value) || null;
 });
+
+// Calculate total sequence duration
+const totalDuration = computed(() => {
+  return modules.value.reduce((total, module) => total + module.duration, 0);
+});
+
+// Format duration in human-readable format
+const formatDuration = (ms: number) => {
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+
+  if (minutes > 0) {
+    return `${minutes}m ${seconds % 60}s`;
+  }
+
+  return `${seconds}s`;
+};
+
+// Protocol structure for the sequence
+const currentSequence = computed<Sequence>(() => {
+  // Map UI modules to protocol animations
+  const animations: Animation[] = modules.value.map(module => {
+    // Create layers array from color effect and masks
+    const layers: Layer[] = [];
+
+    // Add color effect layer
+    if (module.colorEffect) {
+      const colorLayer = convertUILayerToProtocol(module.colorEffect);
+      if (colorLayer) layers.push(colorLayer);
+    }
+
+    // Add mask1 layer if present
+    if (module.mask1 && module.mask1.type !== 'none') {
+      const maskLayer = convertUILayerToProtocol(module.mask1);
+      if (maskLayer) layers.push(maskLayer);
+    }
+
+    // Add mask2 layer if present
+    if (module.mask2 && module.mask2.type !== 'none') {
+      const maskLayer = convertUILayerToProtocol(module.mask2);
+      if (maskLayer) layers.push(maskLayer);
+    }
+
+    // Create animation with layers
+    return {
+      direction: Direction.FORWARD, // Default to forward
+      duration: module.duration,
+      brightness: 255, // Default to full brightness
+      layers
+    };
+  });
+
+  return { animations };
+});
+
+// Helper function to convert hex color to uint32
+function hexColorToUint32(hexColor: string): number {
+  // Remove # if present
+  hexColor = hexColor.replace('#', '');
+
+  // Parse as RGB
+  const r = parseInt(hexColor.substring(0, 2), 16);
+  const g = parseInt(hexColor.substring(2, 4), 16);
+  const b = parseInt(hexColor.substring(4, 6), 16);
+
+  // Pack into uint32 (0xRRGGBB)
+  return (r << 16) | (g << 8) | b;
+}
+
+// Helper function to convert UI layer (color effect or mask) to protocol Layer
+function convertUILayerToProtocol(uiLayer: { type: string; [key: string]: any }): Layer | null {
+  // Get the protocol layer type
+  const layerType = effectTypeToLayerType[uiLayer.type];
+  if (layerType === undefined) return null;
+
+  const layer: Layer = { type: layerType };
+
+  // Set common parameters based on UI layer
+  if (uiLayer.duration !== undefined) layer.duration = uiLayer.duration;
+  if (uiLayer.length !== undefined) layer.length = uiLayer.length;
+  if (uiLayer.gap !== undefined) layer.gap = uiLayer.gap;
+  if (uiLayer.frequency !== undefined) layer.frequency = uiLayer.frequency;
+  if (uiLayer.speed !== undefined) layer.speed = uiLayer.speed;
+
+  // Handle color for SingleColor
+  if (uiLayer.type === 'single' && uiLayer.color) {
+    layer.color = hexColorToUint32(uiLayer.color);
+  }
+
+  // Handle colors array for multi-color effects
+  if (['fade', 'sections', 'sectionsWave', 'switch'].includes(uiLayer.type) && Array.isArray(uiLayer.colors)) {
+    layer.colors = uiLayer.colors.map(hexColorToUint32);
+  }
+
+  // Handle sections for mask types that need it
+  if (['blink', 'sectionsWave', 'sections'].includes(uiLayer.type) && Array.isArray(uiLayer.sections)) {
+    layer.sections = new Uint8Array(uiLayer.sections);
+  }
+
+  return layer;
+}
 
 // Handlers for module sequence events
 const handleUpdateModules = (newModules: Module[]) => {
@@ -178,18 +330,61 @@ const handleRemoveMask2 = () => {
     };
   }
 };
+
+// Connection status (basic implementation)
+const isConnected = ref(false);
+const connectionStatus = computed(() => isConnected.value ? 'Connected' : 'Disconnected');
+const chipClass = computed(() => isConnected.value ? 'bg-green-500 text-white' : 'bg-red-500 text-white');
+
+// Play/Save action methods
+const play = () => {
+  console.log('Play action triggered');
+  console.log('Sequence data:', currentSequence.value);
+  // Implement your play logic here
+};
+
+const playAndSave = () => {
+  console.log('Play and save action triggered');
+  console.log('Sequence data:', currentSequence.value);
+  // Implement your play and save logic here
+};
+
+// For debugging: log the current sequence when it changes
+watch(currentSequence, (newSequence) => {
+  console.log('Current sequence updated:', newSequence);
+}, { deep: true });
 </script>
 
 <template>
   <main class="w-screen h-screen flex flex-col">
-    <!-- Fixed position container for BluetoothMenu -->
-    <div class="fixed top-2 right-4 z-50">
-      <BluetoothMenu />
-    </div>
-
     <!-- Main centered container with 80% width -->
     <div class="w-4/5 mx-auto flex flex-col flex-grow mt-12">
       <div class="flex flex-col bg-white rounded-lg shadow-md flex-grow overflow-hidden">
+        <!-- Module Sequence Header -->
+        <div class="p-4 flex justify-between items-center">
+          <div class="flex items-center">
+            <h1 class="text-2xl font-bold">Animation Sequence</h1>
+            <span class="ml-4 px-3 py-1 bg-gray-100 rounded-full text-gray-700">
+              Total Duration: {{ formatDuration(totalDuration) }}
+            </span>
+          </div>
+
+          <!-- Control buttons (moved from BluetoothMenu) -->
+          <div class="flex flex-row items-center gap-4">
+            <!-- Connection Status Chip -->
+            <div class="flex items-center gap-2">
+              <span>Status:</span>
+              <Chip :label="connectionStatus" :class="chipClass" />
+            </div>
+
+            <!-- Button Group for Controls -->
+            <div class="flex">
+              <Button class="mr-2" label="Play" icon="pi pi-play" @click="play" />
+              <Button label="Save" icon="pi pi-save" @click="playAndSave" />
+            </div>
+          </div>
+        </div>
+
         <!-- Module Sequence Component -->
         <ModuleSequence
           :modules="modules"
@@ -202,7 +397,7 @@ const handleRemoveMask2 = () => {
         />
 
         <!-- Three Columns Layout (fills remaining height) -->
-        <div class="grid grid-cols-3 gap-6 p-6 flex-grow overflow-hidden">
+        <div class="bg-gray-100 grid grid-cols-3 gap-6 p-6 flex-grow overflow-hidden">
           <!-- Color Effect Column -->
           <div class="col-span-1 bg-white rounded-lg shadow-md p-4 flex flex-col h-full">
             <h2 class="text-xl font-semibold mb-4">Color Effect</h2>

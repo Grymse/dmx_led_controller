@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
-import Button from 'primevue/button';
 import Slider from 'primevue/slider';
 import InputText from 'primevue/inputtext';
 import ColorPickerGroup from './ColorPickerGroup.vue';
@@ -187,13 +186,6 @@ watch(() => props.effect.type, (newType) => {
         </div>
       </template>
     </div>
-
-    <!-- Apply button -->
-    <Button
-      label="Apply Changes"
-      class="mt-4 w-full"
-      @click="emit('update:effect', effect)"
-    />
   </div>
 </template>
 

@@ -2,7 +2,6 @@
 import { ref, computed } from 'vue';
 import Slider from 'primevue/slider';
 import InputText from 'primevue/inputtext';
-import Button from 'primevue/button';
 
 const props = defineProps<{
   mask: { type: string; [key: string]: any };
@@ -177,13 +176,6 @@ initializeMask();
         </div>
       </div>
     </div>
-
-    <Button
-      v-if="mask.type !== 'none'"
-      label="Apply Changes"
-      class="mt-4 w-full"
-      @click="updateMask(mask)"
-    />
   </div>
 </template>
 

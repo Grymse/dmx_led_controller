@@ -230,16 +230,8 @@ const totalDuration = computed(() => {
 </script>
 
 <template>
-  <div class="w-full py-4 bg-gray-50 border-b border-gray-200">
+  <div class="w-full py-4 bg-gray-300 border-b border-gray-200">
     <div class="px-6">
-      <div class="flex items-center justify-between mb-3">
-        <div class="text-lg text-gray-600">
-          Program
-        </div>
-        <div class="text-sm text-gray-600">
-          Total Duration: {{ (totalDuration / 1000).toFixed(1) }}s
-        </div>
-      </div>
 
       <!-- Animation Modules Container with Drag Event Handling -->
       <div
