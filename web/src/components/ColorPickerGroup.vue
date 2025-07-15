@@ -103,7 +103,7 @@ const handleColorPickerChange = (index: number) => {
         <!-- Delete button (appears on hover) -->
         <Button
           icon="pi pi-trash"
-          class="p-button-danger p-button-sm absolute -bottom-4 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+          class="p-button-danger p-button-sm absolute -bottom-4 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
           @click="removeColor(index)"
           :disabled="internalColors.length <= 1"
           style="width: 1.5rem; height: 1.5rem; padding: 0.25rem"

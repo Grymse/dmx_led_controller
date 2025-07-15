@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import Button from 'primevue/button';
+import { ref, watch, computed } from 'vue';
+import Slider from 'primevue/slider';
+import InputText from 'primevue/inputtext';
 import ColorPickerGroup from './ColorPickerGroup.vue';
 
 const props = defineProps<{
@@ -9,24 +10,92 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:effect']);
 
-// Ensure colors are properly initialized
+// Define the configuration for each effect type
+const effectConfigs = {
+  'single': {
+    label: 'Single Color',
+    id: 0, // SingleColor = 0
+    params: [
+      { key: 'color', type: 'color', default: '#FF0000', required: true },
+    ]
+  },
+  'rainbow': {
+    label: 'Rainbow',
+    id: 1, // RainbowColor = 1
+    params: [
+      { key: 'duration', type: 'slider', default: 50, min: 1, max: 1000, step: 5, label: 'Duration', unit: 'ms', required: true },
+      { key: 'length', type: 'slider', default: 150, min: 1, max: 500, step: 5, label: 'Length', required: true }
+    ]
+  },
+  'sectionsWave': {
+    label: 'Sections Wave',
+    id: 2, // SectionsWaveColor = 2
+    params: [
+      { key: 'colors', type: 'colors', default: ['#FF0000'], required: true },
+      { key: 'duration', type: 'slider', default: 300, min: 50, max: 5000, step: 50, label: 'Duration', unit: 'ms', required: true }
+    ]
+  },
+  'sections': {
+    label: 'Sections',
+    id: 3, // SectionsColor = 3
+    params: [
+      { key: 'colors', type: 'colors', default: ['#FF0000'], required: true },
+      { key: 'duration', type: 'slider', default: 300, min: 50, max: 5000, step: 50, label: 'Duration', unit: 'ms', required: true }
+    ]
+  },
+  'fade': {
+    label: 'Fade',
+    id: 4, // FadeColor = 4
+    params: [
+      { key: 'colors', type: 'colors', default: ['#FF0000'], required: true },
+      { key: 'duration', type: 'slider', default: 300, min: 50, max: 5000, step: 50, label: 'Duration', unit: 'ms', required: true }
+    ]
+  },
+  'switch': {
+    label: 'Switch',
+    id: 5, // SwitchColor = 5
+    params: [
+      { key: 'colors', type: 'colors', default: ['#FF0000'], required: true },
+      { key: 'duration', type: 'slider', default: 300, min: 50, max: 5000, step: 50, label: 'Duration', unit: 'ms', required: true }
+    ]
+  }
+};
+
+// Generate effectTypes array for select dropdown
+const effectTypes = Object.entries(effectConfigs).map(([value, config]) => ({
+  value,
+  label: config.label
+}));
+
+// Get current effect configuration
+const currentEffectConfig = computed(() => {
+  return effectConfigs[props.effect.type] || null;
+});
+
+// Ensure effect has required parameters when type changes
 const initializeEffect = () => {
-  if (props.effect.type === 'fade' || props.effect.type === 'sections' || props.effect.type === 'sectionsWave' || props.effect.type === 'switch') {
-    if (!props.effect.colors || !Array.isArray(props.effect.colors)) {
-      props.effect.colors = ['#FF0000']; // Default red color
-    } else {
-      // Ensure all colors have # prefix
-      props.effect.colors = props.effect.colors.map((color: string) => {
-        return color.startsWith('#') ? color : `#${color}`;
-      });
+  const config = currentEffectConfig.value;
+  if (!config) return;
+
+  const updates: Record<string, any> = {};
+  let hasUpdates = false;
+
+  config.params.forEach(param => {
+    // Check if parameter exists and is valid
+    if (param.key === 'color' && (props.effect.color === undefined || typeof props.effect.color !== 'string')) {
+      updates.color = param.default;
+      hasUpdates = true;
+    } else if (param.key === 'colors' && (!props.effect.colors || !Array.isArray(props.effect.colors) || props.effect.colors.length === 0)) {
+      updates.colors = [...param.default];
+      hasUpdates = true;
+    } else if (param.key !== 'color' && param.key !== 'colors' && props.effect[param.key] === undefined) {
+      updates[param.key] = param.default;
+      hasUpdates = true;
     }
-  } else if (props.effect.type === 'single' && !props.effect.color) {
-    props.effect.color = '#FF0000'; // Default color for single color effect
-  } else if (props.effect.type === 'single' && typeof props.effect.color === 'string') {
-    // Ensure single color has # prefix
-    props.effect.color = props.effect.color.startsWith('#')
-      ? props.effect.color
-      : `#${props.effect.color}`;
+  });
+
+  if (hasUpdates) {
+    updateEffect(updates);
   }
 };
 
@@ -48,24 +117,9 @@ const updateColors = (colors: string[] | string) => {
   }
 };
 
-// Available effect types
-const effectTypes = [
-  { value: 'single', label: 'Single Color' },
-  { value: 'rainbow', label: 'Rainbow' },
-  { value: 'fade', label: 'Fade' },
-  { value: 'sections', label: 'Sections' },
-  { value: 'sectionsWave', label: 'Sections Wave' },
-  { value: 'switch', label: 'Switch' },
-];
-
 // Watch for effect type changes to initialize properties
 watch(() => props.effect.type, (newType) => {
-  if (newType === 'single' && !props.effect.color) {
-    updateEffect({ color: '#FF0000' });
-  } else if ((newType === 'fade' || newType === 'sections' || newType === 'sectionsWave' || newType === 'switch')
-            && (!props.effect.colors || !Array.isArray(props.effect.colors))) {
-    updateEffect({ colors: ['#FF0000'] });
-  }
+  initializeEffect();
 });
 </script>
 
@@ -84,65 +138,80 @@ watch(() => props.effect.type, (newType) => {
       </select>
     </div>
 
-    <!-- Single color effect -->
-    <div v-if="effect.type === 'single'" class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
-      <ColorPickerGroup
-        :colors="effect.color"
-        :multiple="false"
-        @update:colors="updateColors"
-      />
+    <!-- Dynamic parameters based on effect type -->
+    <div v-if="currentEffectConfig" class="mb-4">
+      <template v-for="param in currentEffectConfig.params" :key="param.key">
+        <!-- Color Parameter -->
+        <div v-if="param.key === 'color'" class="mb-3">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+          <ColorPickerGroup
+            :colors="effect.color || param.default"
+            :multiple="false"
+            @update:colors="updateColors"
+          />
+        </div>
+
+        <!-- Multiple Colors Parameter -->
+        <div v-else-if="param.key === 'colors'" class="mb-3">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Colors</label>
+          <ColorPickerGroup
+            :colors="effect.colors || param.default"
+            :multiple="true"
+            @update:colors="updateColors"
+          />
+        </div>
+
+        <!-- Slider Parameter -->
+        <div v-else-if="param.type === 'slider'" class="mb-3">
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            {{ param.label }}: {{ effect[param.key] || param.default }}{{ param.unit || '' }}
+          </label>
+          <div class="slider-container">
+            <InputText
+              v-model.number="effect[param.key]"
+              type="number"
+              :min="param.min"
+              :max="param.max"
+              class="w-24"
+            />
+            <Slider
+              v-model="effect[param.key]"
+              class="slider-component"
+              :min="param.min"
+              :max="param.max"
+              :step="param.step"
+              @change="updateEffect({ [param.key]: effect[param.key] })"
+            />
+          </div>
+        </div>
+      </template>
     </div>
-
-    <!-- Rainbow parameters -->
-    <div v-else-if="effect.type === 'rainbow'" class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-1">Duration (ms)</label>
-      <input
-        type="number"
-        class="w-full border border-gray-300 rounded-md p-2"
-        min="1"
-        v-model.number="effect.duration"
-        @change="updateEffect({ duration: effect.duration })"
-      />
-
-      <label class="block text-sm font-medium text-gray-700 mt-2 mb-1">Length</label>
-      <input
-        type="number"
-        class="w-full border border-gray-300 rounded-md p-2"
-        min="1"
-        v-model.number="effect.length"
-        @change="updateEffect({ length: effect.length })"
-      />
-    </div>
-
-    <!-- Multiple colors effects (fade, sections, sectionsWave, switch) -->
-    <div v-else-if="['fade', 'sections', 'sectionsWave', 'switch'].includes(effect.type)" class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-1">Colors</label>
-
-      <ColorPickerGroup
-        :colors="effect.colors"
-        :multiple="true"
-        @update:colors="updateColors"
-      />
-
-      <!-- Duration for fade/switch effects -->
-      <div v-if="['fade', 'switch'].includes(effect.type)" class="mt-4">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Duration (ms)</label>
-        <input
-          type="number"
-          class="w-full border border-gray-300 rounded-md p-2"
-          min="1"
-          v-model.number="effect.duration"
-          @change="updateEffect({ duration: effect.duration })"
-        />
-      </div>
-    </div>
-
-    <!-- Apply button -->
-    <Button
-      label="Apply Changes"
-      class="mt-4 w-full"
-      @click="emit('update:effect', effect)"
-    />
   </div>
 </template>
+
+<style scoped>
+/* Additional styling for slider components */
+:deep(.p-slider) {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+:deep(.p-inputtext) {
+  padding: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  width: 100%;
+}
+
+.slider-component {
+  flex: 1;
+  max-width: calc(100% - 6rem);
+  margin: 0 1.5rem 0 0.5rem; /* Add margin on both sides */
+}
+</style>
