@@ -18,6 +18,7 @@
 #include "dmx/dmx.h"
 #include "connectivity/serialization/message_decoder.h"
 #include "state/binary_store.h"
+#include "connectivity/name_generator.h"
 
 #define CE_PIN 0
 #define CSN_PIN 10
@@ -86,9 +87,7 @@ void setup() {
   }, 10000);
 
     const uint8_t defaultProgram[] = { 0xAA, 0xBB, 0xCC, 0xDD };
-    if (store.saveDefaultIfEmpty(defaultProgram, sizeof(defaultProgram))) {
-        printf("Default saved or already exists.\n");
-    }
+    store.saveDefaultIfEmpty(defaultProgram, sizeof(defaultProgram));
 }
 
 void loop() {
