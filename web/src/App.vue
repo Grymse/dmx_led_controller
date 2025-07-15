@@ -72,7 +72,7 @@ interface Module {
 const modules = ref<Module[]>([
   {
     id: 1,
-    name: 'Rainbow Wave',
+    name: 'Rainbow + Wave',
     duration: 2000,
     colorEffect: { type: 'rainbow', duration: 50, length: 150 },
     mask1: { type: 'wave', duration: 200, length: 300, gap: 100 },
@@ -80,7 +80,7 @@ const modules = ref<Module[]>([
   },
   {
     id: 2,
-    name: 'Fade Pulse',
+    name: 'Fade + Pulse',
     duration: 5000,
     colorEffect: {
       type: 'fade',
