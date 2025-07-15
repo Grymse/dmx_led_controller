@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import Slider from 'primevue/slider';
 import InputText from 'primevue/inputtext';
+import { convertTimeValues, ticksToMs, msToTicks } from '@/lib/timeUtils';
+
+// Constants for duration bounds (in ms)
+const MIN_DURATION_MS = 175; // 7 ticks * 25ms
+const MAX_DURATION_MS = 25000; // 1000 ticks * 25ms
 
 const props = defineProps<{
   mask: { type: string; [key: string]: any };
@@ -10,19 +15,34 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:mask']);
 
+// Create a local copy of the mask with ms values for the UI
+const uiMask = ref<Record<string, any>>({});
+
+// Watch for changes in the mask prop (which contains tick values)
+watch(() => props.mask, (newMask) => {
+  // Convert incoming tick values to ms for the UI
+  if (newMask) {
+    uiMask.value = convertTimeValues(newMask, false);
+  }
+}, { immediate: true, deep: true });
+
 // Handle updates to the mask
 const updateMask = (updates: any) => {
-  emit('update:mask', { ...props.mask, ...updates });
+  // Update the local UI version
+  uiMask.value = { ...uiMask.value, ...updates };
+
+  // Convert from ms back to ticks for the actual data model
+  const tickUpdates = convertTimeValues(updates, true);
+  emit('update:mask', { ...props.mask, ...tickUpdates });
 };
 
 // Define the configuration for each mask type
 const maskConfigs = {
-  // 'none' option removed
   'blink': {
     label: 'Blink',
     id: 50, // BlinkMask = 50
     params: [
-      { key: 'duration', type: 'slider', default: 500, min: 50, max: 5000, step: 50, label: 'Duration', unit: 'ms', required: true }
+      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
     ]
   },
   'invert': {
@@ -35,14 +55,14 @@ const maskConfigs = {
     id: 52, // PulseSawtoothMask = 52
     params: [
       { key: 'gap', type: 'slider', default: 150, min: 0, max: 500, step: 5, label: 'Gap', required: true },
-      { key: 'duration', type: 'slider', default: 500, min: 50, max: 5000, step: 50, label: 'Duration', unit: 'ms', required: true }
+      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
     ]
   },
   'pulse': {
     label: 'Pulse',
     id: 53, // PulseMask = 53
     params: [
-      { key: 'duration', type: 'slider', default: 500, min: 50, max: 5000, step: 50, label: 'Duration', unit: 'ms', required: true }
+      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
     ]
   },
   'sawtooth': {
@@ -51,21 +71,21 @@ const maskConfigs = {
     params: [
       { key: 'length', type: 'slider', default: 300, min: 1, max: 500, step: 5, label: 'Length', required: true },
       { key: 'gap', type: 'slider', default: 150, min: 0, max: 500, step: 5, label: 'Gap', required: true },
-      { key: 'duration', type: 'slider', default: 500, min: 50, max: 5000, step: 50, label: 'Duration', unit: 'ms', required: true }
+      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
     ]
   },
   'sectionsWave': {
     label: 'Sections Wave',
     id: 55, // SectionsWaveMask = 55
     params: [
-      { key: 'duration', type: 'slider', default: 500, min: 50, max: 5000, step: 50, label: 'Duration', unit: 'ms', required: true }
+      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
     ]
   },
   'sections': {
     label: 'Sections',
     id: 56, // SectionsMask = 56
     params: [
-      { key: 'duration', type: 'slider', default: 500, min: 50, max: 5000, step: 50, label: 'Duration', unit: 'ms', required: true }
+      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
     ]
   },
   'stars': {
@@ -83,16 +103,9 @@ const maskConfigs = {
     params: [
       { key: 'length', type: 'slider', default: 100, min: 1, max: 500, step: 5, label: 'Length', required: true },
       { key: 'gap', type: 'slider', default: 0, min: 0, max: 500, step: 5, label: 'Gap', required: true },
-      { key: 'duration', type: 'slider', default: 500, min: 50, max: 5000, step: 50, label: 'Duration', unit: 'ms', required: true }
+      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
     ]
   }
-};
-
-// Default fallback configuration for unknown types
-const defaultConfig = {
-  label: 'Unknown',
-  id: -1,
-  params: []
 };
 
 // Generate maskTypes array for select dropdown
@@ -103,21 +116,32 @@ const maskTypes = Object.entries(maskConfigs).map(([value, config]) => ({
 
 // Get current mask configuration
 const currentMaskConfig = computed(() => {
-  return maskConfigs[props.mask.type] || defaultConfig;
+  return maskConfigs[uiMask.value.type] || null;
 });
 
 // Ensure mask has required parameters when type changes
 const initializeMask = () => {
   const config = currentMaskConfig.value;
+  if (!config) return;
 
   const updates: Record<string, any> = {};
   let hasUpdates = false;
 
   config.params.forEach(param => {
-    // Check if parameter exists
-    if (props.mask[param.key] === undefined) {
+    // Check if parameter exists and set to default if not
+    if (uiMask.value[param.key] === undefined) {
       updates[param.key] = param.default;
       hasUpdates = true;
+    }
+    // Ensure duration is within bounds
+    else if (param.key === 'duration') {
+      if (uiMask.value.duration < MIN_DURATION_MS) {
+        updates.duration = MIN_DURATION_MS;
+        hasUpdates = true;
+      } else if (uiMask.value.duration > MAX_DURATION_MS) {
+        updates.duration = MAX_DURATION_MS;
+        hasUpdates = true;
+      }
     }
   });
 
@@ -126,26 +150,20 @@ const initializeMask = () => {
   }
 };
 
-// Helper to ensure we have default values
-const getNumericValue = (value: any, defaultValue: number): number => {
-  if (value === undefined || value === null || isNaN(Number(value))) {
-    return defaultValue;
-  }
-  return Number(value);
-};
-
-// Initialize mask parameters on component creation
-initializeMask();
+// Watch for mask type changes to initialize properties
+watch(() => uiMask.value.type, () => {
+  initializeMask();
+}, { immediate: true });
 </script>
 
 <template>
   <div>
     <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-1">{{ title }} Type</label>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Mask Type</label>
       <select
         class="w-full border border-gray-300 rounded-md p-2"
-        v-model="mask.type"
-        @change="updateMask({ type: $event.target.value }); initializeMask();"
+        v-model="uiMask.type"
+        @change="updateMask({ type: $event.target.value })"
       >
         <option v-for="type in maskTypes" :key="type.value" :value="type.value">
           {{ type.label }}
@@ -154,57 +172,47 @@ initializeMask();
     </div>
 
     <!-- Dynamic parameters based on mask type -->
-    <div class="mb-4">
-      <!-- Render each parameter based on its type -->
-      <div v-for="param in currentMaskConfig.params" :key="param.key" class="mb-3">
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          {{ param.label }}: {{ mask[param.key] || param.default }}{{ param.unit || '' }}
-        </label>
-        <div class="slider-container">
-          <InputText
-            v-model.number="mask[param.key]"
-            type="number"
-            :min="param.min"
-            :max="param.max"
-            class="w-24"
-          />
-          <Slider
-            v-model="mask[param.key]"
-            class="slider-component"
-            :min="param.min"
-            :max="param.max"
-            :step="param.step"
-            @change="updateMask({ [param.key]: mask[param.key] })"
-          />
+    <div v-if="currentMaskConfig" class="mb-4">
+      <template v-for="param in currentMaskConfig.params" :key="param.key">
+        <!-- Slider Parameter -->
+        <div v-if="param.type === 'slider'" class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            {{ param.label }}{{ param.unit ? ' (' + param.unit + ')' : '' }}
+          </label>
+          <div class="flex items-center space-x-3">
+            <InputText
+              v-model.number="uiMask[param.key]"
+              type="number"
+              :min="param.min"
+              :max="param.max"
+              class="w-20"
+              @change="updateMask({ [param.key]: uiMask[param.key] })"
+            />
+            <div class="slider-container">
+              <Slider
+                v-model="uiMask[param.key]"
+                :min="param.min"
+                :max="param.max"
+                :step="param.step"
+                @change="updateMask({ [param.key]: uiMask[param.key] })"
+                class="slider-component"
+              />
+            </div>
+          </div>
         </div>
-      </div>
+      </template>
     </div>
   </div>
 </template>
 
 <style scoped>
-/* Additional styling for slider components */
-:deep(.p-slider) {
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-:deep(.p-inputtext) {
-  padding: 0.5rem;
-  font-size: 0.875rem;
-}
-
 .slider-container {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0.5rem 0;
-  width: 100%;
+  flex: 1;
+  padding: 0 8px;
+  max-width: calc(100% - 100px);
 }
 
 .slider-component {
-  flex: 1;
-  max-width: calc(100% - 6rem);
-  margin: 0 1.5rem 0 0.5rem; /* Add margin on both sides */
+  width: 100%;
 }
 </style>

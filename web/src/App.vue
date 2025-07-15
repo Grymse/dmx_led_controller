@@ -7,6 +7,9 @@ import ModuleSequence from "@/components/ModuleSequence.vue";
 import Button from 'primevue/button';
 import Chip from 'primevue/chip';
 
+// To this:
+import { ticksToMs, msToTicks, hexColorToUint32} from './lib/timeUtils';
+
 // Define the types based on the Protocol structure
 enum Direction {
   FORWARD = 0,
@@ -120,57 +123,6 @@ const formatDuration = (ms: number) => {
   return `${seconds}s`;
 };
 
-// Protocol structure for the sequence
-const currentSequence = computed<Sequence>(() => {
-  // Map UI modules to protocol animations
-  const animations: Animation[] = modules.value.map(module => {
-    // Create layers array from color effect and masks
-    const layers: Layer[] = [];
-
-    // Add color effect layer
-    if (module.colorEffect) {
-      const colorLayer = convertUILayerToProtocol(module.colorEffect);
-      if (colorLayer) layers.push(colorLayer);
-    }
-
-    // Add mask1 layer if present
-    if (module.mask1) {
-      const maskLayer = convertUILayerToProtocol(module.mask1);
-      if (maskLayer) layers.push(maskLayer);
-    }
-
-    // Add mask2 layer if present
-    if (module.mask2) {
-      const maskLayer = convertUILayerToProtocol(module.mask2);
-      if (maskLayer) layers.push(maskLayer);
-    }
-
-    // Create animation with layers
-    return {
-      direction: Direction.FORWARD, // Default to forward
-      duration: module.duration,
-      brightness: 255, // Default to full brightness
-      layers
-    };
-  });
-
-  return { animations };
-});
-
-// Helper function to convert hex color to uint32
-function hexColorToUint32(hexColor: string): number {
-  // Remove # if present
-  hexColor = hexColor.replace('#', '');
-
-  // Parse as RGB
-  const r = parseInt(hexColor.substring(0, 2), 16);
-  const g = parseInt(hexColor.substring(2, 4), 16);
-  const b = parseInt(hexColor.substring(4, 6), 16);
-
-  // Pack into uint32 (0xRRGGBB)
-  return (r << 16) | (g << 8) | b;
-}
-
 // Helper function to convert UI layer (color effect or mask) to protocol Layer
 function convertUILayerToProtocol(uiLayer: { type: string; [key: string]: any }): Layer | null {
   // Get the protocol layer type
@@ -204,6 +156,46 @@ function convertUILayerToProtocol(uiLayer: { type: string; [key: string]: any })
   return layer;
 }
 
+// Add this function to the App.vue component
+function convertUIModulesToProtocol(uiModules: Module[]): Animation[] {
+  return uiModules.map(module => {
+    // Create layers array from color effect and masks
+    const layers: Layer[] = [];
+
+    // Add color effect layer
+    if (module.colorEffect) {
+      const colorLayer = convertUILayerToProtocol(module.colorEffect);
+      if (colorLayer) layers.push(colorLayer);
+    }
+
+    // Add mask1 layer if present
+    if (module.mask1) {
+      const maskLayer = convertUILayerToProtocol(module.mask1);
+      if (maskLayer) layers.push(maskLayer);
+    }
+
+    // Add mask2 layer if present
+    if (module.mask2) {
+      const maskLayer = convertUILayerToProtocol(module.mask2);
+      if (maskLayer) layers.push(maskLayer);
+    }
+
+    // Create animation with layers
+    return {
+      direction: Direction.FORWARD, // Default to forward
+      duration: msToTicks(module.duration), // Convert ms to ticks
+      brightness: 255, // Default to full brightness
+      layers
+    };
+  });
+}
+
+// Update the currentSequence computed property
+const currentSequence = computed<Sequence>(() => {
+  const animations = convertUIModulesToProtocol(modules.value);
+  return { animations };
+});
+
 // Handlers for module sequence events
 const handleUpdateModules = (newModules: Module[]) => {
   modules.value = newModules;
@@ -228,6 +220,7 @@ const handleSelectModule = (id: number) => {
   }
 };
 
+// When adding a new module, ensure the duration is in ms
 const handleAddModule = () => {
   const newId = modules.value.length > 0
     ? Math.max(...modules.value.map(m => m.id)) + 1
@@ -236,10 +229,10 @@ const handleAddModule = () => {
   const newModule = {
     id: newId,
     name: `New Module ${newId}`,
-    duration: 2000,
+    duration: 2000, // This is already in ms for the UI
     colorEffect: { type: 'single', color: '#FF0000' },
-    mask1: null, // Start with no mask instead of "none" type
-    mask2: null  // No mask in second slot by default
+    mask1: null,
+    mask2: null
   };
 
   // Store previous active module
@@ -280,10 +273,11 @@ const handleRemoveModule = (id: number) => {
   }
 };
 
-const handleUpdateDuration = (id: number, duration: number) => {
+// Update the handleUpdateDuration function
+const handleUpdateDuration = (id: number, durationMs: number) => {
   const moduleIndex = modules.value.findIndex(m => m.id === id);
   if (moduleIndex !== -1) {
-    modules.value[moduleIndex].duration = duration;
+    modules.value[moduleIndex].duration = durationMs; // Store as ms in UI
   }
 };
 

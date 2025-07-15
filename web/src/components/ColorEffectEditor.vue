@@ -3,12 +3,28 @@ import { ref, watch, computed } from 'vue';
 import Slider from 'primevue/slider';
 import InputText from 'primevue/inputtext';
 import ColorPickerGroup from './ColorPickerGroup.vue';
+import { convertTimeValues, ticksToMs, msToTicks } from '@/lib/timeUtils';
+
+// Constants for duration bounds (in ms)
+const MIN_DURATION_MS = 175; // 7 ticks * 25ms
+const MAX_DURATION_MS = 25000; // 1000 ticks * 25ms
 
 const props = defineProps<{
   effect: { type: string; [key: string]: any };
 }>();
 
 const emit = defineEmits(['update:effect']);
+
+// Create a local copy of the effect with ms values for the UI
+const uiEffect = ref<Record<string, any>>({});
+
+// Watch for changes in the effect prop (which contains tick values)
+watch(() => props.effect, (newEffect) => {
+  // Convert incoming tick values to ms for the UI
+  if (newEffect) {
+    uiEffect.value = convertTimeValues(newEffect, false);
+  }
+}, { immediate: true, deep: true });
 
 // Define the configuration for each effect type
 const effectConfigs = {
@@ -23,7 +39,7 @@ const effectConfigs = {
     label: 'Rainbow',
     id: 1, // RainbowColor = 1
     params: [
-      { key: 'duration', type: 'slider', default: 50, min: 1, max: 1000, step: 5, label: 'Duration', unit: 'ms', required: true },
+      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true },
       { key: 'length', type: 'slider', default: 150, min: 1, max: 500, step: 5, label: 'Length', required: true }
     ]
   },
@@ -32,7 +48,7 @@ const effectConfigs = {
     id: 2, // SectionsWaveColor = 2
     params: [
       { key: 'colors', type: 'colors', default: ['#FF0000'], required: true },
-      { key: 'duration', type: 'slider', default: 300, min: 50, max: 5000, step: 50, label: 'Duration', unit: 'ms', required: true }
+      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
     ]
   },
   'sections': {
@@ -40,7 +56,7 @@ const effectConfigs = {
     id: 3, // SectionsColor = 3
     params: [
       { key: 'colors', type: 'colors', default: ['#FF0000'], required: true },
-      { key: 'duration', type: 'slider', default: 300, min: 50, max: 5000, step: 50, label: 'Duration', unit: 'ms', required: true }
+      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
     ]
   },
   'fade': {
@@ -48,7 +64,7 @@ const effectConfigs = {
     id: 4, // FadeColor = 4
     params: [
       { key: 'colors', type: 'colors', default: ['#FF0000'], required: true },
-      { key: 'duration', type: 'slider', default: 300, min: 50, max: 5000, step: 50, label: 'Duration', unit: 'ms', required: true }
+      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
     ]
   },
   'switch': {
@@ -56,7 +72,7 @@ const effectConfigs = {
     id: 5, // SwitchColor = 5
     params: [
       { key: 'colors', type: 'colors', default: ['#FF0000'], required: true },
-      { key: 'duration', type: 'slider', default: 300, min: 50, max: 5000, step: 50, label: 'Duration', unit: 'ms', required: true }
+      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
     ]
   }
 };
@@ -69,8 +85,18 @@ const effectTypes = Object.entries(effectConfigs).map(([value, config]) => ({
 
 // Get current effect configuration
 const currentEffectConfig = computed(() => {
-  return effectConfigs[props.effect.type] || null;
+  return effectConfigs[uiEffect.value.type] || null;
 });
+
+// Handle updates to the effect
+const updateEffect = (updates: any) => {
+  // Update the local UI version
+  uiEffect.value = { ...uiEffect.value, ...updates };
+
+  // Convert time values from ms back to ticks for the actual data model
+  const tickUpdates = convertTimeValues(updates, true);
+  emit('update:effect', { ...props.effect, ...tickUpdates });
+};
 
 // Ensure effect has required parameters when type changes
 const initializeEffect = () => {
@@ -82,15 +108,25 @@ const initializeEffect = () => {
 
   config.params.forEach(param => {
     // Check if parameter exists and is valid
-    if (param.key === 'color' && (props.effect.color === undefined || typeof props.effect.color !== 'string')) {
+    if (param.key === 'color' && (uiEffect.value.color === undefined || typeof uiEffect.value.color !== 'string')) {
       updates.color = param.default;
       hasUpdates = true;
-    } else if (param.key === 'colors' && (!props.effect.colors || !Array.isArray(props.effect.colors) || props.effect.colors.length === 0)) {
+    } else if (param.key === 'colors' && (!uiEffect.value.colors || !Array.isArray(uiEffect.value.colors) || uiEffect.value.colors.length === 0)) {
       updates.colors = [...param.default];
       hasUpdates = true;
-    } else if (param.key !== 'color' && param.key !== 'colors' && props.effect[param.key] === undefined) {
+    } else if (param.key !== 'color' && param.key !== 'colors' && uiEffect.value[param.key] === undefined) {
       updates[param.key] = param.default;
       hasUpdates = true;
+    }
+    // Ensure duration is within bounds
+    else if (param.key === 'duration') {
+      if (uiEffect.value.duration < MIN_DURATION_MS) {
+        updates.duration = MIN_DURATION_MS;
+        hasUpdates = true;
+      } else if (uiEffect.value.duration > MAX_DURATION_MS) {
+        updates.duration = MAX_DURATION_MS;
+        hasUpdates = true;
+      }
     }
   });
 
@@ -99,18 +135,9 @@ const initializeEffect = () => {
   }
 };
 
-// Initialize on component creation
-initializeEffect();
-
-// Handle updates to the effect
-const updateEffect = (updates: any) => {
-  const updatedEffect = { ...props.effect, ...updates };
-  emit('update:effect', updatedEffect);
-};
-
 // Handle color updates from ColorPickerGroup
 const updateColors = (colors: string[] | string) => {
-  if (props.effect.type === 'single') {
+  if (uiEffect.value.type === 'single') {
     updateEffect({ color: colors });
   } else if (Array.isArray(colors)) {
     updateEffect({ colors });
@@ -118,9 +145,9 @@ const updateColors = (colors: string[] | string) => {
 };
 
 // Watch for effect type changes to initialize properties
-watch(() => props.effect.type, (newType) => {
+watch(() => uiEffect.value.type, () => {
   initializeEffect();
-});
+}, { immediate: true });
 </script>
 
 <template>
@@ -129,7 +156,7 @@ watch(() => props.effect.type, (newType) => {
       <label class="block text-sm font-medium text-gray-700 mb-1">Effect Type</label>
       <select
         class="w-full border border-gray-300 rounded-md p-2"
-        v-model="effect.type"
+        v-model="uiEffect.type"
         @change="updateEffect({ type: $event.target.value })"
       >
         <option v-for="type in effectTypes" :key="type.value" :value="type.value">
@@ -142,46 +169,49 @@ watch(() => props.effect.type, (newType) => {
     <div v-if="currentEffectConfig" class="mb-4">
       <template v-for="param in currentEffectConfig.params" :key="param.key">
         <!-- Color Parameter -->
-        <div v-if="param.key === 'color'" class="mb-3">
+        <div v-if="param.key === 'color'" class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
           <ColorPickerGroup
-            :colors="effect.color || param.default"
+            :colors="uiEffect.color || param.default"
             :multiple="false"
             @update:colors="updateColors"
           />
         </div>
 
         <!-- Multiple Colors Parameter -->
-        <div v-else-if="param.key === 'colors'" class="mb-3">
+        <div v-else-if="param.key === 'colors'" class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-1">Colors</label>
           <ColorPickerGroup
-            :colors="effect.colors || param.default"
+            :colors="uiEffect.colors || param.default"
             :multiple="true"
             @update:colors="updateColors"
           />
         </div>
 
         <!-- Slider Parameter -->
-        <div v-else-if="param.type === 'slider'" class="mb-3">
+        <div v-else-if="param.type === 'slider'" class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            {{ param.label }}: {{ effect[param.key] || param.default }}{{ param.unit || '' }}
+            {{ param.label }}{{ param.unit ? ' (' + param.unit + ')' : '' }}
           </label>
-          <div class="slider-container">
+          <div class="flex items-center space-x-3">
             <InputText
-              v-model.number="effect[param.key]"
+              v-model.number="uiEffect[param.key]"
               type="number"
               :min="param.min"
               :max="param.max"
-              class="w-24"
+              class="w-20"
+              @change="updateEffect({ [param.key]: uiEffect[param.key] })"
             />
-            <Slider
-              v-model="effect[param.key]"
-              class="slider-component"
-              :min="param.min"
-              :max="param.max"
-              :step="param.step"
-              @change="updateEffect({ [param.key]: effect[param.key] })"
-            />
+            <div class="slider-container">
+              <Slider
+                v-model="uiEffect[param.key]"
+                :min="param.min"
+                :max="param.max"
+                :step="param.step"
+                @change="updateEffect({ [param.key]: uiEffect[param.key] })"
+                class="slider-component"
+              />
+            </div>
           </div>
         </div>
       </template>
@@ -190,28 +220,13 @@ watch(() => props.effect.type, (newType) => {
 </template>
 
 <style scoped>
-/* Additional styling for slider components */
-:deep(.p-slider) {
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-:deep(.p-inputtext) {
-  padding: 0.5rem;
-  font-size: 0.875rem;
-}
-
 .slider-container {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0.5rem 0;
-  width: 100%;
+  flex: 1;
+  padding: 0 8px;
+  max-width: calc(100% - 100px);
 }
 
 .slider-component {
-  flex: 1;
-  max-width: calc(100% - 6rem);
-  margin: 0 1.5rem 0 0.5rem; /* Add margin on both sides */
+  width: 100%;
 }
 </style>
