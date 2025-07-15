@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import Button from 'primevue/button';
+import Slider from 'primevue/slider';
+import InputText from 'primevue/inputtext';
 import ColorPickerGroup from './ColorPickerGroup.vue';
 
 const props = defineProps<{
@@ -96,23 +98,21 @@ watch(() => props.effect.type, (newType) => {
 
     <!-- Rainbow parameters -->
     <div v-else-if="effect.type === 'rainbow'" class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-1">Duration (ms)</label>
-      <input
-        type="number"
-        class="w-full border border-gray-300 rounded-md p-2"
-        min="1"
-        v-model.number="effect.duration"
-        @change="updateEffect({ duration: effect.duration })"
-      />
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Duration: {{ effect.duration || 50 }}ms</label>
+        <div class="slider-container">
+          <InputText v-model.number="effect.duration" type="number" min="1" max="1000" class="w-24" />
+          <Slider v-model="effect.duration" class="slider-component" :min="1" :max="1000" :step="5" @change="updateEffect({ duration: effect.duration })" />
+        </div>
+      </div>
 
-      <label class="block text-sm font-medium text-gray-700 mt-2 mb-1">Length</label>
-      <input
-        type="number"
-        class="w-full border border-gray-300 rounded-md p-2"
-        min="1"
-        v-model.number="effect.length"
-        @change="updateEffect({ length: effect.length })"
-      />
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Length: {{ effect.length || 150 }}</label>
+        <div class="slider-container">
+          <InputText v-model.number="effect.length" type="number" min="1" max="500" class="w-24" />
+          <Slider v-model="effect.length" class="slider-component" :min="1" :max="500" :step="5" @change="updateEffect({ length: effect.length })" />
+        </div>
+      </div>
     </div>
 
     <!-- Multiple colors effects (fade, sections, sectionsWave, switch) -->
@@ -127,14 +127,11 @@ watch(() => props.effect.type, (newType) => {
 
       <!-- Duration for fade/switch effects -->
       <div v-if="['fade', 'switch'].includes(effect.type)" class="mt-4">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Duration (ms)</label>
-        <input
-          type="number"
-          class="w-full border border-gray-300 rounded-md p-2"
-          min="1"
-          v-model.number="effect.duration"
-          @change="updateEffect({ duration: effect.duration })"
-        />
+        <label class="block text-sm font-medium text-gray-700 mb-1">Duration: {{ effect.duration || 300 }}ms</label>
+        <div class="slider-container">
+          <InputText v-model.number="effect.duration" type="number" min="50" max="5000" class="w-24" />
+          <Slider v-model="effect.duration" class="slider-component" :min="50" :max="5000" :step="50" @change="updateEffect({ duration: effect.duration })" />
+        </div>
       </div>
     </div>
 
@@ -146,3 +143,30 @@ watch(() => props.effect.type, (newType) => {
     />
   </div>
 </template>
+
+<style scoped>
+/* Additional styling for slider components */
+:deep(.p-slider) {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+:deep(.p-inputtext) {
+  padding: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  width: 100%;
+}
+
+.slider-component {
+  flex: 1;
+  max-width: calc(100% - 6rem);
+  margin: 0 1.5rem 0 0.5rem; /* Add margin on both sides */
+}
+</style>
