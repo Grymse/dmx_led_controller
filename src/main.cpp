@@ -17,6 +17,7 @@
 #include "leds/generators/generators.h"
 #include "dmx/dmx.h"
 #include "connectivity/serialization/message_decoder.h"
+#include "state/binary_store.h"
 
 #define CE_PIN 0
 #define CSN_PIN 10
