@@ -363,7 +363,7 @@ watch(currentSequence, (newSequence) => {
         <!-- Module Sequence Header -->
         <div class="p-4 flex justify-between items-center">
           <div class="flex items-center">
-            <h1 class="text-2xl font-bold">Animation Sequence</h1>
+            <h1 class="text-2xl font-bold">Sequence</h1>
             <span class="ml-4 px-3 py-1 bg-gray-100 rounded-full text-gray-700">
               Total Duration: {{ formatDuration(totalDuration) }}
             </span>
@@ -380,7 +380,7 @@ watch(currentSequence, (newSequence) => {
             <!-- Button Group for Controls -->
             <div class="flex">
               <Button class="mr-2" label="Play" icon="pi pi-play" @click="play" />
-              <Button label="Save" icon="pi pi-save" @click="playAndSave" />
+              <Button label="Play and Save" icon="pi pi-save" @click="playAndSave" />
             </div>
           </div>
         </div>
