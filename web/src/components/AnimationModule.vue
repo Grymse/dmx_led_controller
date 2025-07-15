@@ -75,8 +75,10 @@ const colorsToDisplay = computed(() => {
 
 <template>
   <div
-    class="relative px-4 py-3 rounded-md cursor-pointer transition-all duration-200 flex items-center gap-3"
-    :class="isActive ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'"
+    class="relative px-4 py-3 rounded-md cursor-pointer transition-all duration-200 flex items-center gap-3 border"
+    :class="isActive
+      ? 'border-indigo-400 bg-indigo-50 text-indigo-900 shadow-sm'
+      : 'border-gray-300 bg-gray-100 hover:bg-gray-200'"
     @click="handleClick"
   >
     <!-- Module name -->
@@ -99,7 +101,9 @@ const colorsToDisplay = computed(() => {
         :value="duration"
         @change="updateDuration"
         class="text-sm border rounded px-2 py-1"
-        :class="isActive ? 'bg-blue-600 text-white border-blue-400' : 'bg-white text-gray-800 border-gray-300'"
+        :class="isActive
+          ? 'bg-indigo-100 text-indigo-900 border-indigo-300'
+          : 'bg-white text-gray-800 border-gray-300'"
       >
         <option value="500">0.5s</option>
         <option value="1000">1s</option>
@@ -115,7 +119,9 @@ const colorsToDisplay = computed(() => {
     <!-- Remove button -->
     <button
       class="w-5 h-5 rounded-full flex items-center justify-center text-xs hover:bg-red-600 hover:text-white transition-colors"
-      :class="isActive ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'"
+      :class="isActive
+        ? 'bg-indigo-200 text-indigo-800'
+        : 'bg-gray-200 text-gray-600'"
       @click="handleRemove"
     >
       ×

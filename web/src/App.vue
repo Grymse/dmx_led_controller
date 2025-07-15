@@ -139,18 +139,20 @@ const totalDuration = computed(() => {
 <template>
   <main class="w-screen h-screen flex flex-col">
     <!-- Fixed position container for BluetoothMenu -->
-    <div class="fixed top-4 right-4 z-50">
+    <div class="fixed top-2 right-4 z-50">
       <BluetoothMenu />
     </div>
 
     <!-- Main centered container with 80% width -->
-    <div class="w-4/5 mx-auto flex flex-col flex-grow my-4">
+    <div class="w-4/5 mx-auto flex flex-col flex-grow mt-12">
       <div class="flex flex-col bg-white rounded-lg shadow-md flex-grow overflow-hidden">
         <!-- Top Row with Animation Modules -->
-        <div class="w-full py-4 bg-gray-100 border-b border-gray-200">
+        <div class="w-full py-4 bg-gray-50 border-b border-gray-200">
           <div class="px-6">
             <div class="flex items-center justify-between mb-3">
-              <div class="text-2xl">DMX LED Controller</div>
+              <div class="text-lg text-gray-600">
+                Program
+              </div>
               <div class="text-sm text-gray-600">
                 Total Duration: {{ (totalDuration / 1000).toFixed(1) }}s
               </div>
