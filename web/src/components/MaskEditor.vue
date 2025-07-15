@@ -2,11 +2,12 @@
 import { ref, computed, watch } from 'vue';
 import Slider from 'primevue/slider';
 import InputText from 'primevue/inputtext';
+import Dropdown from 'primevue/dropdown';
 import { convertTimeValues, ticksToMs, msToTicks } from '@/lib/timeUtils';
 
 // Constants for duration bounds (in ms)
 const MIN_DURATION_MS = 175; // 7 ticks * 25ms
-const MAX_DURATION_MS = 25000; // 1000 ticks * 25ms
+const MAX_DURATION_MS = 50000; // 2000 ticks * 25ms
 
 const props = defineProps<{
   mask: { type: string; [key: string]: any };
@@ -40,6 +41,7 @@ const updateMask = (updates: any) => {
 const maskConfigs = {
   'blink': {
     label: 'Blink',
+    icon: 'pi pi-eye',
     id: 50, // BlinkMask = 50
     params: [
       { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
@@ -47,11 +49,13 @@ const maskConfigs = {
   },
   'invert': {
     label: 'Invert',
+    icon: 'pi pi-sync-alt',
     id: 51, // InvertMask = 51
     params: [] // No parameters needed for invert
   },
   'pulseSawtooth': {
     label: 'Pulse Sawtooth',
+    icon: 'pi pi-chart-line',
     id: 52, // PulseSawtoothMask = 52
     params: [
       { key: 'gap', type: 'slider', default: 150, min: 0, max: 500, step: 5, label: 'Gap', required: true },
@@ -60,6 +64,7 @@ const maskConfigs = {
   },
   'pulse': {
     label: 'Pulse',
+    icon: 'pi pi-heart',
     id: 53, // PulseMask = 53
     params: [
       { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
@@ -67,6 +72,7 @@ const maskConfigs = {
   },
   'sawtooth': {
     label: 'Sawtooth',
+    icon: 'pi pi-chart-bar',
     id: 54, // SawtoothMask = 54
     params: [
       { key: 'length', type: 'slider', default: 300, min: 1, max: 500, step: 5, label: 'Length', required: true },
@@ -76,6 +82,7 @@ const maskConfigs = {
   },
   'sectionsWave': {
     label: 'Sections Wave',
+    icon: 'pi pi-sliders-h',
     id: 55, // SectionsWaveMask = 55
     params: [
       { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
@@ -83,6 +90,7 @@ const maskConfigs = {
   },
   'sections': {
     label: 'Sections',
+    icon: 'pi pi-table',
     id: 56, // SectionsMask = 56
     params: [
       { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
@@ -90,6 +98,7 @@ const maskConfigs = {
   },
   'stars': {
     label: 'Stars',
+    icon: 'pi pi-star',
     id: 57, // StarsMask = 57
     params: [
       { key: 'frequency', type: 'slider', default: 100, min: 1, max: 1000, step: 10, label: 'Frequency', required: true },
@@ -99,6 +108,7 @@ const maskConfigs = {
   },
   'wave': {
     label: 'Wave',
+    icon: 'pi pi-arrow-right-arrow-left',
     id: 58, // WaveMask = 58
     params: [
       { key: 'length', type: 'slider', default: 100, min: 1, max: 500, step: 5, label: 'Length', required: true },
@@ -111,7 +121,8 @@ const maskConfigs = {
 // Generate maskTypes array for select dropdown
 const maskTypes = Object.entries(maskConfigs).map(([value, config]) => ({
   value,
-  label: config.label
+  label: config.label,
+  icon: config.icon
 }));
 
 // Get current mask configuration
@@ -154,21 +165,57 @@ const initializeMask = () => {
 watch(() => uiMask.value.type, () => {
   initializeMask();
 }, { immediate: true });
+
+// Handle dropdown change
+const handleDropdownChange = (event: any) => {
+  updateMask({ type: event.value });
+};
+
+function getIconForParam(paramKey: string) {
+  switch (paramKey) {
+    case 'duration':
+      return 'pi pi-clock';
+    case 'length':
+      return 'pi pi-arrows-h';
+    case 'gap':
+      return 'pi pi-align-justify';
+    case 'frequency':
+      return 'pi pi-chart-line';
+    case 'speed':
+      return 'pi pi-bolt';
+    default:
+      return 'pi pi-sliders-v';
+  }
+}
 </script>
 
 <template>
   <div>
     <div class="mb-4">
       <label class="block text-sm font-medium text-gray-700 mb-1">Mask Type</label>
-      <select
-        class="w-full border border-gray-300 rounded-md p-2"
+      <Dropdown
         v-model="uiMask.type"
-        @change="updateMask({ type: $event.target.value })"
+        :options="maskTypes"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Select a Mask"
+        class="w-full"
+        @change="handleDropdownChange"
       >
-        <option v-for="type in maskTypes" :key="type.value" :value="type.value">
-          {{ type.label }}
-        </option>
-      </select>
+        <template #value="slotProps">
+          <div v-if="slotProps.value" class="flex items-center gap-2">
+            <i :class="maskConfigs[slotProps.value].icon" style="font-size: 1rem"></i>
+            <div>{{ maskConfigs[slotProps.value].label }}</div>
+          </div>
+          <span v-else>Select a Mask</span>
+        </template>
+        <template #option="slotProps">
+          <div class="flex items-center gap-2">
+            <i :class="slotProps.option.icon" style="font-size: 1rem"></i>
+            <div>{{ slotProps.option.label }}</div>
+          </div>
+        </template>
+      </Dropdown>
     </div>
 
     <!-- Dynamic parameters based on mask type -->
@@ -177,6 +224,7 @@ watch(() => uiMask.value.type, () => {
         <!-- Slider Parameter -->
         <div v-if="param.type === 'slider'" class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-1">
+            <i :class="getIconForParam(param.key)" class="mr-1"></i>
             {{ param.label }}{{ param.unit ? ' (' + param.unit + ')' : '' }}
           </label>
           <div class="flex items-center space-x-3">
@@ -214,5 +262,14 @@ watch(() => uiMask.value.type, () => {
 
 .slider-component {
   width: 100%;
+}
+
+:deep(.p-dropdown) {
+  width: 100%;
+}
+
+:deep(.p-dropdown-item) {
+  display: flex;
+  align-items: center;
 }
 </style>

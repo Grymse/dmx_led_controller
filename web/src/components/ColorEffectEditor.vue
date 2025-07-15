@@ -2,12 +2,13 @@
 import { ref, watch, computed } from 'vue';
 import Slider from 'primevue/slider';
 import InputText from 'primevue/inputtext';
+import Dropdown from 'primevue/dropdown';
 import ColorPickerGroup from './ColorPickerGroup.vue';
 import { convertTimeValues, ticksToMs, msToTicks } from '@/lib/timeUtils';
 
 // Constants for duration bounds (in ms)
 const MIN_DURATION_MS = 175; // 7 ticks * 25ms
-const MAX_DURATION_MS = 25000; // 1000 ticks * 25ms
+const MAX_DURATION_MS = 50000; // 2000 ticks * 25ms
 
 const props = defineProps<{
   effect: { type: string; [key: string]: any };
@@ -30,6 +31,7 @@ watch(() => props.effect, (newEffect) => {
 const effectConfigs = {
   'single': {
     label: 'Single Color',
+    icon: 'pi pi-circle-fill',
     id: 0, // SingleColor = 0
     params: [
       { key: 'color', type: 'color', default: '#FF0000', required: true },
@@ -37,6 +39,7 @@ const effectConfigs = {
   },
   'rainbow': {
     label: 'Rainbow',
+    icon: 'pi pi-palette',
     id: 1, // RainbowColor = 1
     params: [
       { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true },
@@ -45,6 +48,7 @@ const effectConfigs = {
   },
   'sectionsWave': {
     label: 'Sections Wave',
+    icon: 'pi pi-sliders-h',
     id: 2, // SectionsWaveColor = 2
     params: [
       { key: 'colors', type: 'colors', default: ['#FF0000'], required: true },
@@ -53,6 +57,7 @@ const effectConfigs = {
   },
   'sections': {
     label: 'Sections',
+    icon: 'pi pi-table',
     id: 3, // SectionsColor = 3
     params: [
       { key: 'colors', type: 'colors', default: ['#FF0000'], required: true },
@@ -61,6 +66,7 @@ const effectConfigs = {
   },
   'fade': {
     label: 'Fade',
+    icon: 'pi pi-moon',
     id: 4, // FadeColor = 4
     params: [
       { key: 'colors', type: 'colors', default: ['#FF0000'], required: true },
@@ -69,6 +75,7 @@ const effectConfigs = {
   },
   'switch': {
     label: 'Switch',
+    icon: 'pi pi-sync',
     id: 5, // SwitchColor = 5
     params: [
       { key: 'colors', type: 'colors', default: ['#FF0000'], required: true },
@@ -80,7 +87,8 @@ const effectConfigs = {
 // Generate effectTypes array for select dropdown
 const effectTypes = Object.entries(effectConfigs).map(([value, config]) => ({
   value,
-  label: config.label
+  label: config.label,
+  icon: config.icon
 }));
 
 // Get current effect configuration
@@ -148,21 +156,52 @@ const updateColors = (colors: string[] | string) => {
 watch(() => uiEffect.value.type, () => {
   initializeEffect();
 }, { immediate: true });
+
+// PrimeVue dropdown option template
+const optionTemplate = (option: any) => {
+  return {
+    template: `
+      <div class="flex items-center gap-2">
+        <i class="${option.icon}" style="font-size: 1rem"></i>
+        <div>${option.label}</div>
+      </div>
+    `
+  };
+};
+
+// Handle dropdown change
+const handleDropdownChange = (event: any) => {
+  updateEffect({ type: event.value });
+};
 </script>
 
 <template>
   <div>
     <div class="mb-4">
       <label class="block text-sm font-medium text-gray-700 mb-1">Effect Type</label>
-      <select
-        class="w-full border border-gray-300 rounded-md p-2"
+      <Dropdown
         v-model="uiEffect.type"
-        @change="updateEffect({ type: $event.target.value })"
+        :options="effectTypes"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Select an Effect"
+        class="w-full"
+        @change="handleDropdownChange"
       >
-        <option v-for="type in effectTypes" :key="type.value" :value="type.value">
-          {{ type.label }}
-        </option>
-      </select>
+        <template #value="slotProps">
+          <div v-if="slotProps.value" class="flex items-center gap-2">
+            <i :class="effectConfigs[slotProps.value].icon" style="font-size: 1rem"></i>
+            <div>{{ effectConfigs[slotProps.value].label }}</div>
+          </div>
+          <span v-else>Select an Effect</span>
+        </template>
+        <template #option="slotProps">
+          <div class="flex items-center gap-2">
+            <i :class="slotProps.option.icon" style="font-size: 1rem"></i>
+            <div>{{ slotProps.option.label }}</div>
+          </div>
+        </template>
+      </Dropdown>
     </div>
 
     <!-- Dynamic parameters based on effect type -->
@@ -170,7 +209,9 @@ watch(() => uiEffect.value.type, () => {
       <template v-for="param in currentEffectConfig.params" :key="param.key">
         <!-- Color Parameter -->
         <div v-if="param.key === 'color'" class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            <i class="pi pi-palette mr-1"></i> Color
+          </label>
           <ColorPickerGroup
             :colors="uiEffect.color || param.default"
             :multiple="false"
@@ -180,7 +221,9 @@ watch(() => uiEffect.value.type, () => {
 
         <!-- Multiple Colors Parameter -->
         <div v-else-if="param.key === 'colors'" class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Colors</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            <i class="pi pi-palette mr-1"></i> Colors
+          </label>
           <ColorPickerGroup
             :colors="uiEffect.colors || param.default"
             :multiple="true"
@@ -191,6 +234,7 @@ watch(() => uiEffect.value.type, () => {
         <!-- Slider Parameter -->
         <div v-else-if="param.type === 'slider'" class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-1">
+            <i :class="param.key === 'duration' ? 'pi pi-clock' : 'pi pi-arrows-h'" class="mr-1"></i>
             {{ param.label }}{{ param.unit ? ' (' + param.unit + ')' : '' }}
           </label>
           <div class="flex items-center space-x-3">
@@ -228,5 +272,14 @@ watch(() => uiEffect.value.type, () => {
 
 .slider-component {
   width: 100%;
+}
+
+:deep(.p-dropdown) {
+  width: 100%;
+}
+
+:deep(.p-dropdown-item) {
+  display: flex;
+  align-items: center;
 }
 </style>
