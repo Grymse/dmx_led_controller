@@ -115,6 +115,7 @@ const handleColorPickerChange = (index: number) => {
         v-if="!maxColors || internalColors.length < maxColors"
         icon="pi pi-plus"
         class="p-button-sm"
+        severity="info"
         @click="addColor"
         style="width: 2.5rem; height: 2.5rem"
       />
