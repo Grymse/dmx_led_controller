@@ -9,5 +9,6 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Bluetooth: typeof import('./src/components/Bluetooth.vue')['default']
+    Serial: typeof import('./src/components/Serial.vue')['default']
   }
 }

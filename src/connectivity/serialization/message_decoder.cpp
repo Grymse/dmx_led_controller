@@ -1,20 +1,7 @@
 
 #include "message_decoder.h"
 
-/**
- * @brief Decodes a sequence from the provided protobuf stream.
- *
- * This static method is responsible for decoding a sequence from a protobuf stream
- * and populating the corresponding Sequence object. It sets up the necessary callback
- * for decoding animations within the sequence.
- *
- * @param stream The input stream from which the sequence data is read.
- * @param sequence A pointer to the Sequence object that will be populated with the decoded data.
- * @return true if the sequence is successfully decoded, false otherwise.
- */
-
-
- bool readTargetGroups(pb_istream_t *stream, const pb_field_iter_t *field, void **arg)
+bool message_decoder_readTargetGroups(pb_istream_t *stream, const pb_field_iter_t *field, void **arg)
 {
     std::vector<uint32_t>* group_ids = static_cast<std::vector<uint32_t>*>(*arg);
     while (stream->bytes_left)
@@ -27,8 +14,7 @@
     return true;
 }
 
-
-bool cb_callback(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+bool message_decoder_cb_callback(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   if(field->tag == protocol_Message_sequence_tag) {
       protocol_Sequence *incoming_sequence = static_cast<protocol_Sequence*>(field->pData);
       Sequence* sequence = new Sequence();
@@ -41,7 +27,7 @@ bool cb_callback(pb_istream_t *stream, const pb_field_t *field, void **arg) {
       incoming_broadcast->sequence.animations.funcs.decode = SequenceDecoder::decode_animation;
       incoming_broadcast->sequence.animations.arg = sequence;
 
-      incoming_broadcast->target_groups.funcs.decode = readTargetGroups;
+      incoming_broadcast->target_groups.funcs.decode = message_decoder_readTargetGroups;
       std::vector<uint32_t>* target_groups = new std::vector<uint32_t>();
       incoming_broadcast->target_groups.arg = target_groups;
 
@@ -59,11 +45,11 @@ bool cb_callback(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   return true;
 }
 
-
 bool MessageDecoder::decode(pb_istream_t* stream) {
   protocol_Message incomingMessage = protocol_Message_init_zero;
+  std::vector<uint32_t> target_groups;
 
-  incomingMessage.cb_payload.funcs.decode = cb_callback; // Set the callback for decoding the payload
+  incomingMessage.cb_payload.funcs.decode = message_decoder_cb_callback; // Set the callback for decoding the payload
 
   // Setup callbacks for decoding 
   if (!pb_decode(stream, protocol_Message_fields, &incomingMessage)) {
@@ -76,31 +62,62 @@ bool MessageDecoder::decode(pb_istream_t* stream) {
   switch (incomingMessage.which_payload) {
     case protocol_Message_sequence_tag: {
       sequence = static_cast<Sequence*>(incomingMessage.payload.sequence.animations.arg);
-      // available through *sequence
+      if (this->onSequenceReceived == nullptr) {
+        debug("\033[1;31mNo callback set for sequence received\033[0m\n", 0);
+        return false;
+      }
+      this->onSequenceReceived(sequence);
       break;
     }
+
     case protocol_Message_broadcast_sequence_tag: {
       protocol_BroadcastSequence broadcast = incomingMessage.payload.broadcast_sequence;
       sequence = static_cast<Sequence*>(broadcast.sequence.animations.arg);
       std::vector<uint32_t>* group_ids = static_cast<std::vector<uint32_t>*>(broadcast.target_groups.arg);
-      // available through *sequence
-      // available through *group_ids
+      if (this->onBroadcastSequenceReceived == nullptr) {
+        debug("\033[1;31mNo callback set for broadcast sequence received\033[0m\n", 0);
+        return false;
+      }
+      this->onBroadcastSequenceReceived(sequence, group_ids);
       break;
     }
+
     case protocol_Message_save_state_tag: {
       protocol_State* state = &incomingMessage.payload.save_state;
       sequence = static_cast<Sequence*>(state->sequence.animations.arg);
 
-      // available through *sequence
-      // available through state->settings
+      if (this->onSaveStateReceived == nullptr) {
+        debug("\033[1;31mNo callback set for save state received\033[0m\n", 0);
+        return false;
+      }
+      this->onSaveStateReceived(sequence, &state->settings);
       break;
     }
     case protocol_Message_request_state_tag: {
-      printf("\033[1;34mRequesting current state\033[0m\n", 0);
-      // This is just a request, no sequence or settings to decode
+      if (this->onRequestState == nullptr) {
+        debug("\033[1;31mNo callback set for request state\033[0m\n", 0);
+        return false;
+      }
+      this->onRequestState();
       break;
     }
   }
 
   return true;
+}
+
+void MessageDecoder::setOnSequenceReceived(OnSequenceReceived callback) {
+  this->onSequenceReceived = callback;
+}
+
+void MessageDecoder::setOnBroadcastSequenceReceived(OnBroadcastSequenceReceived callback) {
+  this->onBroadcastSequenceReceived = callback;
+}
+
+void MessageDecoder::setOnSaveStateReceived(OnSaveStateReceived callback) {
+  this->onSaveStateReceived = callback;
+}
+
+void MessageDecoder::setOnRequestState(OnRequestState callback) {
+  this->onRequestState = callback;
 }

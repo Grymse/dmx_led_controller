@@ -2,11 +2,21 @@
 
 #include "common.h"
 
-class MessageDecoder {
-  private:
+typedef void (*OnSequenceReceived)(Sequence* sequence);
+typedef void (*OnBroadcastSequenceReceived)(Sequence* sequence, std::vector<uint32_t>* group_ids);
+typedef void (*OnSaveStateReceived)(Sequence* sequence, protocol_Settings* settings);
+typedef void (*OnRequestState)();
 
-  static bool decode_message(pb_istream_t* stream, const pb_field_iter_t* field, void** arg);
+class MessageDecoder {
+  OnSequenceReceived onSequenceReceived = nullptr;
+  OnBroadcastSequenceReceived onBroadcastSequenceReceived = nullptr;
+  OnSaveStateReceived onSaveStateReceived = nullptr;
+  OnRequestState onRequestState = nullptr;
 
   public:
-  static bool decode(pb_istream_t* stream);
+  bool decode(pb_istream_t* stream);
+  void setOnSequenceReceived(OnSequenceReceived callback);
+  void setOnBroadcastSequenceReceived(OnBroadcastSequenceReceived callback);
+  void setOnSaveStateReceived(OnSaveStateReceived callback);
+  void setOnRequestState(OnRequestState callback);
 };
