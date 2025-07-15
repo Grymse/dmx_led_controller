@@ -14,6 +14,7 @@ declare module 'vue' {
     ColorEffectEditor: typeof import('./src/components/ColorEffectEditor.vue')['default']
     ColorPickerGroup: typeof import('./src/components/ColorPickerGroup.vue')['default']
     MaskEditor: typeof import('./src/components/MaskEditor.vue')['default']
+    ModuleSequence: typeof import('./src/components/ModuleSequence.vue')['default']
     Toolbar: typeof import('primevue/toolbar')['default']
   }
 }

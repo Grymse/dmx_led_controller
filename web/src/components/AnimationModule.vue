@@ -8,6 +8,10 @@ const props = defineProps<{
   duration: number;
   colorEffect?: { type: string; [key: string]: any };
   index: number; // Add index prop to know position
+  isDragging: boolean; // Whether any module is being dragged
+  dragOverIndex: number | null; // Index being dragged over
+  dropPosition: 'before' | 'after' | null; // Position relative to the module
+  draggedIndex: number | null; // Index of the module being dragged
 }>();
 
 const emit = defineEmits([
@@ -20,10 +24,23 @@ const emit = defineEmits([
 ]);
 
 const localDuration = ref(props.duration);
+const isMoving = ref(false);
 
 // Update local duration when prop changes
 watch(() => props.duration, (newDuration) => {
   localDuration.value = newDuration;
+});
+
+// Track when this module is the drop target
+watch(() => props.dragOverIndex, (newIndex) => {
+  if (newIndex === props.index) {
+    isMoving.value = true;
+
+    // Reset the flag after animation completes
+    setTimeout(() => {
+      isMoving.value = false;
+    }, 300);
+  }
 });
 
 const handleClick = () => {
@@ -63,16 +80,43 @@ const handleDragEnd = (e: DragEvent) => {
 
 const handleDragOver = (e: DragEvent) => {
   e.preventDefault(); // Necessary to allow dropping
-  emit('dragover', props.index);
+
+  // Calculate if we're in the first or second half of the element
+  if (e.currentTarget instanceof HTMLElement) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const midPoint = rect.left + rect.width / 2;
+    const position = e.clientX < midPoint ? 'before' : 'after';
+
+    emit('dragover', { index: props.index, position });
+  } else {
+    emit('dragover', { index: props.index, position: 'after' });
+  }
 };
 
 const handleDrop = (e: DragEvent) => {
   e.preventDefault();
   if (e.dataTransfer) {
     const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
-    emit('drop', { fromIndex, toIndex: props.index });
+
+    // Calculate if we're in the first or second half of the element
+    if (e.currentTarget instanceof HTMLElement) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const midPoint = rect.left + rect.width / 2;
+      const position = e.clientX < midPoint ? 'before' : 'after';
+
+      emit('drop', { fromIndex, toIndex: props.index, position });
+    } else {
+      emit('drop', { fromIndex, toIndex: props.index, position: 'after' });
+    }
   }
 };
+
+// Determine if this module should show a drop indicator
+const showDropIndicator = computed(() => {
+  if (!props.isDragging || props.draggedIndex === props.index) return false;
+
+  return props.dragOverIndex === props.index;
+});
 
 // Helper function to ensure color is in valid format
 const formatColorIfNeeded = (color: string) => {
@@ -115,81 +159,150 @@ const colorsToDisplay = computed(() => {
 </script>
 
 <template>
-  <div
-    class="relative px-4 py-3 rounded-md cursor-pointer transition-all duration-200 flex items-center gap-3 border"
-    :class="isActive
-      ? 'border-indigo-400 bg-indigo-50 text-indigo-900 shadow-sm'
-      : 'border-gray-300 bg-gray-100 hover:bg-gray-200'"
-    @click="handleClick"
-    draggable="true"
-    @dragstart="handleDragStart"
-    @dragend="handleDragEnd"
-    @dragover="handleDragOver"
-    @drop="handleDrop"
-  >
-    <!-- Drag handle -->
-    <div class="cursor-move text-gray-400 hover:text-gray-600">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="8" cy="6" r="1" />
-        <circle cx="8" cy="12" r="1" />
-        <circle cx="8" cy="18" r="1" />
-        <circle cx="16" cy="6" r="1" />
-        <circle cx="16" cy="12" r="1" />
-        <circle cx="16" cy="18" r="1" />
-      </svg>
-    </div>
+  <div class="module-container" :class="{ 'is-moving': isMoving }">
+    <!-- Left drop indicator - only show if dropping BEFORE this module -->
+    <div
+      v-if="showDropIndicator && dropPosition === 'before'"
+      class="drop-indicator"
+    ></div>
 
-    <!-- Module name -->
-    <span>{{ name }}</span>
-
-    <!-- Color indicators -->
-    <div class="flex -space-x-1" v-if="colorEffect">
-      <div
-        v-for="(color, index) in colorsToDisplay"
-        :key="index"
-        class="w-4 h-4 rounded-full border border-white"
-        :style="{ backgroundColor: color }"
-        :title="color"
-      ></div>
-    </div>
-
-    <!-- Duration dropdown -->
-    <div class="flex items-center ml-auto" @click.stop>
-      <select
-        :value="duration"
-        @change="updateDuration"
-        class="text-sm border rounded px-2 py-1"
-        :class="isActive
-          ? 'bg-indigo-100 text-indigo-900 border-indigo-300'
-          : 'bg-white text-gray-800 border-gray-300'"
-      >
-        <option value="500">0.5s</option>
-        <option value="1000">1s</option>
-        <option value="2000">2s</option>
-        <option value="3000">3s</option>
-        <option value="5000">5s</option>
-        <option value="10000">10s</option>
-        <option value="20000">20s</option>
-        <option value="30000">30s</option>
-      </select>
-    </div>
-
-    <!-- Remove button -->
-    <button
-      class="w-5 h-5 rounded-full flex items-center justify-center text-xs hover:bg-red-600 hover:text-white transition-colors"
-      :class="isActive
-        ? 'bg-indigo-200 text-indigo-800'
-        : 'bg-gray-200 text-gray-600'"
-      @click="handleRemove"
+    <div
+      class="relative px-4 py-3 rounded-md cursor-pointer transition-all duration-200 flex items-center gap-3 border module-content"
+      :class="[
+        isActive
+          ? 'border-indigo-400 bg-indigo-50 text-indigo-900 shadow-sm'
+          : 'border-gray-300 bg-gray-100 hover:bg-gray-200',
+        { 'being-dragged': isDragging && draggedIndex === index }
+      ]"
+      @click="handleClick"
+      draggable="true"
+      @dragstart="handleDragStart"
+      @dragend="handleDragEnd"
+      @dragover="handleDragOver"
+      @drop="handleDrop"
     >
-      ×
-    </button>
+      <!-- Drag handle -->
+      <div class="cursor-move text-gray-400 hover:text-gray-600">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="8" cy="6" r="1" />
+          <circle cx="8" cy="12" r="1" />
+          <circle cx="8" cy="18" r="1" />
+          <circle cx="16" cy="6" r="1" />
+          <circle cx="16" cy="12" r="1" />
+          <circle cx="16" cy="18" r="1" />
+        </svg>
+      </div>
+
+      <!-- Module name -->
+      <span>{{ name }}</span>
+
+      <!-- Color indicators -->
+      <div class="flex -space-x-1" v-if="colorEffect">
+        <div
+          v-for="(color, index) in colorsToDisplay"
+          :key="index"
+          class="w-4 h-4 rounded-full border border-white"
+          :style="{ backgroundColor: color }"
+          :title="color"
+        ></div>
+      </div>
+
+      <!-- Duration dropdown -->
+      <div class="flex items-center ml-auto" @click.stop>
+        <select
+          :value="duration"
+          @change="updateDuration"
+          class="text-sm border rounded px-2 py-1"
+          :class="isActive
+            ? 'bg-indigo-100 text-indigo-900 border-indigo-300'
+            : 'bg-white text-gray-800 border-gray-300'"
+        >
+          <option value="500">0.5s</option>
+          <option value="1000">1s</option>
+          <option value="2000">2s</option>
+          <option value="3000">3s</option>
+          <option value="5000">5s</option>
+          <option value="10000">10s</option>
+          <option value="20000">20s</option>
+          <option value="30000">30s</option>
+        </select>
+      </div>
+
+      <!-- Remove button -->
+      <button
+        class="w-5 h-5 rounded-full flex items-center justify-center text-xs hover:bg-red-600 hover:text-white transition-colors"
+        :class="isActive
+          ? 'bg-indigo-200 text-indigo-800'
+          : 'bg-gray-200 text-gray-600'"
+        @click="handleRemove"
+      >
+        ×
+      </button>
+    </div>
+
+    <!-- Right drop indicator - only show if dropping AFTER this module -->
+    <div
+      v-if="showDropIndicator && dropPosition === 'after'"
+      class="drop-indicator drop-indicator-right"
+    ></div>
   </div>
 </template>
 
 <style scoped>
-.dragging {
+.module-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin: 0.25rem;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.being-dragged {
   opacity: 0.5;
-  border: 2px dashed #6366F1 !important;
+}
+
+/* Animation when module is moving to a new position */
+.is-moving .module-content {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.drop-indicator {
+  position: absolute;
+  width: 4px;
+  height: 80%;
+  background-color: #6366F1;
+  border-radius: 2px;
+  z-index: 5;
+  animation: pulse 1.5s infinite;
+  left: 0;
+  transform: translateX(-50%);
+}
+
+.drop-indicator-right {
+  left: auto;
+  right: 0;
+  transform: translateX(50%);
+}
+
+/* Animation when modules are reordered */
+@keyframes wiggle {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
 }
 </style>
