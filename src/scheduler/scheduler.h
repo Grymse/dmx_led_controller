@@ -34,10 +34,19 @@ struct ScheduledProcess {
 };
 
 
+typedef void (*FutureFunction)();
+
+struct TimeoutFunctions {
+  FutureFunction func;
+  unsigned long timeout;
+};
+
 class ProcessScheduler {
   std::vector<ScheduledProcess*> processes;
+  std::vector<TimeoutFunctions*> timeouts;
 
   public:
   void addProcess(Process* process, int tickInterval);
   void update();
+  void timeout(FutureFunction func, unsigned long millisDelay);
 };

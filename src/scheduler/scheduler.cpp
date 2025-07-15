@@ -7,7 +7,7 @@
  * @param tickInterval The interval in milliseconds to update the process
  */
 void ProcessScheduler::addProcess(Process* process, int tickInterval) {
-  processes.push_back(new ScheduledProcess{ millis(), tickInterval, process });
+  this->processes.push_back(new ScheduledProcess{ millis(), tickInterval, process });
 }
 
 /**
@@ -32,4 +32,29 @@ void ProcessScheduler::update() {
     }
     debug("t%d\n", diff);
   }
+
+  // Check timeouts
+  for (auto it = timeouts.begin(); it != timeouts.end();) {
+    TimeoutFunctions* timeoutFunc = *it;
+    if (millis() >= timeoutFunc->timeout) {
+      timeoutFunc->func(); // Call the function
+      delete timeoutFunc; // Clean up the timeout function
+      it = timeouts.erase(it); // Remove from the list
+    } else {
+      ++it; // Move to the next timeout
+    }
+  }
+}
+
+
+/**
+ * @brief Schedule a function to be called after a delay
+ *
+ * @param func The function to call after the delay
+ * @param millisDelay The delay in milliseconds before calling the function
+ */
+void ProcessScheduler::timeout(FutureFunction func, u32_t millisDelay) {
+  // Add a new scheduled process that will call the functionPtr after millisDelay
+  this->timeouts.push_back(new TimeoutFunctions{ func, millis() + millisDelay });
+  
 }

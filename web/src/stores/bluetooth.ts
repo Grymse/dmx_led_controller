@@ -2,9 +2,9 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 // BLE Service and Characteristic UUIDs (must match ESP32)
-const SERVICE_UUID = '12345678-1234-1234-1234-123456789abc'
-const CHARACTERISTIC_UUID_RX = '12345678-1234-1234-1234-123456789abd'
-const CHARACTERISTIC_UUID_TX = '12345678-1234-1234-1234-123456789abe'
+const SERVICE_UUID = 'b2085082-e29b-4d4e-b868-f782458dec9a'
+const CHARACTERISTIC_UUID_RX = 'b2085082-e29b-4d4e-b868-f782458dec9b'
+const CHARACTERISTIC_UUID_TX = 'b2085082-e29b-4d4e-b868-f782458dec9c'
 
 export interface BleMessage {
   timestamp: string
@@ -73,6 +73,7 @@ export const useBleStore = defineStore('ble', () => {
   }
 
   const handleNotification = (event: Event): void => {
+    console.log("Notification");
     const target = event.target as BluetoothRemoteGATTCharacteristic
     const decoder = new TextDecoder()
     const value = decoder.decode(target.value!)

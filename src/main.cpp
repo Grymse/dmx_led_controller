@@ -13,10 +13,17 @@
 #include "leds/layers/masks/masks.h"
 #include "leds/layers/colors/colors.h"
 #include "connectivity/radio.h"
-#include "connectivity/espnow.h"
+/* #include "connectivity/espnow.h" */
 #include "leds/generators/generators.h"
-#include "dmx/dmx.h"
+/* #include "dmx/dmx.h" */
 #include "connectivity/serialization/message_decoder.h"
+#include "connectivity/bluetooth.h"
+
+
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
 
 #define CE_PIN 0
 #define CSN_PIN 10
@@ -30,18 +37,36 @@ u8_t frames_per_second = 40;
 ProcessScheduler scheduler;
 Animator* animator;
 SequenceScheduler* sequenceScheduler;
+BluetoothService* bluetooth;
+/* MessageDecoder* messageDecoder; */
+
+class DecodeIncomingMessages: public BLECharacteristicCallbacks {
+    void onWrite(BLECharacteristic *pCharacteristic) {
+      if (pCharacteristic->getLength() < 2) return;
+
+      /* pb_istream_t buffer = pb_istream_from_buffer(pCharacteristic->getData(), pCharacteristic->getLength());
+      MessageDecoder::decode(&buffer); */
+    }
+};
+
+void onReceiveSequence(Sequence* sequence) {
+  sequenceScheduler->set(sequence);
+}
+
+u8_t arr[5] = {1, 2, 3, 4, 5};
 
 void setup() {
   // put your setup code here, to run once:
   scheduler = ProcessScheduler();
-  Serial.begin(115200);
-  pinMode(BUILTIN_LED, OUTPUT);
 
   FastLED.addLeds<WS2812B, LED_PIN, RGB>(leds, NUM_LEDS);
 
   animator = new Animator(leds, NUM_LEDS);
   sequenceScheduler = new SequenceScheduler(animator);
+  /* messageDecoder = new MessageDecoder(); */
 
+  /* messageDecoder->setOnSequenceReceived(onReceiveSequence); */
+  
   scheduler.addProcess(animator, 1000 / frames_per_second);
   //scheduler.addProcess(new ReadDMXProcess(animator), 1000 / frames_per_second); // Update every 25ms
 
@@ -49,7 +74,6 @@ void setup() {
   // chained together, and second device needs to act as if it's leds are offset by
   // e.g. 300 leds. If set to 300, then the controller will display leds 300-599
   animator->setVirtualOffset(0);
-
   
   /**
    * @brief Scheduler is commented out for DMX controller.
@@ -81,9 +105,19 @@ void setup() {
     new FadeColor({CRGB(255, 0, 0),CRGB(255, 255, 255)}, 1200),
     new StarsMask(300, 5, 1),
   }, 10000);
+
+
+  bluetooth = new BluetoothService();
+  bluetooth->setOnReceive(new DecodeIncomingMessages());
+  scheduler.addProcess(bluetooth, 1000); // Run once every second to check if it should start advertising
+
 }
 
 void loop() {
   scheduler.update();
+  delay(1000);
+
+  pb_istream_t buffer = pb_istream_from_buffer(arr, sizeof(arr));
+  MessageDecoder::decode(&buffer);
   delay(1); // Stability //TODO: Check if this actually introduces stability, or whether we should remove it for more compute time.
 }

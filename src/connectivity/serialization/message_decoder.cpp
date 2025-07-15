@@ -1,73 +1,6 @@
 
 #include "message_decoder.h"
 
-/* 
-message Sequence {
-  repeated Animation animations = 2;
-}
-
-enum MessageType {
-  SET_SEQUENCE = 0; // For live setting the current animation sequence.
-  SAVE_SEQUENCE = 1; // Save new default sequence to the device.
-  SAVE_SETTINGS = 2; // Save new settings to the device.
-  REQUEST_STATE = 3; // Request the current sequence and settings from the device.
-  RESPONSE_STATE = 4; // Response with the current sequence and settings from the device.
-}
-
-enum PropagationMode {
-  LOCAL_ONLY = 0;     // Execute locally only, do not broadcast via antenna
-  BROADCAST_ALL = 1;  // Broadcast via antenna to all controllers (all will execute)
-  BROADCAST_GROUPS = 2; // Broadcast via antenna, only specified groups will execute
-}
-
-message Settings {
-  uint32 group_id = 1; // Group ID for this controller (used for selective message handling)
-  uint32 virtual_offset = 2; // Virtual index of first LED for this controller
-}
-
-message Message {
-  MessageType type = 1;
-  
-  // Content fields (mutually exclusive based on message type)
-  Settings settings = 2; // Present for SAVE_SETTINGS messages
-  Sequence sequence = 3; // Present for SET_SEQUENCE and SAVE_SEQUENCE messages
-  
-  // Propagation control (only relevant for messages received via Bluetooth)
-  PropagationMode propagation = 4; // How the gateway controller should propagate this message
-  repeated uint32 target_groups = 5; // Groups to execute when propagation = BROADCAST_GROUPS
-  
-  // Note: Controllers receiving messages via antenna will:
-  // - Always execute the message if propagation = BROADCAST_ALL
-  // - Execute only if their group_id is in target_groups when propagation = BROADCAST_GROUPS
-  // - Never see messages with propagation = LOCAL_ONLY (not propagated)
-} */
-
-/* 
-
-bool SequenceDecoder::decode_animation(pb_istream_t* stream, const pb_field_iter_t* field, void** arg) {
-  _protocol_Animation incomingAnimation = protocol_Animation_init_zero;
-  Animation* animation = new Animation();
-  Sequence* sequence = static_cast<Sequence*>(*arg);
-  sequence->animations.push_back(animation);
-
-  std::vector<ILayer*>* layers = new std::vector<ILayer*>();
-  incomingAnimation.layers.funcs.decode = LayerDecoder::decode_layer;
-  incomingAnimation.layers.arg = &animation->layers;
-
-  // Decode the incomingAnimation from the stream
-  if (!pb_decode(stream, protocol_Animation_fields, &incomingAnimation)) {
-    debug("\033[1;31mFailed to decode animation\033[0m\n", 0);
-    return false;  // Return false if decoding fails
-  }
-
-  animation->direction = incomingAnimation.direction == protocol_Direction_FORWARD ? Direction::FORWARD : Direction::BACKWARD;
-  animation->tickDuration = incomingAnimation.duration;
-  animation->firstTick = incomingAnimation.first_tick;
-  animation->brightness = incomingAnimation.brightness;
-
-  return true;  // Return true if decoding is successful
-}
-
 /**
  * @brief Decodes a sequence from the provided protobuf stream.
  *
@@ -129,7 +62,6 @@ bool cb_callback(pb_istream_t *stream, const pb_field_t *field, void **arg) {
 
 bool MessageDecoder::decode(pb_istream_t* stream) {
   protocol_Message incomingMessage = protocol_Message_init_zero;
-  std::vector<uint32_t> target_groups;
 
   incomingMessage.cb_payload.funcs.decode = cb_callback; // Set the callback for decoding the payload
 

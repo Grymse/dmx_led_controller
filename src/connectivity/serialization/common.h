@@ -2,6 +2,7 @@
 #include "../../leds/serialization/sequence_decoder.h"
 #include <pb_decode.h>
 #include "protocol.pb.h"
+#include "Arduino.h"
 #include "common.h"
 #include <vector>
 
