@@ -7,6 +7,8 @@ import ModuleSequence from "@/components/ModuleSequence.vue";
 import Button from 'primevue/button';
 import Chip from 'primevue/chip';
 import { ticksToMs, msToTicks, hexColorToUint32} from './lib/timeUtils';
+import { protocol } from "./lib/protobuf/protocol.ts";
+
 
 // Define the types based on the Protocol structure
 enum Direction {
