@@ -273,12 +273,16 @@ const totalDuration = computed(() => {
         </transition-group>
 
         <!-- Add Module Button -->
-        <button
+        <Button
           @click="addModule"
-          class="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center text-xl font-bold transition-colors ml-2"
-        >
-          +
-        </button>
+          icon="pi pi-plus"
+          rounded
+          severity="info"
+          class="ml-2 !w-8 !h-8 !text-xl !flex !items-center !justify-center"
+          aria-label="Add Module"
+        />
+
+
 
         <!-- End drop indicator -->
         <div

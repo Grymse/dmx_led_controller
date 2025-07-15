@@ -478,7 +478,7 @@ watch(currentSequence, (newSequence) => {
               <button
                 v-if="activeModule && activeModule.mask1"
                 @click="handleRemoveMask1"
-                class="w-6 h-6 rounded-full flex items-center justify-center text-sm bg-gray-100 text-gray-600 hover:bg-red-200"
+                class="w-6 h-6 rounded-full flex items-center justify-center text-sm bg-gray-100 text-gray-600 hover:bg-gray-200"
                 title="Remove mask"
               >
                 ×
@@ -489,12 +489,16 @@ watch(currentSequence, (newSequence) => {
               <div v-if="activeModule">
                 <!-- Show add mask button if no mask -->
                 <div v-if="!activeModule.mask1" class="flex flex-col items-center justify-center h-full">
-                  <button
+                  <Button
                     @click="handleAddMask1"
-                    class="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold"
-                  >
-                    +
-                  </button>
+                    icon="pi pi-plus"
+                    rounded
+                    severity="info"
+                    aria-label="Add Mask"
+                    class="w-12 h-12 !text-xl !flex !items-center !justify-center"
+                  />
+
+
                   <span class="mt-2 text-gray-500">Add Mask</span>
                 </div>
                 <!-- Show mask editor if mask exists -->
@@ -522,7 +526,7 @@ watch(currentSequence, (newSequence) => {
               <button
                 v-if="activeModule && activeModule.mask2"
                 @click="handleRemoveMask2"
-                class="w-6 h-6 rounded-full flex items-center justify-center text-sm bg-gray-100 text-gray-600 hover:bg-red-200"
+                class="w-6 h-6 rounded-full flex items-center justify-center text-sm bg-gray-100 text-gray-600 hover:bg-gray-200"
                 title="Remove mask"
               >
                 ×
@@ -533,12 +537,14 @@ watch(currentSequence, (newSequence) => {
               <div v-if="activeModule">
                 <!-- Show add mask button if no mask -->
                 <div v-if="!activeModule.mask2" class="flex flex-col items-center justify-center h-full">
-                  <button
+                  <Button
                     @click="handleAddMask2"
-                    class="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold"
-                  >
-                    +
-                  </button>
+                    icon="pi pi-plus"
+                    rounded
+                    severity="info"
+                    aria-label="Add Mask"
+                    class="w-12 h-12 !text-xl !flex !items-center !justify-center"
+                  />
                   <span class="mt-2 text-gray-500">Add Mask</span>
                 </div>
                 <!-- Show mask editor if mask exists -->

@@ -232,10 +232,10 @@ const colorsToDisplay = computed(() => {
 
       <!-- Remove button -->
       <button
-        class="w-5 h-5 rounded-full flex items-center justify-center text-xs hover:bg-red-600 hover:text-white transition-colors"
+        class="w-5 h-5 rounded-full flex items-center justify-center text-xs  transition-colors"
         :class="isActive
-          ? 'bg-indigo-200 text-indigo-800'
-          : 'bg-gray-200 text-gray-600'"
+          ? 'bg-indigo-200 text-indigo-800 hover:bg-indigo-300'
+          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'"
         @click="handleRemove"
       >
         ×
