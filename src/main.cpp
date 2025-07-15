@@ -17,6 +17,8 @@
 #include "leds/generators/generators.h"
 #include "dmx/dmx.h"
 #include "connectivity/serialization/message_decoder.h"
+#include "state/binary_store.h"
+#include "connectivity/name_generator.h"
 
 #define CE_PIN 0
 #define CSN_PIN 10
@@ -30,6 +32,8 @@ u8_t frames_per_second = 40;
 ProcessScheduler scheduler;
 Animator* animator;
 SequenceScheduler* sequenceScheduler;
+
+BinaryStore store("config", "program"); // Used to store the program on the flash memory
 
 void setup() {
   // put your setup code here, to run once:
@@ -81,6 +85,9 @@ void setup() {
     new FadeColor({CRGB(255, 0, 0),CRGB(255, 255, 255)}, 1200),
     new StarsMask(300, 5, 1),
   }, 10000);
+
+    const uint8_t defaultProgram[] = { 0xAA, 0xBB, 0xCC, 0xDD };
+    store.saveDefaultIfEmpty(defaultProgram, sizeof(defaultProgram));
 }
 
 void loop() {
