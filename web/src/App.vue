@@ -22,7 +22,7 @@
               <Badge :value="connectionStatus" class="text-white" :severity="serialStore.isConnected ? 'success' : 'danger'" />
             </div>
             <!-- Button Group for Controls -->
-            <PlaySaveButtons :currentSequence="currentSequence" @save="playAndSave" />
+            <PlaySaveButtons ref="playSaveButtons" :currentSequence="currentSequence" @save="playAndSave" />
           </div>
         </div>
 
@@ -184,6 +184,7 @@ const {
   Message
 } = protocol;
 
+const emit = defineEmits(['play']);
 
 // Sample initial modules - with mask1 present and mask2 null by default
 const modules = ref<Module[]>([
@@ -539,9 +540,12 @@ const playAndSave = () => {
   // Implement your play and save logic here
 };
 
+const playSaveButtons = ref(null);
 // For debugging: log the current sequence when it changes
 watch(currentSequence, (newSequence) => {
   console.log('Current sequence updated:', newSequence);
+  //emit('play');
+  //playSaveButtons.value?.handlePlay();
 }, { deep: true });
 
 // Handle removing a module

@@ -1,4 +1,3 @@
-// PlaySaveButtons.vue
 <template>
   <div class="flex">
     <Button
@@ -22,6 +21,7 @@ import { useSerialStore } from '../stores/serial';
 import { computed } from 'vue';
 import { protocol } from '../lib/protobuf/protocol';
 import { watch } from 'vue';
+import { onMounted } from 'vue';
 
 const serialStore = useSerialStore();
 
@@ -33,15 +33,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['save']);
-
-
-watch(
-  () => serialStore.receivedData,
-  (newVal) => {
-    console.log('ESP32: ', newVal);
-  }
-);
-
 
 const isConnected = computed(() => serialStore.isConnected);
 
@@ -63,6 +54,7 @@ const playAndSave = () => {
     }),
   }).serializeBinary();
   serialStore.writeSerial(data);
-
 };
+
+defineExpose({ handlePlay });
 </script>
