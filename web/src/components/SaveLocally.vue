@@ -6,7 +6,7 @@
       icon="pi pi-download"
       severity="secondary"
       outlined
-      @click="saveModules"
+      @click="saveSequence"
     />
     <Button
       label="Load Program"
@@ -22,24 +22,25 @@
 <script setup lang="ts">
 import { defineProps, defineEmits } from 'vue';
 import Button from 'primevue/button';
-import type { Module } from './lib/module';
+import type { Module } from '@/lib/module';
 
 const props = defineProps({
-  modules: {
+  currentSequence: {
     type: Array as () => Module[],
     required: true,
   },
 });
 
-const emit = defineEmits(['updateModules']);
+const emit = defineEmits(['updateSequence']);
 
-const saveModules = () => {
-  const jsonData = JSON.stringify(props.modules, null, 2);
+const saveSequence = () => {
+  // Convert the modules array to a JSON string
+  const jsonData = JSON.stringify(props.currentSequence, null, 2);
   const blob = new Blob([jsonData], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'modules.json';
+  a.download = 'sequence.json';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -59,10 +60,12 @@ const handleFileChange = (event: Event) => {
 
     reader.onload = (e: ProgressEvent<FileReader>) => {
       try {
-        const jsonData = JSON.parse(reader.result as string);
-        emit('updateModules', jsonData);
+        const jsonData = e.target?.result as string;
+        const sequenceData = JSON.parse(jsonData);
+        emit('updateSequence', sequenceData);
       } catch (error) {
-        console.error('Error parsing JSON:', error);
+        console.error('Error loading sequence:', error);
+        alert('Failed to load sequence.  Please check the file format.');
       }
     };
 

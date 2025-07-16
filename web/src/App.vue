@@ -11,7 +11,7 @@
             <span class="ml-4 px-3 py-1 bg-gray-100 rounded-full text-gray-700">
               Total Duration: {{ formatDuration(totalDuration) }}
             </span>
-            <SaveLocally :currentSequence="currentSequence" @updateSequence="handleSequenceUpdate" />
+            <SaveLocally :currentSequence="modules" @updateSequence="handleSequenceUpdate" />
           </div>
           <!-- Control buttons (moved from BluetoothMenu) -->
           <div class="flex flex-row items-center gap-4">
