@@ -85,7 +85,7 @@ export const useSerialStore = defineStore<'serial', SerialState, {}, SerialActio
             break;
           }
           // Append received data to the state
-          this.receivedData += value;
+          this.receivedData = value;
         } catch (error) {
           console.error('Error reading from serial port:', error);
           this.error = 'Error reading from serial port.';

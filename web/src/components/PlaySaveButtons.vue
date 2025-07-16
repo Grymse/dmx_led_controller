@@ -21,6 +21,7 @@
 import { useSerialStore } from '../stores/serial';
 import { computed } from 'vue';
 import { protocol } from '../lib/protobuf/protocol';
+import { watch } from 'vue';
 
 const serialStore = useSerialStore();
 
@@ -34,20 +35,34 @@ const props = defineProps({
 const emit = defineEmits(['save']);
 
 
+watch(
+  () => serialStore.receivedData,
+  (newVal) => {
+    console.log('ESP32: ', newVal);
+  }
+);
+
+
 const isConnected = computed(() => serialStore.isConnected);
 
-function sendProgram() {
+const handlePlay = () => {
   const data = new protocol.Message({
     sequence: props.currentSequence,
   }).serializeBinary();
   serialStore.writeSerial(data);
-}
-
-const handlePlay = () => {
-  sendProgram();
 };
 
 const playAndSave = () => {
-  emit('save');
+  const data = new protocol.Message({
+    save_state: new protocol.State({
+      sequence: props.currentSequence,
+      settings: new protocol.Settings({
+        group_id: 0,
+        virtual_offset: 0,
+      })
+    }),
+  }).serializeBinary();
+  serialStore.writeSerial(data);
+
 };
 </script>

@@ -34,6 +34,7 @@ ProcessScheduler scheduler;
 Animator *animator;
 SequenceScheduler *sequenceScheduler;
 MessageDecoder* messageDecoder;
+BinaryStore store("config", "program");
 
 /**
  * @brief Reads a data packet from Serial based on a length prefix.
@@ -119,28 +120,44 @@ int16_t readSerialPacket(byte* dataBuffer) {
 }
 
 void onReceiveSequence(Sequence *sequence) {
-  printf("Received sequence with %d animations\n", sequence->animations.size());
+  sequenceScheduler->set(sequence);
+}
+
+
+u8_t buffer[1028];
+u32_t buffer_length;
+
+void onReceiveSaveState(Sequence *sequence, protocol_Settings *settings) {
+  buffer_length = store.saveData(buffer, buffer_length);
   sequenceScheduler->set(sequence);
 }
 
 class ReadFromPC : public Process {
-  u8_t buffer[1028]; // Buffer for reading data
 public:
+  ReadFromPC() {
+    // Constructor can be used to initialize anything if needed
+    buffer_length = store.loadData(buffer, sizeof(buffer));
+
+    // Only if contains program
+    if (5 < buffer_length) {
+      pb_istream_t stream = pb_istream_from_buffer(buffer,buffer_length);
+      messageDecoder->decode(&stream);
+    }
+  }
+
   void update() override {
-      auto length = readSerialPacket(buffer);
-      if (length < 1) {
-        if (length != 0) printf("length-return: %d\n",length);
+      buffer_length = readSerialPacket(buffer);
+      if (buffer_length < 1) {
+        if (buffer_length != 0) printf("length-return: %d\n",buffer_length);
         return;
       }
 
-      pb_istream_t stream = pb_istream_from_buffer(buffer,length);
+      pb_istream_t stream = pb_istream_from_buffer(buffer,buffer_length);
       messageDecoder->decode(&stream);
     }
 
   String getName() override { return "ReadFromPC"; }
 };
-
-BinaryStore store("config", "program"); // Used to store the program on the flash memory
 
 void setup() {
   // put your setup code here, to run once:
@@ -154,6 +171,7 @@ void setup() {
   messageDecoder = new MessageDecoder();
 
   messageDecoder->setOnSequenceReceived(onReceiveSequence);
+  messageDecoder->setOnSaveStateReceived(onReceiveSaveState);
 
   scheduler.addProcess(animator, 1000 / frames_per_second);
   // scheduler.addProcess(new ReadDMXProcess(animator), 1000 /
@@ -166,12 +184,14 @@ void setup() {
   animator->setVirtualOffset(0);
 
   scheduler.addProcess(sequenceScheduler, 1000 / frames_per_second);
-  scheduler.addProcess(new ReadFromPC(), 20);
 
   sequenceScheduler->add({
-    new FadeColor({CRGB(255, 0, 0),CRGB(255, 255, 255)}, 1200),
+    new FadeColor({CRGB(255, 0, 0),CRGB(0, 255, 0),CRGB(0, 0, 255)}, 1200),
     new StarsMask(300, 5, 1),
   }, 10000);
+  
+  scheduler.addProcess(new ReadFromPC(), 20);
+
 /* 
   const uint8_t defaultProgram[] = { 0xAA, 0xBB, 0xCC, 0xDD };
   store.saveDefaultIfEmpty(defaultProgram, sizeof(defaultProgram)); */
