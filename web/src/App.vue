@@ -544,8 +544,7 @@ const playSaveButtons = ref(null);
 // For debugging: log the current sequence when it changes
 watch(currentSequence, (newSequence) => {
   console.log('Current sequence updated:', newSequence);
-  //emit('play');
-  //playSaveButtons.value?.handlePlay();
+  playSaveButtons.value?.handlePlay();
 }, { deep: true });
 
 // Handle removing a module
