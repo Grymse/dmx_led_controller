@@ -16,6 +16,7 @@
     "@primeuix/themes": "^1.2.1",
     "@tailwindcss/vite": "^4.1.11",
     "google-protobuf": "^3.21.4",
+    "lodash": "^4.17.21",
     "pinia": "^3.0.3",
     "primevue": "^4.3.6",
     "tailwindcss": "^4.1.11",
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@primevue/auto-import-resolver": "^4.3.6",
     "@tsconfig/node22": "^22.0.2",
+    "@types/lodash": "^4.17.20",
     "@types/node": "^22.15.32",
     "@types/web-bluetooth": "^0.0.21",
     "@vitejs/plugin-vue": "^6.0.0",

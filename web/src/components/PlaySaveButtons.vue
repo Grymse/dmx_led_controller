@@ -20,8 +20,6 @@
 import { useSerialStore } from '../stores/serial';
 import { computed } from 'vue';
 import { protocol } from '../lib/protobuf/protocol';
-import { watch } from 'vue';
-import { onMounted } from 'vue';
 
 const serialStore = useSerialStore();
 

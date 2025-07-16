@@ -1,3 +1,4 @@
+import { debounce } from 'lodash';
 import { defineStore } from 'pinia';
 
 
@@ -16,6 +17,7 @@ interface SerialActions {
   connectSerial(): Promise<void>;
   readSerial(): Promise<void>;
   writeSerial(data: Uint8Array): Promise<void>;
+  _writeSerialImmediate(data: Uint8Array): Promise<void>;
   disconnectSerial(): Promise<void>;
 }
 
@@ -100,7 +102,8 @@ export const useSerialStore = defineStore<'serial', SerialState, {}, SerialActio
       }
     },
 
-    async writeSerial(data: Uint8Array) {
+    async _writeSerialImmediate(data: Uint8Array) {
+      console.log("ATTEMPT WRITE");
       if (!this.port || !this.port.writable) {
         console.error('Serial port not open for writing.');
         this.error = 'Serial port not open for writing.';
@@ -109,9 +112,9 @@ export const useSerialStore = defineStore<'serial', SerialState, {}, SerialActio
 
       try {
         const prependedData = new Uint8Array(data.length + 2);
-        prependedData[0] = data.length % 256;  // First prepended value (length)
-        prependedData[1] = 0; //Math.floor(data.length / 256);       // Second prepended value
-        prependedData.set(data, 2); // Copy original data starting at index 2
+        prependedData[0] = data.length % 256;
+        prependedData[1] = 0;
+        prependedData.set(data, 2);
 
         console.log("BEFORE WRITE", prependedData);
         const writer = this.port.writable.getWriter();
@@ -123,6 +126,13 @@ export const useSerialStore = defineStore<'serial', SerialState, {}, SerialActio
         this.error = 'Error writing to serial port.';
       }
     },
+
+    writeSerial: debounce(function(this: any, data: Uint8Array) {
+      return this._writeSerialImmediate(data);
+    }, 500, {
+      leading: false,  // Don't execute on the leading edge
+      trailing: true,   // Execute on the trailing edge (after delay)
+    }),
 
     async disconnectSerial() {
       if (this.reader) {
