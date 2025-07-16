@@ -25,35 +25,26 @@ import { protocol } from '../lib/protobuf/protocol';
 const serialStore = useSerialStore();
 
 const props = defineProps({
-  program: {
-    type: Number,
-    default: 0,
+  currentSequence: {
+    type: Object as () => protocol.Sequence,
+    required: true,
   },
 });
 
 const emit = defineEmits(['save']);
 
-const currentSequence = computed<protocol.Sequence>(() => {
-  // Replace this with your actual sequence generation logic
-  return { animations: [] };
-});
 
 const isConnected = computed(() => serialStore.isConnected);
 
-function getSequence(program: boolean): protocol.Sequence {
-  // Replace this with your actual sequence generation logic
-  return { animations: [] };
-}
-
-function sendProgram(program: number) {
+function sendProgram() {
   const data = new protocol.Message({
-    sequence: getSequence(program !== 0),
+    sequence: props.currentSequence,
   }).serializeBinary();
   serialStore.writeSerial(data);
 }
 
 const handlePlay = () => {
-  sendProgram(props.program);
+  sendProgram();
 };
 
 const playAndSave = () => {

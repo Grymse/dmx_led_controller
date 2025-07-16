@@ -1,3 +1,165 @@
+// App.vue
+<template>
+  <main class="w-screen h-screen flex flex-col bg-gray-100">
+    <!-- Main centered container with 80% width -->
+    <div class="w-4/5 mx-auto flex flex-col flex-grow mt-4">
+      <div class="flex flex-col bg-white rounded-lg shadow-md flex-grow overflow-hidden">
+        <!-- Module Sequence Header -->
+        <div class="p-4 flex justify-between items-center">
+          <div class="flex items-center">
+            <h1 class="text-2xl font-bold">Sequence</h1>
+            <span class="ml-4 px-3 py-1 bg-gray-100 rounded-full text-gray-700">
+              Total Duration: {{ formatDuration(totalDuration) }}
+            </span>
+            <SaveLocally :currentSequence="currentSequence" @updateSequence="handleSequenceUpdate" />
+          </div>
+          <!-- Control buttons (moved from BluetoothMenu) -->
+          <div class="flex flex-row items-center gap-4">
+            <SerialConnectButton />
+            <!-- Connection Status Chip -->
+            <div class="flex items-center gap-2">
+              <span>Status:</span>
+              <Badge :value="connectionStatus" class="text-white" :severity="serialStore.isConnected ? 'success' : 'danger'" />
+            </div>
+            <!-- Button Group for Controls -->
+            <PlaySaveButtons :currentSequence="currentSequence" @save="playAndSave" />
+          </div>
+        </div>
+
+        <!-- Module Sequence Component -->
+        <ModuleSequence
+          :modules="modules"
+          :activeModuleId="activeModuleId"
+          @select="handleSelectModule"
+          @remove="handleRemoveModule"
+          @update:modules="handleUpdateModules"
+          @update:duration="handleUpdateModuleDuration"
+          @update:name="handleUpdateModuleName"
+          @update:direction="handleUpdateDirection"
+          @add="handleAddModule"
+        />
+
+
+        <!-- Three Columns Layout (fills remaining height) -->
+        <div class="bg-gray-50 border border-indigo-400 bg-indigo-50 grid grid-cols-3 gap-0 p-6 flex-grow overflow-hidden rounded-lg">
+          <!-- Color Effect Column -->
+          <div
+            class="col-span-1 bg-white shadow-md p-4 flex flex-col h-full transition-all duration-300 ease-in-out"
+            :class="{ 'animate-editor': animateEditors }"
+          >
+            <h2 class="text-xl font-semibold mb-4">Color Effect</h2>
+            <div class="flex-grow overflow-auto">
+              <div v-if="activeModule">
+                <ColorEffectEditor
+                  :effect="activeModule.colorEffect"
+                  @update:effect="handleUpdateColorEffect"
+                />
+              </div>
+              <div v-else class="text-gray-500 italic">
+                Select or add a module to configure
+              </div>
+            </div>
+          </div>
+
+          <!-- Mask 1 Column -->
+          <div
+            class="col-span-1 bg-white shadow-md p-4 flex flex-col h-full relative transition-all duration-300 ease-in-out"
+            :class="{ 'animate-editor': animateEditors, 'animate-editor-delay-1': animateEditors }"
+          >
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-semibold">Mask</h2>
+              <!-- Remove mask button (only show if mask exists) -->
+              <button
+                v-if="activeModule && activeModule.mask1"
+                @click="handleRemoveMask1"
+                class="w-6 h-6 rounded-full flex items-center justify-center text-sm bg-gray-100 text-gray-600 hover:bg-gray-200"
+                title="Remove mask"
+              >
+                ×
+              </button>
+            </div>
+
+            <div class="flex-grow overflow-auto">
+              <div v-if="activeModule">
+                <!-- Show add mask button if no mask -->
+                <div v-if="!activeModule.mask1" class="flex flex-col items-center justify-center h-full">
+                  <Button
+                    @click="handleAddMask1"
+                    icon="pi pi-plus"
+                    rounded
+                    severity="info"
+                    aria-label="Add Mask"
+                    class="w-12 h-12 !text-xl !flex !items-center !justify-center"
+                  />
+
+
+                  <span class="mt-2 text-gray-500">Add Mask</span>
+                </div>
+                <!-- Show mask editor if mask exists -->
+                <MaskEditor
+                  v-else
+                  :mask="activeModule.mask1"
+                  title="Mask"
+                  @update:mask="handleUpdateMask1"
+                />
+              </div>
+              <div v-else class="text-gray-500 italic">
+                Select or add a module to configure
+              </div>
+            </div>
+          </div>
+
+          <!-- Mask 2 Column -->
+          <div
+            class="col-span-1 bg-white shadow-md p-4 flex flex-col h-full relative transition-all duration-300 ease-in-out"
+            :class="{ 'animate-editor': animateEditors, 'animate-editor-delay-2': animateEditors }"
+          >
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-semibold">Mask 2</h2>
+              <!-- Remove mask button (only show if mask exists) -->
+              <button
+                v-if="activeModule && activeModule.mask2"
+                @click="handleRemoveMask2"
+                class="w-6 h-6 rounded-full flex items-center justify-center text-sm bg-gray-100 text-gray-600 hover:bg-gray-200"
+                title="Remove mask"
+              >
+                ×
+              </button>
+            </div>
+
+            <div class="flex-grow overflow-auto">
+              <div v-if="activeModule">
+                <!-- Show add mask button if no mask -->
+                <div v-if="!activeModule.mask2" class="flex flex-col items-center justify-center h-full">
+                  <Button
+                    @click="handleAddMask2"
+                    icon="pi pi-plus"
+                    rounded
+                    severity="info"
+                    aria-label="Add Mask"
+                    class="w-12 h-12 !text-xl !flex !items-center !justify-center"
+                  />
+                  <span class="mt-2 text-gray-500">Add Mask</span>
+                </div>
+                <!-- Show mask editor if mask exists -->
+                <MaskEditor
+                  v-else
+                  :mask="activeModule.mask2"
+                  title="Mask 2"
+                  @update:mask="handleUpdateMask2"
+                />
+              </div>
+              <div v-else class="text-gray-500 italic">
+                Select or add a module to configure
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</template>
+
 <script setup lang="ts">
 
 import { ref, computed, watch } from 'vue';
@@ -5,15 +167,21 @@ import ColorEffectEditor from "@/components/ColorEffectEditor.vue";
 import MaskEditor from "@/components/MaskEditor.vue";
 import ModuleSequence from "@/components/ModuleSequence.vue";
 import Button from 'primevue/button';
+import Badge from 'primevue/badge';
 import type { Module } from './lib/module';
 import { protocol } from './lib/protobuf/protocol';
 import { convertUIModulesToProtocol } from './lib/serialiser';
 import { useSerialStore } from './stores/serial.ts';
 import SerialConnectButton from "@/components/SerialConnectButton.vue";
+import PlaySaveButtons from './components/PlaySaveButtons.vue';
+import SaveLocally from './components/SaveLocally.vue';
 
 const {
   Direction,
   Sequence,
+  Animation,
+  Layer,
+  Message
 } = protocol;
 
 
@@ -77,6 +245,8 @@ const formatDuration = (ms: number) => {
 const currentSequence = computed<protocol.Sequence>(() => {
   return convertUIModulesToProtocol(modules.value);
 });
+
+
 
 // Handlers for module sequence events
 // Handler for updating module duration
@@ -417,176 +587,12 @@ const handleRemoveModule = (id: number) => {
     }
   }
 };
+
+const handleSequenceUpdate = (sequenceData: any) => {
+  modules.value = sequenceData;
+  activeModuleId.value = sequenceData.length > 0 ? sequenceData[0].id : null;
+};
 </script>
-
-<template>
-  <main class="w-screen h-screen flex flex-col bg-gray-100">
-    <!-- Main centered container with 80% width -->
-    <div class="w-4/5 mx-auto flex flex-col flex-grow mt-4">
-      <div class="flex flex-col bg-white rounded-lg shadow-md flex-grow overflow-hidden">
-        <!-- Module Sequence Header -->
-        <div class="p-4 flex justify-between items-center">
-          <div class="flex items-center">
-            <h1 class="text-2xl font-bold">Sequence</h1>
-            <span class="ml-4 px-3 py-1 bg-gray-100 rounded-full text-gray-700">
-              Total Duration: {{ formatDuration(totalDuration) }}
-            </span>
-            <Button
-              class="ml-4"
-              label="Save Locally"
-              icon="pi pi-download"
-              severity="secondary"
-              outlined
-            />
-
-          </div>
-
-          <!-- Control buttons (moved from BluetoothMenu) -->
-          <div class="flex flex-row items-center gap-4">
-            <SerialConnectButton />
-            <!-- Connection Status Chip -->
-            <div class="flex items-center gap-2">
-              <span>Status:</span>
-              <Badge :value="connectionStatus" class="text-white" :severity="serialStore.isConnected ? 'success' : 'danger'" />
-            </div>
-            <!-- Button Group for Controls -->
-            <PlaySaveButtons @save="playAndSave" />
-          </div>
-        </div>
-
-        <!-- Module Sequence Component -->
-        <ModuleSequence
-          :modules="modules"
-          :activeModuleId="activeModuleId"
-          @select="handleSelectModule"
-          @remove="handleRemoveModule"
-          @update:modules="handleUpdateModules"
-          @update:duration="handleUpdateModuleDuration"
-          @update:name="handleUpdateModuleName"
-          @update:direction="handleUpdateDirection"
-          @add="handleAddModule"
-        />
-
-
-        <!-- Three Columns Layout (fills remaining height) -->
-        <div class="bg-gray-50 border border-indigo-400 bg-indigo-50 grid grid-cols-3 gap-0 p-6 flex-grow overflow-hidden rounded-lg">
-          <!-- Color Effect Column -->
-          <div
-            class="col-span-1 bg-white shadow-md p-4 flex flex-col h-full transition-all duration-300 ease-in-out"
-            :class="{ 'animate-editor': animateEditors }"
-          >
-            <h2 class="text-xl font-semibold mb-4">Color Effect</h2>
-            <div class="flex-grow overflow-auto">
-              <div v-if="activeModule">
-                <ColorEffectEditor
-                  :effect="activeModule.colorEffect"
-                  @update:effect="handleUpdateColorEffect"
-                />
-              </div>
-              <div v-else class="text-gray-500 italic">
-                Select or add a module to configure
-              </div>
-            </div>
-          </div>
-
-          <!-- Mask 1 Column -->
-          <div
-            class="col-span-1 bg-white shadow-md p-4 flex flex-col h-full relative transition-all duration-300 ease-in-out"
-            :class="{ 'animate-editor': animateEditors, 'animate-editor-delay-1': animateEditors }"
-          >
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-xl font-semibold">Mask</h2>
-              <!-- Remove mask button (only show if mask exists) -->
-              <button
-                v-if="activeModule && activeModule.mask1"
-                @click="handleRemoveMask1"
-                class="w-6 h-6 rounded-full flex items-center justify-center text-sm bg-gray-100 text-gray-600 hover:bg-gray-200"
-                title="Remove mask"
-              >
-                ×
-              </button>
-            </div>
-
-            <div class="flex-grow overflow-auto">
-              <div v-if="activeModule">
-                <!-- Show add mask button if no mask -->
-                <div v-if="!activeModule.mask1" class="flex flex-col items-center justify-center h-full">
-                  <Button
-                    @click="handleAddMask1"
-                    icon="pi pi-plus"
-                    rounded
-                    severity="info"
-                    aria-label="Add Mask"
-                    class="w-12 h-12 !text-xl !flex !items-center !justify-center"
-                  />
-
-
-                  <span class="mt-2 text-gray-500">Add Mask</span>
-                </div>
-                <!-- Show mask editor if mask exists -->
-                <MaskEditor
-                  v-else
-                  :mask="activeModule.mask1"
-                  title="Mask"
-                  @update:mask="handleUpdateMask1"
-                />
-              </div>
-              <div v-else class="text-gray-500 italic">
-                Select or add a module to configure
-              </div>
-            </div>
-          </div>
-
-          <!-- Mask 2 Column -->
-          <div
-            class="col-span-1 bg-white shadow-md p-4 flex flex-col h-full relative transition-all duration-300 ease-in-out"
-            :class="{ 'animate-editor': animateEditors, 'animate-editor-delay-2': animateEditors }"
-          >
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-xl font-semibold">Mask 2</h2>
-              <!-- Remove mask button (only show if mask exists) -->
-              <button
-                v-if="activeModule && activeModule.mask2"
-                @click="handleRemoveMask2"
-                class="w-6 h-6 rounded-full flex items-center justify-center text-sm bg-gray-100 text-gray-600 hover:bg-gray-200"
-                title="Remove mask"
-              >
-                ×
-              </button>
-            </div>
-
-            <div class="flex-grow overflow-auto">
-              <div v-if="activeModule">
-                <!-- Show add mask button if no mask -->
-                <div v-if="!activeModule.mask2" class="flex flex-col items-center justify-center h-full">
-                  <Button
-                    @click="handleAddMask2"
-                    icon="pi pi-plus"
-                    rounded
-                    severity="info"
-                    aria-label="Add Mask"
-                    class="w-12 h-12 !text-xl !flex !items-center !justify-center"
-                  />
-                  <span class="mt-2 text-gray-500">Add Mask</span>
-                </div>
-                <!-- Show mask editor if mask exists -->
-                <MaskEditor
-                  v-else
-                  :mask="activeModule.mask2"
-                  title="Mask 2"
-                  @update:mask="handleUpdateMask2"
-                />
-              </div>
-              <div v-else class="text-gray-500 italic">
-                Select or add a module to configure
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-</template>
 
 <style scoped>
 /* Animation for editors when switching modules */

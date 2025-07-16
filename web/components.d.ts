@@ -19,6 +19,7 @@ declare module 'vue' {
     MaskEditor: typeof import('./src/components/MaskEditor.vue')['default']
     ModuleSequence: typeof import('./src/components/ModuleSequence.vue')['default']
     PlaySaveButtons: typeof import('./src/components/PlaySaveButtons.vue')['default']
+    SaveLocally: typeof import('./src/components/SaveLocally.vue')['default']
     Serial: typeof import('./src/components/Serial.vue')['default']
     SerialConnectButton: typeof import('./src/components/SerialConnectButton.vue')['default']
     Toolbar: typeof import('primevue/toolbar')['default']
