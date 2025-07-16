@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue';
 import Slider from 'primevue/slider';
 import InputText from 'primevue/inputtext';
 import Dropdown from 'primevue/dropdown';
-import { convertTimeValues, ticksToMs, msToTicks } from '@/lib/timeUtils';
+import { convertTimeValues } from '@/lib/timeUtils';
 
 // Constants for duration bounds (in ms)
 const MIN_DURATION_MS = 175; // 7 ticks * 25ms

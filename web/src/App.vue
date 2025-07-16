@@ -6,70 +6,15 @@ import MaskEditor from "@/components/MaskEditor.vue";
 import ModuleSequence from "@/components/ModuleSequence.vue";
 import Button from 'primevue/button';
 import Chip from 'primevue/chip';
-import { ticksToMs, msToTicks, hexColorToUint32} from './lib/timeUtils';
-import { protocol } from "./lib/protobuf/protocol.ts";
+import type { Module } from './lib/module';
+import { protocol } from './lib/protobuf/protocol';
+import { convertUIModulesToProtocol } from './lib/serialiser';
 
+const {
+  Direction,
+  Sequence,
+} = protocol;
 
-// Define the types based on the Protocol structure
-enum Direction {
-  FORWARD = 0,
-  BACKWARD = 1
-}
-
-// Maps UI types to LayerType enum values from protocol
-const effectTypeToLayerType: Record<string, number> = {
-  'single': 0,     // SingleColor
-  'rainbow': 1,    // RainbowColor
-  'sectionsWave': 2, // SectionsWaveColor
-  'sections': 3,   // SectionsColor
-  'fade': 4,       // FadeColor
-  'switch': 5,     // SwitchColor
-  'blink': 50,     // BlinkMask
-  'invert': 51,    // InvertMask
-  'pulseSawtooth': 52, // PulseSawtoothMask
-  'pulse': 53,     // PulseMask
-  'sawtooth': 54,  // SawtoothMask
-  'sectionsWave': 55, // SectionsWaveMask
-  'sections': 56,  // SectionsMask
-  'stars': 57,     // StarsMask
-  'wave': 58,      // WaveMask
-};
-
-// Interfaces to model the protocol structure
-interface Layer {
-  type: number;
-  duration?: number;
-  length?: number;
-  color?: number;
-  gap?: number;
-  frequency?: number;
-  speed?: number;
-  colors?: number[];
-  sections?: Uint8Array;
-}
-
-interface Animation {
-  direction: Direction;
-  duration: number;
-  first_tick?: number;
-  brightness?: number;
-  layers: Layer[];
-}
-
-interface Sequence {
-  animations: Animation[];
-}
-
-// UI Module interface
-interface Module {
-  id: number;
-  name: string;
-  duration: number;
-  direction: Direction;
-  colorEffect: { type: string; [key: string]: any };
-  mask1: { type: string; [key: string]: any } | null;
-  mask2: { type: string; [key: string]: any } | null;
-}
 
 // Sample initial modules - with mask1 present and mask2 null by default
 const modules = ref<Module[]>([
@@ -126,77 +71,10 @@ const formatDuration = (ms: number) => {
   return `${seconds}s`;
 };
 
-// Helper function to convert UI layer (color effect or mask) to protocol Layer
-function convertUILayerToProtocol(uiLayer: { type: string; [key: string]: any }): Layer | null {
-  // Get the protocol layer type
-  const layerType = effectTypeToLayerType[uiLayer.type];
-  if (layerType === undefined) return null;
-
-  const layer: Layer = { type: layerType };
-
-  // Set common parameters based on UI layer
-  if (uiLayer.duration !== undefined) layer.duration = uiLayer.duration;
-  if (uiLayer.length !== undefined) layer.length = uiLayer.length;
-  if (uiLayer.gap !== undefined) layer.gap = uiLayer.gap;
-  if (uiLayer.frequency !== undefined) layer.frequency = uiLayer.frequency;
-  if (uiLayer.speed !== undefined) layer.speed = uiLayer.speed;
-
-  // Handle color for SingleColor
-  if (uiLayer.type === 'single' && uiLayer.color) {
-    layer.color = hexColorToUint32(uiLayer.color);
-  }
-
-  // Handle colors array for multi-color effects
-  if (['fade', 'sections', 'sectionsWave', 'switch'].includes(uiLayer.type) && Array.isArray(uiLayer.colors)) {
-    layer.colors = uiLayer.colors.map(hexColorToUint32);
-  }
-
-  // Handle sections for mask types that need it
-  if (['blink', 'sectionsWave', 'sections'].includes(uiLayer.type) && Array.isArray(uiLayer.sections)) {
-    layer.sections = new Uint8Array(uiLayer.sections);
-  }
-
-  return layer;
-}
-
-// Update the convertUIModulesToProtocol function to use the module's direction
-function convertUIModulesToProtocol(uiModules: Module[]): Animation[] {
-  return uiModules.map(module => {
-    // Create layers array from color effect and masks
-    const layers: Layer[] = [];
-
-    // Add color effect layer
-    if (module.colorEffect) {
-      const colorLayer = convertUILayerToProtocol(module.colorEffect);
-      if (colorLayer) layers.push(colorLayer);
-    }
-
-    // Add mask1 layer if present
-    if (module.mask1) {
-      const maskLayer = convertUILayerToProtocol(module.mask1);
-      if (maskLayer) layers.push(maskLayer);
-    }
-
-    // Add mask2 layer if present
-    if (module.mask2) {
-      const maskLayer = convertUILayerToProtocol(module.mask2);
-      if (maskLayer) layers.push(maskLayer);
-    }
-
-    // Create animation with layers and use the module's direction
-    return {
-      direction: module.direction, // Use module direction instead of hardcoded value
-      duration: msToTicks(module.duration),
-      brightness: 255,
-      layers
-    };
-  });
-}
 
 // Update the currentSequence computed property
-const currentSequence = computed<Sequence>(() => {
-  const animations = convertUIModulesToProtocol(modules.value);
-  return { animations };
+const currentSequence = computed<protocol.Sequence>(() => {
+  return convertUIModulesToProtocol(modules.value);
 });
 
 // Handlers for module sequence events
@@ -248,11 +126,12 @@ const handleSelectModule = (id: number) => {
 };
 
 // Add a handler for direction updates
-const handleUpdateDirection = (id: number, direction: Direction) => {
+const handleUpdateDirection = (id: number, direction: typeof Direction) => {
   const moduleIndex = modules.value.findIndex(m => m.id === id);
   if (moduleIndex !== -1) {
     modules.value[moduleIndex] = {
       ...modules.value[moduleIndex],
+      // @ts-expect-error fucking typescript
       direction
     };
   }
@@ -478,7 +357,8 @@ const chipClass = computed(() => isConnected.value ? 'bg-green-500 text-white' :
 // Play/Save action methods
 const play = () => {
   console.log('Play action triggered');
-  console.log('Sequence data:', currentSequence.value);
+  console.log('Sequence:', currentSequence.value);
+  console.log('Sequence serialized:', currentSequence.value.serializeBinary());
   // Implement your play logic here
 };
 

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, defineProps, defineEmits, watch, computed } from 'vue';
 import Button from 'primevue/button';
-import Tooltip from 'primevue/tooltip';
 
 
 const props = defineProps<{

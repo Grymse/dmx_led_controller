@@ -2,17 +2,7 @@
 import { ref, computed } from 'vue';
 import AnimationModule from './AnimationModule.vue';
 import Button from 'primevue/button';
-
-// Define the Module interface
-interface Module {
-  id: number;
-  name: string;
-  duration: number;
-  direction: number;
-  colorEffect: { type: string; [key: string]: any };
-  mask1: { type: string; [key: string]: any } | null;
-  mask2: { type: string; [key: string]: any } | null;
-}
+import type {Module} from '@/lib/module';
 
 const props = defineProps<{
   modules: Module[];

@@ -4,7 +4,7 @@ import Slider from 'primevue/slider';
 import InputText from 'primevue/inputtext';
 import Dropdown from 'primevue/dropdown';
 import ColorPickerGroup from './ColorPickerGroup.vue';
-import { convertTimeValues, ticksToMs, msToTicks } from '@/lib/timeUtils';
+import { convertTimeValues } from '@/lib/timeUtils';
 
 // Constants for duration bounds (in ms)
 const MIN_DURATION_MS = 175; // 7 ticks * 25ms
@@ -37,6 +37,7 @@ const effectConfigs = {
       { key: 'color', type: 'color', default: '#FF0000', required: true },
     ]
   },
+
   'rainbow': {
     label: 'Rainbow',
     icon: 'pi pi-palette',
@@ -46,6 +47,7 @@ const effectConfigs = {
       { key: 'length', type: 'slider', default: 150, min: 1, max: 500, step: 5, label: 'Length', required: true }
     ]
   },
+
   'sectionsWave': {
     label: 'Sections Wave',
     icon: 'pi pi-sliders-h',
@@ -55,6 +57,7 @@ const effectConfigs = {
       { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
     ]
   },
+
   'sections': {
     label: 'Sections',
     icon: 'pi pi-bars',
@@ -64,6 +67,7 @@ const effectConfigs = {
       { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
     ]
   },
+
   'fade': {
     label: 'Fade',
     icon: 'pi pi-sort-amount-down-alt',
@@ -73,6 +77,7 @@ const effectConfigs = {
       { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
     ]
   },
+
   'switch': {
     label: 'Switch',
     icon: 'pi pi-sync',
