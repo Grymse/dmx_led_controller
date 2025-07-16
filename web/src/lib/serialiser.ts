@@ -78,6 +78,9 @@ enum ModuleType {
 // Helper function to convert UI layer (color effect or mask) to protocol Layer
 function convertUILayerToProtocol(uiLayer: { type: string; [key: string]: any }, type: ModuleType): protocol.Layer | null {
   // Get the protocol layer type
+
+
+
   const layerType = type === ModuleType.COLOR ? colorTypeToLayerType[uiLayer.type] : maskTypeToLayerType[uiLayer.type];
   if (layerType === undefined) return null;
 
@@ -103,8 +106,15 @@ function convertUILayerToProtocol(uiLayer: { type: string; [key: string]: any },
   }
 
   // Handle sections for mask types that need it
-  if (['blink', 'sectionsWave', 'sections'].includes(uiLayer.type) && Array.isArray(uiLayer.sections)) {
-    layer.sections = new Uint8Array(uiLayer.sections);
+  if (['blink', 'sectionsWave', 'sections'].includes(uiLayer.type) && uiLayer.numSections !== undefined) {
+    const sections = new Uint8Array(uiLayer.numSections);
+    for (let i = 0; i < uiLayer.numSections; i++) {
+      sections[i] = uiLayer[`intensity${i+1}`] ?? 0;
+    }
+
+    layer.sections = sections;
+
+    console.log(sections);
   }
 
   return layer;

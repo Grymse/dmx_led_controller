@@ -62,7 +62,30 @@ const maskConfigs: {
     icon: 'pi pi-eye',
     id: 50, // BlinkMask = 50
     params: [
-      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
+      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true },
+      { key: 'numSections', type: 'dropdown', default: 4, options: [
+          { label: '2', value: 2 },
+          { label: '3', value: 3 },
+          { label: '4', value: 4 },
+          { label: '5', value: 5 },
+          { label: '6', value: 6 },
+          { label: '7', value: 7 },
+          { label: '8', value: 8 }
+        ], label: 'Number of Sections', required: true },
+      ...Array.from({ length: 8 }, (_, i) => ({
+        key: `intensity${i + 1}`,
+        type: 'selectbutton',
+        default: 255,
+        options: [
+          { label: '0%', value: 0 },
+          { label: '25%', value: 63 },
+          { label: '50%', value: 127 },
+          { label: '75%', value: 191 },
+          { label: '100%', value: 255 }
+        ],
+        label: `Section ${i + 1} Intensity`,
+        required: true
+      }))
     ]
   },
   'invert': {
@@ -105,7 +128,6 @@ const maskConfigs: {
     params: [
       { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true },
       { key: 'numSections', type: 'dropdown', default: 4, options: [
-          { label: '1', value: 1 },
           { label: '2', value: 2 },
           { label: '3', value: 3 },
           { label: '4', value: 4 },
@@ -137,7 +159,6 @@ const maskConfigs: {
     params: [
       { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true },
       { key: 'numSections', type: 'dropdown', default: 4, options: [
-          { label: '1', value: 1 },
           { label: '2', value: 2 },
           { label: '3', value: 3 },
           { label: '4', value: 4 },
@@ -330,7 +351,7 @@ function getIconForParam(paramKey: string) {
       </template>
 
       <!-- SelectButton Parameters for intensity -->
-      <template v-if="currentMaskConfig.label === 'Sections Wave' || currentMaskConfig.label === 'Sections'">
+      <template v-if="currentMaskConfig.label === 'Sections Wave' || currentMaskConfig.label === 'Sections' || currentMaskConfig.label === 'Blink'" >
         <div v-for="i in uiMask.numSections" :key="`intensity${i}`" class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-1">
             <i class="pi pi-sliders-v mr-1"></i>

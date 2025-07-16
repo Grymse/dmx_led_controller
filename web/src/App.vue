@@ -212,6 +212,10 @@ const modules = ref<Module[]>([
   }
 ]);
 
+/* watch(modules, (newModules) => {
+  console.log('Modules updated:', newModules);
+}, { deep: true }); */
+
 // Track active module
 const activeModuleId = ref<number | null>(modules.value.length > 0 ? modules.value[0].id : null);
 const previousActiveModuleId = ref<number | null>(null);
@@ -543,7 +547,6 @@ const playAndSave = () => {
 const playSaveButtons = ref(null);
 // For debugging: log the current sequence when it changes
 watch(currentSequence, (newSequence) => {
-  console.log('Current sequence updated:', newSequence);
   playSaveButtons.value?.handlePlay();
 }, { deep: true });
 
