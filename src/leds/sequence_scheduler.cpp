@@ -96,7 +96,7 @@ void SequenceScheduler::update() {
   if (animations.size() == 0) return;
 
   // Exceeded current steps duration => move to next step
-  if (animations[currentAnimation]->tickDuration <= tick) {
+  if (animations.size() != 1 && animations[currentAnimation]->tickDuration <= tick) {
     tick = 0;
     currentAnimation++;
   }
