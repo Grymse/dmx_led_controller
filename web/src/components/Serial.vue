@@ -14,6 +14,7 @@ import { CRGB } from '@/protobuf-example.ts';
   } = protocol;
 
   const serialStore = useSerialStore();
+
   const dataToSend = ref('');
 
   // Optional: Automatically disconnect when the component is unmounted
@@ -22,6 +23,8 @@ import { CRGB } from '@/protobuf-example.ts';
       serialStore.disconnectSerial();
     }
   });
+
+  serialStore.connectSerial();
 
 
 

@@ -11,8 +11,17 @@ interface SerialState {
   isConnected: boolean;
   error: string | null;
 }
+
+interface SerialActions {
+  connectSerial(): Promise<void>;
+  readSerial(): Promise<void>;
+  writeSerial(data: Uint8Array): Promise<void>;
+  disconnectSerial(): Promise<void>;
+}
+
+
 // Add the generic type to defineStore for type safety
-export const useSerialStore = defineStore<'serial', SerialState>('serial', {
+export const useSerialStore = defineStore<'serial', SerialState, {}, SerialActions>('serial', {
   state: (): SerialState => ({
     port: null,
     reader: null,
