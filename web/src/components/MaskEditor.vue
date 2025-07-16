@@ -4,6 +4,7 @@ import Slider from 'primevue/slider';
 import InputText from 'primevue/inputtext';
 import Dropdown from 'primevue/dropdown';
 import { convertTimeValues } from '@/lib/timeUtils';
+import SelectButton from 'primevue/selectbutton';
 
 // Constants for duration bounds (in ms)
 const MIN_DURATION_MS = 175; // 7 ticks * 25ms
@@ -37,8 +38,25 @@ const updateMask = (updates: any) => {
   emit('update:mask', { ...props.mask, ...tickUpdates });
 };
 
-// Define the configuration for each mask type
-const maskConfigs = {
+const maskConfigs: {
+  [key: string]: {
+    label: string;
+    icon: string;
+    id: number;
+    params: {
+      key: string;
+      type: string;
+      default: number;
+      min?: number;
+      max?: number;
+      step?: number;
+      label: string;
+      unit?: string;
+      required: boolean;
+      options?: { label: string; value: number }[];
+    }[];
+  };
+} = {
   'blink': {
     label: 'Blink',
     icon: 'pi pi-eye',
@@ -85,7 +103,31 @@ const maskConfigs = {
     icon: 'pi pi-sliders-h',
     id: 55, // SectionsWaveMask = 55
     params: [
-      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
+      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true },
+      { key: 'numSections', type: 'dropdown', default: 4, options: [
+          { label: '1', value: 1 },
+          { label: '2', value: 2 },
+          { label: '3', value: 3 },
+          { label: '4', value: 4 },
+          { label: '5', value: 5 },
+          { label: '6', value: 6 },
+          { label: '7', value: 7 },
+          { label: '8', value: 8 }
+        ], label: 'Number of Sections', required: true },
+      ...Array.from({ length: 8 }, (_, i) => ({
+        key: `intensity${i + 1}`,
+        type: 'selectbutton',
+        default: 255,
+        options: [
+          { label: '0%', value: 0 },
+          { label: '25%', value: 63 },
+          { label: '50%', value: 127 },
+          { label: '75%', value: 191 },
+          { label: '100%', value: 255 }
+        ],
+        label: `Section ${i + 1} Intensity`,
+        required: true
+      }))
     ]
   },
   'sections': {
@@ -93,7 +135,31 @@ const maskConfigs = {
     icon: 'pi pi-table',
     id: 56, // SectionsMask = 56
     params: [
-      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
+      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true },
+      { key: 'numSections', type: 'dropdown', default: 4, options: [
+          { label: '1', value: 1 },
+          { label: '2', value: 2 },
+          { label: '3', value: 3 },
+          { label: '4', value: 4 },
+          { label: '5', value: 5 },
+          { label: '6', value: 6 },
+          { label: '7', value: 7 },
+          { label: '8', value: 8 }
+        ], label: 'Number of Sections', required: true },
+      ...Array.from({ length: 8 }, (_, i) => ({
+        key: `intensity${i + 1}`,
+        type: 'selectbutton',
+        default: 255,
+        options: [
+          { label: '0%', value: 0 },
+          { label: '25%', value: 63 },
+          { label: '50%', value: 127 },
+          { label: '75%', value: 191 },
+          { label: '100%', value: 255 }
+        ],
+        label: `Section ${i + 1} Intensity`,
+        required: true
+      }))
     ]
   },
   'stars': {
@@ -117,7 +183,6 @@ const maskConfigs = {
     ]
   }
 };
-
 // Generate maskTypes array for select dropdown
 const maskTypes = Object.entries(maskConfigs).map(([value, config]) => ({
   value,
@@ -188,7 +253,6 @@ function getIconForParam(paramKey: string) {
   }
 }
 </script>
-
 <template>
   <div>
     <div class="mb-4">
@@ -247,6 +311,45 @@ function getIconForParam(paramKey: string) {
               />
             </div>
           </div>
+        </div>
+        <!-- Dropdown Parameter -->
+        <div v-else-if="param.type === 'dropdown'" class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            <i :class="getIconForParam(param.key)" class="mr-1"></i>
+            {{ param.label }}
+          </label>
+          <Dropdown
+            v-model="uiMask[param.key]"
+            :options="param.options"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+            @change="updateMask({ [param.key]: uiMask[param.key] })"
+          />
+        </div>
+      </template>
+
+      <!-- SelectButton Parameters for intensity -->
+      <template v-if="currentMaskConfig.label === 'Sections Wave' || currentMaskConfig.label === 'Sections'">
+        <div v-for="i in uiMask.numSections" :key="`intensity${i}`" class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            <i class="pi pi-sliders-v mr-1"></i>
+            Section {{ i }} Intensity
+          </label>
+          <SelectButton
+            v-model="uiMask[`intensity${i}`]"
+            :options="[
+              { label: '0%', value: 0 },
+              { label: '25%', value: 63 },
+              { label: '50%', value: 127 },
+              { label: '75%', value: 191 },
+              { label: '100%', value: 255 }
+            ]"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+            @change="updateMask({ [`intensity${i}`]: uiMask[`intensity${i}`] })"
+          />
         </div>
       </template>
     </div>
