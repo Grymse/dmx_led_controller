@@ -9,8 +9,8 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AnimationModule: typeof import('./src/components/AnimationModule.vue')['default']
+    Badge: typeof import('primevue/badge')['default']
     Bluetooth: typeof import('./src/components/Bluetooth.vue')['default']
-    Serial: typeof import('./src/components/Serial.vue')['default']
     BluetoothMenu: typeof import('./src/components/BluetoothMenu.vue')['default']
     Button: typeof import('primevue/button')['default']
     ColorEffectEditor: typeof import('./src/components/ColorEffectEditor.vue')['default']
@@ -18,6 +18,9 @@ declare module 'vue' {
     InputSwitch: typeof import('primevue/inputswitch')['default']
     MaskEditor: typeof import('./src/components/MaskEditor.vue')['default']
     ModuleSequence: typeof import('./src/components/ModuleSequence.vue')['default']
+    PlaySaveButtons: typeof import('./src/components/PlaySaveButtons.vue')['default']
+    Serial: typeof import('./src/components/Serial.vue')['default']
+    SerialConnectButton: typeof import('./src/components/SerialConnectButton.vue')['default']
     Toolbar: typeof import('primevue/toolbar')['default']
   }
   export interface GlobalDirectives {

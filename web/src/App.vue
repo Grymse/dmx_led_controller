@@ -8,6 +8,8 @@ import Button from 'primevue/button';
 import Chip from 'primevue/chip';
 import { ticksToMs, msToTicks, hexColorToUint32} from './lib/timeUtils';
 import { protocol } from "./lib/protobuf/protocol.ts";
+import { useSerialStore } from './stores/serial.ts';
+import SerialConnectButton from "@/components/SerialConnectButton.vue";
 
 
 // Define the types based on the Protocol structure
@@ -471,9 +473,9 @@ const handleUpdateDuration = (id: number, durationMs: number) => {
 };
 
 // Connection status (basic implementation)
-const isConnected = ref(false);
-const connectionStatus = computed(() => isConnected.value ? 'Connected' : 'Disconnected');
-const chipClass = computed(() => isConnected.value ? 'bg-green-500 text-white' : 'bg-red-500 text-white');
+const serialStore = useSerialStore();
+const connectionStatus = computed(() => serialStore.isConnected ? 'Connected' : 'Disconnected');
+const chipClass = computed(() => serialStore.isConnected ? 'bg-green-500 text-white' : 'bg-red-500 text-white');
 
 // Play/Save action methods
 const play = () => {
@@ -562,17 +564,14 @@ const handleRemoveModule = (id: number) => {
 
           <!-- Control buttons (moved from BluetoothMenu) -->
           <div class="flex flex-row items-center gap-4">
+            <SerialConnectButton />
             <!-- Connection Status Chip -->
             <div class="flex items-center gap-2">
               <span>Status:</span>
-              <Chip :label="connectionStatus" :class="chipClass" />
+              <Badge :value="connectionStatus" class="text-white" :severity="serialStore.isConnected ? 'success' : 'danger'" />
             </div>
-
             <!-- Button Group for Controls -->
-            <div class="flex">
-              <Button class="mr-2" label="Play" icon="pi pi-play" @click="play" />
-              <Button label="Save to lamp" icon="pi pi-save" @click="playAndSave" />
-            </div>
+            <PlaySaveButtons @save="playAndSave" />
           </div>
         </div>
 
