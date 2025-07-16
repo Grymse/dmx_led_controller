@@ -72,7 +72,7 @@ import { CRGB } from '@/protobuf-example.ts';
 </script>
 
 <template>
-  <div id="app">
+  <div class="app">
     <h1>Web Serial with Pinia</h1>
 
     <div class="controls">
@@ -100,7 +100,7 @@ import { CRGB } from '@/protobuf-example.ts';
 
 <style scoped>
 /* Add your CSS from the previous example here, or adapt for your Vue app */
-#app {
+.app {
   font-family: sans-serif;
   margin: 20px;
   background-color: #f4f4f4;
