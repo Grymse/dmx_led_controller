@@ -8,7 +8,19 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AnimationModule: typeof import('./src/components/AnimationModule.vue')['default']
     Bluetooth: typeof import('./src/components/Bluetooth.vue')['default']
     Serial: typeof import('./src/components/Serial.vue')['default']
+    BluetoothMenu: typeof import('./src/components/BluetoothMenu.vue')['default']
+    Button: typeof import('primevue/button')['default']
+    ColorEffectEditor: typeof import('./src/components/ColorEffectEditor.vue')['default']
+    ColorPickerGroup: typeof import('./src/components/ColorPickerGroup.vue')['default']
+    InputSwitch: typeof import('primevue/inputswitch')['default']
+    MaskEditor: typeof import('./src/components/MaskEditor.vue')['default']
+    ModuleSequence: typeof import('./src/components/ModuleSequence.vue')['default']
+    Toolbar: typeof import('primevue/toolbar')['default']
+  }
+  export interface GlobalDirectives {
+    Tooltip: typeof import('primevue/tooltip')['default']
   }
 }

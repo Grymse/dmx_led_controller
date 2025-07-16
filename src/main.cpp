@@ -17,8 +17,8 @@
 #include "leds/generators/generators.h"
 /* #include "dmx/dmx.h" */
 #include "connectivity/serialization/message_decoder.h"
-/* #include "connectivity/bluetooth.h" */
-#include "connectivity/serial_reader.cpp"
+#include "state/binary_store.h"
+#include "connectivity/name_generator.h"
 
 #define CE_PIN 0
 #define CSN_PIN 10
@@ -140,6 +140,8 @@ public:
   String getName() override { return "ReadFromPC"; }
 };
 
+BinaryStore store("config", "program"); // Used to store the program on the flash memory
+
 void setup() {
   // put your setup code here, to run once:
   scheduler = ProcessScheduler();
@@ -166,10 +168,13 @@ void setup() {
   scheduler.addProcess(sequenceScheduler, 1000 / frames_per_second);
   scheduler.addProcess(new ReadFromPC(), 20);
 
-  sequenceScheduler->add( {
-        new FadeColor({CRGB(255, 0, 0), CRGB(255, 255, 255)}, 1200),
-        new StarsMask(300, 5, 1),
-    }, 10000);
+  sequenceScheduler->add({
+    new FadeColor({CRGB(255, 0, 0),CRGB(255, 255, 255)}, 1200),
+    new StarsMask(300, 5, 1),
+  }, 10000);
+/* 
+  const uint8_t defaultProgram[] = { 0xAA, 0xBB, 0xCC, 0xDD };
+  store.saveDefaultIfEmpty(defaultProgram, sizeof(defaultProgram)); */
 }
 
 void loop() {
