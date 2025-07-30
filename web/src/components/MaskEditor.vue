@@ -99,7 +99,7 @@ const maskConfigs: {
     icon: 'pi pi-chart-line',
     id: 52, // PulseSawtoothMask = 52
     params: [
-      { key: 'gap', type: 'slider', default: 150, min: 0, max: 500, step: 5, label: 'Gap', required: true },
+      { key: 'gap', type: 'slider', default: 150, min: 0, max: 500, step: 5, label: 'Gap', unit: 'ms', required: true },
       { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
     ]
   },
@@ -108,7 +108,8 @@ const maskConfigs: {
     icon: 'pi pi-heart',
     id: 53, // PulseMask = 53
     params: [
-      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true }
+      { key: 'duration', type: 'slider', default: 1000, min: MIN_DURATION_MS, max: MAX_DURATION_MS, step: 25, label: 'Duration', unit: 'ms', required: true },
+      { key: 'gap', type: 'slider', default: 150, min: 0, max: 500, step: 5, label: 'Gap', unit: 'ms', required: true },
     ]
   },
   'sawtooth': {
