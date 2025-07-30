@@ -44,7 +44,7 @@ CRGB WaveMask::apply(CRGB color, LEDState* state) {
   float intensity = (LayerUtils::mod(x, this->wavelength + this->wavegap) / this->wavelength) * 512;
 
   if (255 < intensity) {
-    intensity = 511 - intensity;
+    intensity = 510 - intensity;
   }
 
   // turn 0 - 255 into a curve,

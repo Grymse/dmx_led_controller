@@ -40,7 +40,7 @@ CRGB PulseMask::apply(CRGB color, LEDState* state) {
     intensity = 1 - intensity;
   }
 
-  intensity = 4 * intensity * intensity * 255;
+  intensity = 4 * intensity * intensity * 254;
 
   return color.scale8(intensity);
 }
