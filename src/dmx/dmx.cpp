@@ -1,8 +1,6 @@
 #include "dmx.h"
-#include "esp_dmx.h"
 
 // Global variable definitions
-u16_t DMX_START = 3; // 3, 18
 u8_t channels[16] = {0};
 u8_t prevChannels[16] = {0};
 
@@ -17,7 +15,7 @@ u8_t prevChannels[16] = {0};
  * 2: Red
  * 3: Green
  * 4: Blue
- * 5: Direction (0-127 = FORWARD, 128-255 = BACKWARD)
+ * 5: Offset/Direction (0-127 = FORWARD, 128-255 = BACKWARD)
  * 6: UNUSED (Intended for rainbow effect, but not implemented)
  * 7: UNUSED (Intended for rainbow effect, but not implemented)
  * 8: Mask 1 type (1-9)
@@ -177,30 +175,10 @@ void dmx_to_animation(Animator* animator, u8_t* channels) {
     memcpy(prevChannels, channels, sizeof(prevChannels));
 }
 
-
-
-const int tx_pin = 21;
-const int rx_pin = 20;
-const int rts_pin = 10;
-const dmx_port_t dmx_num = DMX_NUM_1;
-
-ReadDMXProcess::ReadDMXProcess(Animator* animator) : Process() {
+ReadDMXProcess::ReadDMXProcess(Animator* animator, u16_t dmx_address) : Process() {
     this->animator = animator;
-
-    // First, use the default DMX configuration...
-    dmx_config_t config = DMX_CONFIG_DEFAULT;
-
-    // ...declare the driver's DMX personalities...
-    const int personality_count = 1;
-    dmx_personality_t personalities[] = {
-    {1, "Default Personality"}
-    };
-
-    // ...install the DMX driver...
-    dmx_driver_install(dmx_num, &config, personalities, personality_count);
-
-    // ...and then set the communication pins!
-    dmx_set_pin(dmx_num, tx_pin, rx_pin, rts_pin);
+    this->dmx_address = dmx_address;
+    DMX::Initialize(input);
 }
 
 String ReadDMXProcess::getName() {
@@ -208,51 +186,20 @@ String ReadDMXProcess::getName() {
 }
 
 void ReadDMXProcess::update() {
-    // Given the MAX485 often reads faulty data, I've temporarily added a hack, where
-    // the DMX controller outputs 123 and 234 on channels 1 and 2, respectively.
-    // If these values are not present, we assume the DMX data is invalid,
-    // and we do not update the animation.
-    /* if (DMX::Read(1) != 123 || DMX::Read(2) != 234) {
-        return;
-    } */
 
-    // Depending on addresses, we read the DMX data.
-    // TODO: Change to DMX::ReadAll(uint8_t * data, uint16_t start, size_t size).
-    // Do not that this will copy to the same indexes, so the channels array have to
-    // be larger. Otherwise, we can also use DMX_IGNORE_THREADSAFETY = 1, which makes
-    // Read quicker, as no semaphore is used.
-    
-    unsigned long startTime = millis();
-    dmx_packet_t packet;
-    int size = dmx_receive_num(dmx_num, &packet, 128, DMX_TIMEOUT_TICK);
+    u8_t read[128] = {0};
+    DMX::ReadAll(read, 1, 120);
 
-    
-    dmx_read(dmx_num, channels, 15);
+    printf("H%d ", DMX::IsHealthy());
     for (int i = 0; i < 15; ++i) {
-        printf("%d ", channels[i+1]);
+        /* channels[i+1] = DMX::Read(i + this->dmx_address); */
+        printf("%d ", read[i+1]);
     }
-
     printf("\n");
 
-    unsigned long elapsedTime = millis() - startTime;
-    printf("%lu ms\n", elapsedTime);
-
-    
-    /* if (size > 0) {
-
-        // Optionally handle RDM requests
-        if (packet.is_rdm) {
-        rdm_send_response(dmx_num);
-        }
-
-        // Process data here...
-    } */
-
-    // Do other work here...
-
-
-    // Map the DMX channels to the animation.
-    /* if (animator != nullptr) {
+    /* // Map the DMX channels to the animation.
+    if (animator != nullptr) {
         dmx_to_animation(animator, channels);
     } */
 }
+

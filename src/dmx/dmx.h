@@ -8,13 +8,13 @@
 #include "../leds/layers/layer.h"
 #include "../leds/layers/colors/colors.h"
 #include "../leds/layers/masks/masks.h"
+#include "dmx_lib.h"
 
 // Type definitions
 typedef uint8_t u8_t;
 typedef uint16_t u16_t;
 
 // Global variables
-extern u16_t DMX_START;
 extern u8_t channels[16];
 extern u8_t prevChannels[16];
 
@@ -29,10 +29,11 @@ void dmx_to_animation(Animator* animator, u8_t* channels);
 // Process class for reading DMX data
 class ReadDMXProcess : public Process {
 private:
+    u16_t dmx_address;
     Animator* animator;
 
 public:
-    ReadDMXProcess(Animator* animator); // Parameterized constructor
+    ReadDMXProcess(Animator* animator, u16_t dmx_address); // Parameterized constructor
     String getName() override;
     void update() override;
 };

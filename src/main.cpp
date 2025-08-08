@@ -24,6 +24,7 @@
 #define LED_PIN 7
 #define NUM_LEDS 300
 #define BUILTIN_LED 8
+#define DMX_START 1
 const uint16_t MAX_BUFFER_SIZE = 1028;
 CRGB *leds = new CRGB[NUM_LEDS];
 RF24 radio = RF24(CE_PIN, CSN_PIN);
@@ -173,7 +174,7 @@ void setup() {
   messageDecoder->setOnSaveStateReceived(onReceiveSaveState);
 
   scheduler.addProcess(animator, 1000 / frames_per_second);
-  scheduler.addProcess(new ReadDMXProcess(animator), 1000 / frames_per_second); // Update every 25ms
+  scheduler.addProcess(new ReadDMXProcess(animator, DMX_START), 1000 / frames_per_second); // Update every 25ms
 
   // Set virtual offset for the animator. This is used when multiple LED strips
   // are chained together, and second device needs to act as if it's leds are

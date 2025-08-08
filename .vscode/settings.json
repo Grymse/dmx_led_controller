@@ -59,7 +59,8 @@
     "mutex": "cpp",
     "thread": "cpp",
     "protocol.pb.h": "c",
-    "list": "cpp"
+    "list": "cpp",
+    "bitset": "cpp"
   },
   "cSpell.words": [
     "CRGB"

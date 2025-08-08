@@ -26,11 +26,11 @@
 
 #define HEALTHY_TIME            500         // timeout in ms 
 
-#define BUF_SIZE                1024        //  buffer size for rx events
+#define BUF_SIZE                2048        //  buffer size for rx events
 
 #define DMX_CORE                0           // select the core the rx/tx thread should run on
 
-#define DMX_IGNORE_THREADSAFETY 1           // set to 1 to disable all threadsafe mechanisms
+#define DMX_IGNORE_THREADSAFETY 0           // set to 1 to disable all threadsafe mechanisms
 
 QueueHandle_t DMX::dmx_rx_queue;
 
@@ -57,7 +57,7 @@ void DMX::Initialize(DMXDirection direction)
         .baud_rate = 250000,
         .data_bits = UART_DATA_8_BITS,
         .parity = UART_PARITY_DISABLE,
-        .stop_bits = UART_STOP_BITS_2,
+        .stop_bits = UART_STOP_BITS_1,
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
     };
 
