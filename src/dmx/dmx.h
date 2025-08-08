@@ -8,7 +8,6 @@
 #include "../leds/layers/layer.h"
 #include "../leds/layers/colors/colors.h"
 #include "../leds/layers/masks/masks.h"
-#include "dmx_lib.h"
 
 // Type definitions
 typedef uint8_t u8_t;

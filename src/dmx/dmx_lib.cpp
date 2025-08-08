@@ -18,8 +18,8 @@
 #include "dmx_lib.h"
 #include <Arduino.h>
 
-#define DMX_SERIAL_INPUT_PIN    GPIO_NUM_4 // pin for dmx rx
-#define DMX_SERIAL_OUTPUT_PIN   GPIO_NUM_2 // pin for dmx tx
+#define DMX_SERIAL_INPUT_PIN    GPIO_NUM_20 // pin for dmx rx
+#define DMX_SERIAL_OUTPUT_PIN   GPIO_NUM_21 // pin for dmx tx
 #define DMX_SERIAL_IO_PIN       GPIO_NUM_3  // pin for dmx rx/tx change
 
 #define DMX_UART_NUM            UART_NUM_1  // dmx uart
@@ -30,7 +30,7 @@
 
 #define DMX_CORE                0           // select the core the rx/tx thread should run on
 
-#define DMX_IGNORE_THREADSAFETY 0           // set to 1 to disable all threadsafe mechanisms
+#define DMX_IGNORE_THREADSAFETY 1           // set to 1 to disable all threadsafe mechanisms
 
 QueueHandle_t DMX::dmx_rx_queue;
 

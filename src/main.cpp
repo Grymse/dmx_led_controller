@@ -13,9 +13,8 @@
 #include "leds/serialization/sequence_decoder.h"
 #include "leds/serialization/sequence_encoder.h"
 #include "scheduler/scheduler.h"
-/* #include "connectivity/espnow.h" */
 #include "leds/generators/generators.h"
-/* #include "dmx/dmx.h" */
+#include "dmx/dmx.h"
 #include "connectivity/serialization/message_decoder.h"
 #include "state/binary_store.h"
 #include "connectivity/name_generator.h"
@@ -167,15 +166,14 @@ void setup() {
   FastLED.addLeds<WS2812B, LED_PIN, RGB>(leds, NUM_LEDS);
 
   animator = new Animator(leds, NUM_LEDS);
-  sequenceScheduler = new SequenceScheduler(animator);
+  /* sequenceScheduler = new SequenceScheduler(animator); */
   messageDecoder = new MessageDecoder();
 
   messageDecoder->setOnSequenceReceived(onReceiveSequence);
   messageDecoder->setOnSaveStateReceived(onReceiveSaveState);
 
   scheduler.addProcess(animator, 1000 / frames_per_second);
-  // scheduler.addProcess(new ReadDMXProcess(animator), 1000 /
-  // frames_per_second); // Update every 25ms
+  scheduler.addProcess(new ReadDMXProcess(animator), 1000 / frames_per_second); // Update every 25ms
 
   // Set virtual offset for the animator. This is used when multiple LED strips
   // are chained together, and second device needs to act as if it's leds are
@@ -183,14 +181,9 @@ void setup() {
   // leds 300-599
   animator->setVirtualOffset(0);
 
-  scheduler.addProcess(sequenceScheduler, 1000 / frames_per_second);
-
-  sequenceScheduler->add({
-    new FadeColor({CRGB(255, 0, 0),CRGB(0, 255, 0),CRGB(0, 0, 255)}, 1200),
-    new StarsMask(300, 5, 1),
-  }, 10000);
+  /* scheduler.addProcess(sequenceScheduler, 1000 / frames_per_second);
   
-  scheduler.addProcess(new ReadFromPC(), 20);
+  scheduler.addProcess(new ReadFromPC(), 20); */
 
 /* 
   const uint8_t defaultProgram[] = { 0xAA, 0xBB, 0xCC, 0xDD };

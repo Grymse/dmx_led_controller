@@ -1,4 +1,5 @@
 #include "dmx.h"
+#include "esp_dmx.h"
 
 // Global variable definitions
 u16_t DMX_START = 3; // 3, 18
@@ -176,9 +177,30 @@ void dmx_to_animation(Animator* animator, u8_t* channels) {
     memcpy(prevChannels, channels, sizeof(prevChannels));
 }
 
+
+
+const int tx_pin = 21;
+const int rx_pin = 20;
+const int rts_pin = 10;
+const dmx_port_t dmx_num = DMX_NUM_1;
+
 ReadDMXProcess::ReadDMXProcess(Animator* animator) : Process() {
     this->animator = animator;
-    DMX::Initialize(input);
+
+    // First, use the default DMX configuration...
+    dmx_config_t config = DMX_CONFIG_DEFAULT;
+
+    // ...declare the driver's DMX personalities...
+    const int personality_count = 1;
+    dmx_personality_t personalities[] = {
+    {1, "Default Personality"}
+    };
+
+    // ...install the DMX driver...
+    dmx_driver_install(dmx_num, &config, personalities, personality_count);
+
+    // ...and then set the communication pins!
+    dmx_set_pin(dmx_num, tx_pin, rx_pin, rts_pin);
 }
 
 String ReadDMXProcess::getName() {
@@ -190,21 +212,47 @@ void ReadDMXProcess::update() {
     // the DMX controller outputs 123 and 234 on channels 1 and 2, respectively.
     // If these values are not present, we assume the DMX data is invalid,
     // and we do not update the animation.
-    if (DMX::Read(1) != 123 || DMX::Read(2) != 234) {
+    /* if (DMX::Read(1) != 123 || DMX::Read(2) != 234) {
         return;
-    }
+    } */
 
     // Depending on addresses, we read the DMX data.
     // TODO: Change to DMX::ReadAll(uint8_t * data, uint16_t start, size_t size).
     // Do not that this will copy to the same indexes, so the channels array have to
     // be larger. Otherwise, we can also use DMX_IGNORE_THREADSAFETY = 1, which makes
     // Read quicker, as no semaphore is used.
+    
+    unsigned long startTime = millis();
+    dmx_packet_t packet;
+    int size = dmx_receive_num(dmx_num, &packet, 128, DMX_TIMEOUT_TICK);
+
+    
+    dmx_read(dmx_num, channels, 15);
     for (int i = 0; i < 15; ++i) {
-        channels[i+1] = DMX::Read(i + DMX_START);
+        printf("%d ", channels[i+1]);
     }
 
+    printf("\n");
+
+    unsigned long elapsedTime = millis() - startTime;
+    printf("%lu ms\n", elapsedTime);
+
+    
+    /* if (size > 0) {
+
+        // Optionally handle RDM requests
+        if (packet.is_rdm) {
+        rdm_send_response(dmx_num);
+        }
+
+        // Process data here...
+    } */
+
+    // Do other work here...
+
+
     // Map the DMX channels to the animation.
-    if (animator != nullptr) {
+    /* if (animator != nullptr) {
         dmx_to_animation(animator, channels);
-    }
+    } */
 }
