@@ -26,7 +26,7 @@
 
 #define HEALTHY_TIME            500         // timeout in ms 
 
-#define BUF_SIZE                2048        //  buffer size for rx events
+#define BUF_SIZE                1028        //  buffer size for rx events
 
 #define DMX_CORE                0           // select the core the rx/tx thread should run on
 
@@ -43,11 +43,9 @@ uint16_t DMX::current_rx_addr = 0;
 long DMX::last_dmx_packet = 0;
 
 uint8_t DMX::dmx_data[513];
+// Working buffer will be added after header update
 
-DMX::DMX()
-{
-
-}
+DMX::DMX() {}
 
 void DMX::Initialize(DMXDirection direction)
 {
@@ -67,7 +65,7 @@ void DMX::Initialize(DMXDirection direction)
     uart_set_pin(DMX_UART_NUM, DMX_SERIAL_OUTPUT_PIN, DMX_SERIAL_INPUT_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 
     // install queue
-    uart_driver_install(DMX_UART_NUM, BUF_SIZE * 2, BUF_SIZE * 2, 20, &dmx_rx_queue, 0);
+    uart_driver_install(DMX_UART_NUM, BUF_SIZE * 4, BUF_SIZE * 4, 20, &dmx_rx_queue, 0);
 
     // create mutex for syncronisation
     sync_dmx = xSemaphoreCreateMutex();
@@ -213,6 +211,10 @@ void DMX::uart_event_task(void *pvParameters)
 {
     uart_event_t event;
     uint8_t* dtmp = (uint8_t*) malloc(BUF_SIZE);
+    uint8_t dmx_buffer[513];  // Working buffer for incoming data
+    bool packet_complete = false;
+    uint16_t buffer_addr = 0;
+    
     for(;;)
     {
         // wait for data in the dmx_queue
@@ -230,54 +232,78 @@ void DMX::uart_event_task(void *pvParameters)
                         // if not 0, then RDM or custom protocol
                         if(dtmp[0] == 0)
                         {
-                        dmx_state = DMX_DATA;
-                        // reset dmx adress to 0
-                        current_rx_addr = 0;
-#ifndef DMX_IGNORE_THREADSAFETY
-                        xSemaphoreTake(sync_dmx, portMAX_DELAY);
-#endif
-                        // store received timestamp
-                        last_dmx_packet = xTaskGetTickCount();
-#ifndef DMX_IGNORE_THREADSAFETY
-                        xSemaphoreGive(sync_dmx);
-#endif
+                            dmx_state = DMX_DATA;
+                            // reset buffer address to 1 (skip start code)
+                            buffer_addr = 1;
+                            packet_complete = false;
+                            // Clear the working buffer
+                            memset(dmx_buffer, 0, sizeof(dmx_buffer));
+                            // Store start code in position 0
+                            dmx_buffer[0] = dtmp[0];
+                            
+                            // Process remaining bytes in this packet
+                            for(int i = 1; i < event.size; i++)
+                            {
+                                if(buffer_addr < 513)
+                                {
+                                    dmx_buffer[buffer_addr++] = dtmp[i];
+                                }
+                            }
                         }
                     }
                     // check if in data receive mode
-                    if(dmx_state == DMX_DATA)
+                    else if(dmx_state == DMX_DATA)
+                    {
+                        // copy received bytes to working buffer
+                        for(int i = 0; i < event.size; i++)
+                        {
+                            if(buffer_addr < 513)
+                            {
+                                dmx_buffer[buffer_addr++] = dtmp[i];
+                            }
+                        }
+                    }
+                    
+                    // Check if we have received a complete packet (513 bytes total)
+                    if(buffer_addr >= 513)
+                    {
+                        packet_complete = true;
+                    }
+                    break;
+                case UART_BREAK:
+                    // If we have a complete packet, copy it to main array
+                    if(packet_complete && buffer_addr >= 513)
                     {
 #ifndef DMX_IGNORE_THREADSAFETY
                         xSemaphoreTake(sync_dmx, portMAX_DELAY);
 #endif
-                        // copy received bytes to dmx data array
-                        for(int i = 0; i < event.size; i++)
-                        {
-                            if(current_rx_addr < 513)
-                            {
-                                dmx_data[current_rx_addr++] = dtmp[i];
-                            }
-                        }
+                        // Copy only the channel data (skip start code at index 0)
+                        // dmx_data[0] stays 0, channels 1-512 get data from dmx_buffer[1-512]
+                        memcpy(&dmx_data[1], &dmx_buffer[1], 512);
+                        last_dmx_packet = xTaskGetTickCount();
 #ifndef DMX_IGNORE_THREADSAFETY
                         xSemaphoreGive(sync_dmx);
 #endif
                     }
-                    break;
-                case UART_BREAK:
-                    // break detected
-                    // clear queue und flush received bytes                    
+                    
+                    // Reset for new packet
                     uart_flush_input(DMX_UART_NUM);
                     xQueueReset(dmx_rx_queue);
                     dmx_state = DMX_BREAK;
+                    packet_complete = false;
+                    buffer_addr = 0;
                     break;
                 case UART_FRAME_ERR:
                 case UART_PARITY_ERR:
                 case UART_BUFFER_FULL:
                 case UART_FIFO_OVF:
                 default:
-                    // error recevied, going to idle mode
+                    // error received, going to idle mode
                     uart_flush_input(DMX_UART_NUM);
                     xQueueReset(dmx_rx_queue);
                     dmx_state = DMX_IDLE;
+                    packet_complete = false;
+                    buffer_addr = 0;
                     break;
             }
         }

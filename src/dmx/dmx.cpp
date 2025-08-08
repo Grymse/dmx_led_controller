@@ -4,20 +4,15 @@
 u8_t channels[16] = {0};
 u8_t prevChannels[16] = {0};
 
-// NOTE: The DMX protocol expects 123, 234 on channels 1 and 2, respectively.
-// This is a hack to ensure that the DMX controller is working correctly.
-// This hack is done as the MAX485 often reads faulty data, and this
-// ensures that we only update the animation if the DMX controller is working correctly.
-
 /**
  * DMX PROTOCOL
  * 1: Dimmer
  * 2: Red
  * 3: Green
  * 4: Blue
- * 5: Offset/Direction (0-127 = FORWARD, 128-255 = BACKWARD)
- * 6: UNUSED (Intended for rainbow effect, but not implemented)
- * 7: UNUSED (Intended for rainbow effect, but not implemented)
+ * 5: Rainbow length (0 = no rainbow. Color above)
+ * 6: Rainbow speed
+ * 7: Offset/Direction (0-127 = FORWARD, 128-255 = BACKWARD)
  * 8: Mask 1 type (1-9)
  * 9: Mask 1 parameter 1
  * 10: Mask 1 parameter 2
@@ -126,6 +121,14 @@ bool hasChannelsChanged(u8_t* channels, u8_t from, u8_t to) {
 // We create an object, as we sometimes wish to use the existing color
 // without resetting the wave animation
 SingleColor* color = new SingleColor(CRGB::Black);
+DynamicLayer* colorLayer = new DynamicLayer(color);
+
+RainbowColor * dmx_to_rainbow(u8_t* channels) {
+    if (channels[5] == 0) {
+        return nullptr;
+    }
+    return new RainbowColor(valueScaler(channels[6]), valueScaler(channels[5]));
+}
 
 /**
  * We check whether the 1-7 has changed and only update color if that is the case
@@ -140,32 +143,40 @@ SingleColor* color = new SingleColor(CRGB::Black);
  */
 void dmx_to_animation(Animator* animator, u8_t* channels) {
     // If the first 7 channels has changed, update the animator settings.
-    if(hasChannelsChanged(channels, 0, 7)) {
+    if(hasChannelsChanged(channels, 0, 6)) {
         // Set dimmer
         animator->setBrightness(channels[1]);
 
         // Set color
         color->setColor(CRGB(channels[2], channels[3], channels[4]));
 
-        // If channel 6 is < 128, direction is FORWARD, otherwise BACKWARD
-        animator->setDirection(channels[5] < 128 ? Direction::FORWARD : Direction::BACKWARD);
+        // Set rainbow
+        RainbowColor* rainbowColor = dmx_to_rainbow(channels);
+        if (rainbowColor != nullptr) {
+            colorLayer->setLayer(rainbowColor);
+        } else {
+            colorLayer->setLayer(color);
+        }
     }
 
-    if(hasChannelsChanged(channels, 8, 15)) {
+    if(hasChannelsChanged(channels, 7, 15)) {
+        // If channel 7 is < 128, direction is FORWARD, otherwise BACKWARD
+        animator->setDirection(channels[7] < 128 ? Direction::FORWARD : Direction::BACKWARD);
+
         ILayer* mask1 = dmx_to_mask(channels + 8); // Use channels 8-11 to decode effect
         ILayer* mask2 = dmx_to_mask(channels + 12); // Use channels 12-15 to decode effect
 
         if (mask1 != nullptr && mask2 != nullptr) {
             // if wwo masks, combine them
-            animator->setLayers({color, mask1, mask2});
+            animator->setLayers({colorLayer, mask1, mask2});
             
         } else if (mask1 != nullptr) {
             // If one mask
-            animator->setLayers({color, mask1});
+            animator->setLayers({colorLayer, mask1});
 
         } else {
-            // Only color layer
-            animator->setLayers({color});
+            // Only colorLayer
+            animator->setLayers({colorLayer});
         }
 
         // Start at higher tick if DMX channel 6 is set
@@ -186,20 +197,12 @@ String ReadDMXProcess::getName() {
 }
 
 void ReadDMXProcess::update() {
-
-    u8_t read[128] = {0};
-    DMX::ReadAll(read, 1, 120);
-
-    printf("H%d ", DMX::IsHealthy());
     for (int i = 0; i < 15; ++i) {
-        /* channels[i+1] = DMX::Read(i + this->dmx_address); */
-        printf("%d ", read[i+1]);
+        channels[i+1] = DMX::Read(i + this->dmx_address);
     }
-    printf("\n");
 
-    /* // Map the DMX channels to the animation.
+    // Map the DMX channels to the animation.
     if (animator != nullptr) {
         dmx_to_animation(animator, channels);
-    } */
+    }
 }
-

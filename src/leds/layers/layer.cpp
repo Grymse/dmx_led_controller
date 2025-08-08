@@ -48,3 +48,20 @@ CRGB DynamicLayer::apply(CRGB color, LEDState* state) {
     return color;
   }
 }
+
+String DynamicLayer::toString() {
+  if (currentLayer) {
+    return "DynamicLayer(" + currentLayer->toString() + ")";
+  } else {
+    return "DynamicLayer(Empty)";
+  }
+}
+
+protocol_Layer DynamicLayer::toEncodable() {
+  if (currentLayer) {
+    return currentLayer->toEncodable();
+  } else {
+    protocol_Layer emptyLayer;
+    return emptyLayer;
+  }
+}

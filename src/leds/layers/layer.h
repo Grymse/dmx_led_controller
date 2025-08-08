@@ -52,4 +52,6 @@ class DynamicLayer : public ILayer {
   void setLayer(ILayer* newLayer);
   void removeLayer();
   CRGB apply(CRGB color, LEDState* state) override;
+  String toString() override;
+  protocol_Layer toEncodable() override;
 };

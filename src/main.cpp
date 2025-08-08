@@ -24,7 +24,7 @@
 #define LED_PIN 7
 #define NUM_LEDS 300
 #define BUILTIN_LED 8
-#define DMX_START 1
+#define DMX_START 123
 const uint16_t MAX_BUFFER_SIZE = 1028;
 CRGB *leds = new CRGB[NUM_LEDS];
 RF24 radio = RF24(CE_PIN, CSN_PIN);
