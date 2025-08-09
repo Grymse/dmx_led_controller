@@ -13,4 +13,5 @@ struct LEDState {
   size_t length; // Length of the LED strip
   Direction direction; // Direction of the animation
   u16_t virtual_index; // offset index, such that this device comes after another device. E.g. Decide 1: 0-299 (offset 0), Device 2: 300-599 (offset 300)
+  u16_t leds_offset; // Number of LEDs to skip/turn off at the start of the strip
 };

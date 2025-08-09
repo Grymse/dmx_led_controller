@@ -24,7 +24,7 @@
 #define LED_PIN 7
 #define NUM_LEDS 300
 #define BUILTIN_LED 8
-#define DMX_START 123
+#define DMX_START 121
 const uint16_t MAX_BUFFER_SIZE = 1028;
 CRGB *leds = new CRGB[NUM_LEDS];
 RF24 radio = RF24(CE_PIN, CSN_PIN);
@@ -181,6 +181,7 @@ void setup() {
   // offset by e.g. 300 leds. If set to 300, then the controller will display
   // leds 300-599
   animator->setVirtualOffset(0);
+  animator->setLedsOffset(60);
 
   /* scheduler.addProcess(sequenceScheduler, 1000 / frames_per_second);
   

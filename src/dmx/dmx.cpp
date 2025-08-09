@@ -92,7 +92,7 @@ ILayer * dmx_to_mask(u8_t* channels) {
             return new SawtoothMask(valueScaler(channels[1]), valueScaler(channels[2]), valueScaler(channels[3]));
         case 8: // SectionsWaveMask
             return new SectionsWaveMask(*to_sections(channels[1]), valueScaler(channels[2]));
-        case 9: // SectionsRandomMask
+        case 9: // SectionsRandomMask TODO: DEFECT
             return new SectionsRandomMask(*to_full_sections(channels[1]), valueScaler(channels[2]));
         default:
             return nullptr; // Unknown layer type

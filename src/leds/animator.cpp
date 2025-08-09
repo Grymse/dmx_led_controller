@@ -40,6 +40,13 @@ void Animator::setVirtualOffset(u16_t virtual_offset) {
   this->virtual_offset = virtual_offset;
 }
 
+
+void Animator::setLedsOffset(u16_t leds_offset) {
+  this->state->length += this->state->leds_offset;
+  this->state->leds_offset = leds_offset;
+  this->state->length -= leds_offset;
+}
+
 /**
  * @brief Clear the layers
  */
@@ -110,10 +117,15 @@ void Animator::update() {
     for (u16_t i = 0; i < state->length; i++) {
         state->index = i;
         state->virtual_index = (i + virtual_offset);
-        leds[i] = layer->apply(leds[i], state);
+        leds[i + state->leds_offset] = layer->apply(leds[i + state->leds_offset], state);
     }
     /* auto after = millis();
     printf("Layer %s took %d ms\n", layer->getName().c_str(), after - before); */
+  }
+
+  // Remove all LEDs before the offset
+  for (u16_t i = 0; i < state->leds_offset; i++) {
+    leds[i] = CRGB::Black;
   }
 
   // Tick should not exceed max

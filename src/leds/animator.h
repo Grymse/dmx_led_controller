@@ -21,6 +21,7 @@ class Animator : public Process {
   public:
   Animator(CRGB* leds, size_t size);
   void setVirtualOffset(u16_t virtual_offset);
+  void setLedsOffset(u16_t leds_offset);
   void clear();
   void setBrightness(u8_t brightness);
   void setTick(u16_t tick);
